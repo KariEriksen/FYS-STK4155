@@ -14,6 +14,8 @@ X = np.c_[np.ones(N),
 		  x**5,x**4*y,x**3*y**2,x**2*y**3,x*y**4,y**5]
 
 z = franke(x,y)
+z_mean = 1.0/float(N) * sum(z)
+
 XT_X = np.linalg.inv(np.dot(X.T,X))
 XT_z = np.dot(X.T,z)
 beta = np.dot(XT_X,XT_z)
@@ -21,4 +23,7 @@ beta = np.dot(XT_X,XT_z)
 z_predict = np.dot(X,beta)
 
 MSE = 1.0/float(N) * sum( (z_predict-z)**2 )
-print(MSE)
+R2  = 1 - sum( (z_predict-z)**2 ) / ( sum ( (z - z_mean)**2 ) )
+print("MSE %g, R^2: %g " % (MSE,R2) )
+
+Var_beta = MSE*XT_X

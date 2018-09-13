@@ -12,7 +12,7 @@ class LeastSquares :
     def fit(self, X, y) :
         if self.backend == 'manual' :
             self._manualFit(X,y)
-        elif self.backend == 'sklearn' or self.backend == 'skl':
+        elif ((self.backend == 'sklearn') or (self.backend == 'skl')):
             self._sklFit(X,y)
         else :
             raise ValueError('Backend <' + self.backend + '> not recognized.')
@@ -22,7 +22,7 @@ class LeastSquares :
     def _sklFit(self, X,y) :
         self.regression = linear_model.LinearRegression()
         self.regression.fit(X,y)
-        self.beta = self.regression.get_params()
+        self.beta = self.regression.coef_
 
     def _manualFit(self, X,y) :
         self.beta = np.dot(np.linalg.inv(np.dot(np.transpose(X),X)), np.dot(np.transpose(X),y))

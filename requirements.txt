@@ -1,0 +1,7 @@
+pytest>=3.8.0
+scikit-learn>=0.19.2
+codecov>=2.0.15
+coverage>=4.5.1
+pytest-cov>=2.6.0
+numpy>=1.15.1
+numba>=0.33.0

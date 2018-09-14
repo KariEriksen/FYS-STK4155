@@ -155,6 +155,32 @@ class LeastSquares :
         return self.beta
 
 
+    def _manualFit(self, X,y) :
+        """The manual version of the fitting method
+
+        Performs the ordinary linear regression fit using the *from scratch* 
+        implementation. The matrix calculation performed corresponds to 
+
+            b = inv(Xt X) * Xt * y,
+
+        where b is the vector of beta values, Xt denotes the tranpose of X and 
+        inv(A) is the inverse of the matrix A.
+
+        Parameters
+        ----------
+        X : numpy.array
+            The design matrix, a 2D numpy array, dimensions (n_dataPoints, n_parameters)
+        y : numpy.array
+            The true data y values, a 1D numpy array, dimension(n_dataPoints, 1)
+        
+        Returns
+        -------
+        beta : numpy.array
+            The optimized beta parameters from the performed fit
+        """
+        self.beta = np.dot(np.linalg.inv(np.dot(np.transpose(X),X)), np.dot(np.transpose(X),y))
+
+
     def _sklFit(self, X, y) :
         """The scikit-learn version of the fitting method
 
@@ -183,27 +209,6 @@ class LeastSquares :
         self.regression.fit(X,y)
         self.beta = self.regression.coef_
         self.beta[0] = self.regression.intercept_
-
-
-    def _manualFit(self, X,y) :
-        """The manual version of the fitting method
-
-        Performs the ordinary linear regression fit using the *from scratch* 
-        implementation.
-
-        Parameters
-        ----------
-        X : numpy.array
-            The design matrix, a 2D numpy array, dimensions (n_dataPoints, n_parameters)
-        y : numpy.array
-            The true data y values, a 1D numpy array, dimension(n_dataPoints, 1)
-        
-        Returns
-        -------
-        beta : numpy.array
-            The optimized beta parameters from the performed fit
-        """
-        self.beta = np.dot(np.linalg.inv(np.dot(np.transpose(X),X)), np.dot(np.transpose(X),y))
 
 
     def predict(self) :
@@ -337,6 +342,74 @@ class LeastSquares :
             self._sklPredict()
         self._MSE = metrics.mean_squared_error(self.y, self.yHat)
 
+
+    def R2(self) :
+        """Computes the R2 score of the model prediction 
+
+        Computes the R2 score of the model prediction, after a fit has 
+        been made. If the backend is 'manual', the *from scratch* 
+        implementation is called. If the backend is 'skl' or 'sklearn', the 
+        scikit-learn metrics.r2_score() method is called used. If no fit has 
+        been performed prior to calling this method, a warning is raised 
+        telling the user that this doesnt make any sense (yet). 
+
+        Returns
+        -------
+        self._R2
+            The R2 score of the model prediction
+
+        Raises
+        ------
+        Warning
+            If a fit has not been performed yet, a warning is raised telling the 
+            user that getting a prediction out of the model before the fit is 
+            done does not make much sense.
+        """
+        manual = self._checkFitDoneAndManualBackend()
+        if manual :
+            self._manualR2()
+        else :
+            self._sklR2()
+        return self._R2
+
+
+    def _manualR2(self) :
+        """Manual version of the R2 score calculation
+
+        If the prediction has not been calculated previously, it is 
+        calculated before the R2 score is calculated. The calculation consists of 
+        dividing the sum of the square difference between the model prediction
+        and the true y values, and the square difference between the model 
+        prediction and the mean model prediction value. 
+
+        Returns
+        -------
+        self._MSE
+            The mean squared error in the prediction of the model.
+        """
+        if self.yHat == None :
+            self._manualPredict()
+        yMean = (1.0 / self.y.size) * np.sum(self.y)
+        self._R2 = 1.0 - np.sum((self.yHat - self.y)**2) / np.sum((self.y - yMean)**2)
+        return self._R2
+
+
+    def _sklR2(self) :
+        """Scikit-learn version of the R2 score calculation
+
+        If the prediction has not been calculated previously, it is 
+        calculated before the R2 score is calculated. The calculation is done by
+        calling the metrics.r2_score() method.
+
+        Returns
+        -------
+        self._MSE
+            The mean squared error in the prediction of the model.
+        """
+        if self.yHat == None :
+            self._sklPredict()
+        self._R2 = metrics.r2_score(self.y, self.yHat)
+        return self._R2
 
 
 

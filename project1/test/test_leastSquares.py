@@ -151,7 +151,66 @@ def test_LeastSquares_meanSquaredError() :
     assert MSE_manual == pytest.approx(MSE_true, abs=1e-15)
 
 
+def test_LeastSquares_R2() :
+    """Tests the R2 score method of the Least Squares class
+
+    The test is done with a known beta array, comparing results to a known
+    MSE value.
+    """
+    N = 5
+    P = 3
+    x = np.linspace(0,1,N)
+    random.seed(10)
+    y = 3*x**2 - 9*x - 2.4*x**5 + 3.1
+    X = np.zeros(shape=(N,P))
+    X[:,0] = 1.0
+
+    for j in range(1,P) :
+        X[:,j] = x**j
+
+    OLS = LeastSquares(backend='skl')
+    beta_skl   = OLS.fit(X,y)
+    R2_skl     = OLS.R2()
+
+    OLS = LeastSquares(backend='manual')
+    beta_manual = OLS.fit(X,y)
+
+    # Ensure the manual and the skl fit both use the exact same beta 
+    # values.
+    OLS.beta   = beta_skl
+    R2_manual  = OLS.R2()
+
+    yHat = np.dot(X, beta_skl)
+    R2_true = 1.0 - np.sum((y - yHat)**2) / np.sum((y - np.mean(y))**2)
+    
+    # beta: 
+    #    2.98147321428571299151
+    #   -6.48616071428570872826
+    #   -1.66071428571428914012
+    #
+    # yHat = beta0 + beta1 x + beta2 x^2
+    #    2.98147321428571299151
+    #    1.25613839285714279370
+    #   -0.67678571428571365765
+    #   -2.81729910714285569640
+    #   -5.16540178571428487686
+    #
+    # y = 3x^2 - 9x -2.4x^5 + 3.1
+    #    3.10000000000000008882
+    #    1.03515625000000000000
+    #   -0.72500000000000008882
+    #   -2.53203124999999973355
+    #   -5.30000000000000071054
+    #
+    # R2 = 1.0 - sum(yHat - y)**2 / sum(yHat - mean(y))**2
+    #    0.99605957942938250227
+
+    assert R2_skl    == pytest.approx(R2_manual, abs=1e-15)
+    assert R2_skl    == pytest.approx(R2_true, abs=1e-15)
+    assert R2_manual == pytest.approx(R2_true, abs=1e-15)
+
+
 if __name__ == '__main__':
-    test_LeastSquares_meanSquaredError()
+    test_LeastSquares_R2()
 
 

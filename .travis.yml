@@ -14,7 +14,7 @@ env:
 #  - PROJECT_DIRECTORY=project3
 
 script:
-  - cd $PROJECT_DIRECTORY && pytest --cov=./
+  - cd $PROJECT_DIRECTORY && pytest -v && pytest --cov=./
 
 after_success:
   - codecov

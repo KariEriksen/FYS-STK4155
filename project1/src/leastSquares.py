@@ -154,42 +154,167 @@ class LeastSquares :
         self.fitDone = True
         return self.beta
 
+
     def _sklFit(self, X, y) :
+        """The scikit-learn version of the fitting method
+
+        Performs the ordinary linear regression fit using the scikit-learn 
+        functionality. Note that the self.beta array resulting from getting
+        linear_model.LinearRegression.coef_ does not contain the intercept
+        by default, even when LinearRegression(fit_intercept=True) is used. 
+        In order to have self.beta correspond to the same quantity in both
+        the 'manual' and 'skl'/'sklearn' cases, we modify it in the scikit-
+        learn case to contain the linear_model.LinearRegression.intercept_ 
+        in self.beta[0]. 
+
+        Parameters
+        ----------
+        X : numpy.array
+            The design matrix, a 2D numpy array, dimensions (n_dataPoints, n_parameters)
+        y : numpy.array
+            The true data y values, a 1D numpy array, dimension(n_dataPoints, 1)
+        
+        Returns
+        -------
+        beta : numpy.array
+            The optimized beta parameters from the performed fit
+        """
         self.regression = linear_model.LinearRegression(fit_intercept=True)
         self.regression.fit(X,y)
         self.beta = self.regression.coef_
         self.beta[0] = self.regression.intercept_
 
+
     def _manualFit(self, X,y) :
+        """The manual version of the fitting method
+
+        Performs the ordinary linear regression fit using the *from scratch* 
+        implementation.
+
+        Parameters
+        ----------
+        X : numpy.array
+            The design matrix, a 2D numpy array, dimensions (n_dataPoints, n_parameters)
+        y : numpy.array
+            The true data y values, a 1D numpy array, dimension(n_dataPoints, 1)
+        
+        Returns
+        -------
+        beta : numpy.array
+            The optimized beta parameters from the performed fit
+        """
         self.beta = np.dot(np.linalg.inv(np.dot(np.transpose(X),X)), np.dot(np.transpose(X),y))
 
-    def predict(self, X=None) :
-        if X != None :
-            self.X = X
 
+    def predict(self) :
+        """Calculates the prediction of the linear model based on the input data after having performed a fit
+
+        Performs the computation of the prediction of the optimized linear model
+        based on the input data. If the backend is 'manual', the *from scratch* 
+        implementation is called. If the backend is 'skl' or 'sklearn', the 
+        scikit-learn linear_model.LinearRegression.predict() method is called.
+
+        Returns
+        -------
+        self.yHat : numpy.array
+            The prediction array, a 1D numpy array of prediction values, 
+            dimensions (n_dataPoints, 1)
+
+        Raises
+        ------
+        Warning
+            If a fit has not been performed yet, a warning is raised telling the 
+            user that getting a prediction out of the model before the fit is 
+            done does not make much sense.
+        """
         if self._checkFitDoneAndManualBackend() :
             self._manualPredict()
         else :
             self._sklPredict()
         return self.yHat
 
+
     def _manualPredict(self) :
+        """Manual version of the prediction calculation
+
+        Performs a simple matrix multiplication of the design matrix and the 
+        computed beta values resulting from the fit to obtain the model
+        prediction.
+
+        Returns
+        -------
+        self.yHat : numpy.array
+            The prediction array, a 1D numpy array of prediction values, 
+            dimensions (n_dataPoints, 1)
+        """
         self.yHat = np.dot(self.X, self.beta)
 
+
     def _sklPredict(self) :
-        self.yHat = self.regression.predict(self.X)-self.beta[0]
+        """Scikit-learn version of the prediction calculation
+
+        Calls the scikit-learn linear_model.LinearRegression.predict() method
+        in order to obtain the prediction. In order to get the prediction with 
+        intercept, we need to subtract self.beta[0] which contains the value 
+        of linear_model.LinearRegression.intercept_ (see self._sklFit()). This 
+        is rougly corresponds to doing metric.mean_squared_error(fit_intercept=True),
+        which is not a functionality available in scikit-learn currently.
+
+        Returns
+        -------
+        self.yHat : numpy.array
+            The prediction array, a 1D numpy array of prediction values, 
+            dimensions (n_dataPoints, 1)
+        """
+        self.yHat = self.regression.predict(self.X) - self.beta[0]
+
 
     def meanSquaredError(self) :
+        """Calculate the mean squared error in the model prediction
+
+        Alias of the self.MSE() method in order to allow calls to both 
+        LeastSquares.meanSquaredError() and LeastSquares.MSE(). 
+
+        Returns
+        -------
+        self._MSE
+            The mean squared error in the prediction of the model.
+        """
         return self.MSE()
 
+
     def MSE(self) :
+        """Calculate the mean squared error in the model prediction
+
+        If the backend is 'manual', the *from scratch* implementation is 
+        called. If the backend is 'skl' or 'sklearn', the scikit-learn 
+        metrics.mean_squared_error() method is called. 
+
+        Returns
+        -------
+        self._MSE
+            The mean squared error in the prediction of the model.
+        """
         if self._checkFitDoneAndManualBackend() :
             self._manualMSE()
         else :
             self._sklMSE()
         return self._MSE
 
+
     def _manualMSE(self) :
+        """Manual version of the mean squared error calculation
+
+        If the prediction has not been calculated previously, it is 
+        calculated before the MSE is calculated by a simple numpy.sum 
+        of the squared difference of the prediction and the true y data, 
+        and a divide by the number of data points.
+
+        Returns
+        -------
+        self._MSE
+            The mean squared error in the prediction of the model.
+        """
         if self.yHat == None :
             self._manualPredict()
         N = self.yHat.size
@@ -197,6 +322,17 @@ class LeastSquares :
 
 
     def _sklMSE(self) :
+        """Scikit-learn version of the mean squared error calculation
+
+        If the prediction has not been calculated previously, it is 
+        calculated before the MSE is calculated by calling the
+        metrics.mean_squared_error() method.
+
+        Returns
+        -------
+        self._MSE
+            The mean squared error in the prediction of the model.
+        """
         if self.yHat == None :
             self._sklPredict()
         self._MSE = metrics.mean_squared_error(self.y, self.yHat)

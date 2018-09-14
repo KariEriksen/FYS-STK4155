@@ -92,7 +92,7 @@ class LeastSquares :
 
     def _sklMSE(self) :
         if self.yHat == None :
-            self.yHat = self._sklPredict()
+            self._sklPredict()
         self._MSE = metrics.mean_squared_error(self.y, self.yHat)
 
 

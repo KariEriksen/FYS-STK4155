@@ -105,12 +105,12 @@ def test_LeastSquares_meanSquaredError() :
 
     The test is done with a known beta array, comparing results to a known
     MSE value.
-    
+    """
     N = 5
     P = 3
     x = np.linspace(0,1,N)
     random.seed(10)
-    y = 3*x**2 - 9*x - 2.4*x**5 - 3.1
+    y = 3*x**2 - 9*x - 2.4*x**5 + 3.1
     X = np.zeros(shape=(N,P))
     X[:,0] = 1.0
 
@@ -129,11 +129,29 @@ def test_LeastSquares_meanSquaredError() :
     OLS.beta    = beta_skl
     MSE_manual  = OLS.meanSquaredError()
 
-    assert MSE_skl == pytest.approx(MSE_manual, abs=1e-10)
-    
-    """
+    # beta: 
+    #    2.98147321428571299151
+    #   -6.48616071428570872826
+    #   -1.66071428571428914012
+    #
+    # yHat = beta0 + beta1 x + beta2 x^2
+    #    2.98147321428571299151
+    #    1.25613839285714279370
+    #   -0.67678571428571365765
+    #   -2.81729910714285569640
+    #   -5.16540178571428487686
+    #
+    # MSE = 1/5 * sum(yHat - y)**2
+    #    0.03294015066964287725
+
+    MSE_true = 0.03294015066964287725
+
+    assert MSE_skl    == pytest.approx(MSE_manual, abs=1e-15)
+    assert MSE_skl    == pytest.approx(MSE_true, abs=1e-15)
+    assert MSE_manual == pytest.approx(MSE_true, abs=1e-15)
 
 
-
+if __name__ == '__main__':
+    test_LeastSquares_meanSquaredError()
 
 

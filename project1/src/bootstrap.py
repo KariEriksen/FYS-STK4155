@@ -61,11 +61,6 @@ class Bootstrap :
 			self.leastSquares.fit(X, y[:2])
 		self.betaMatrix = np.zeros(shape=(self.leastSquares.beta.size, k))
 
-		if __name__ == '__main__':
-			plt.figure()
-			indices = np.argsort(x)
-			plt.plot(x[indices], y[indices], 'k-')
-
 		for i in range(k) :
 			N  = x.size
 
@@ -78,38 +73,5 @@ class Bootstrap :
 			Xi = self.designMatrix.getMatrix(xi)
 			self.betaMatrix[:,i] = self.leastSquares.fit(Xi, yi)
 			
-			if __name__ == '__main__':
-				yiHat = self.leastSquares.predict()
-				indices = np.argsort(xi)
-				plt.plot(xi[indices], yiHat[indices], 'y--')
-
 		self.beta 		  = np.average(self.betaMatrix, axis=1)
 		self.betaVariance = np.var 	  (self.betaMatrix, axis=1)
-
-		#print(self.beta)
-		#print(self.betaVariance)
-
-		if __name__ == '__main__':
-			X = self.designMatrix.getMatrix(x)
-			self.leastSquares.beta = self.beta
-			self.leastSquares.X = X
-			yHat = self.leastSquares.predict()
-			indices = np.argsort(x)
-
-			plt.plot(x[indices], yHat[indices], 'r-')
-			plt.show()
-
-
-
-
-			
-
-
-
-if __name__ == '__main__':
-	ls = LeastSquares()
-	dm = DesignMatrix('polynomial', 3)
-	bs = Bootstrap(ls, dm)
-	x = np.random.rand(100)*5
-	y = x**2 + x - 0.01*x**3 + np.cos(6*x/np.pi) - np.exp(-0.5*x)
-	bs.resample(x,y,3)

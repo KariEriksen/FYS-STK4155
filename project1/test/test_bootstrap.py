@@ -25,7 +25,13 @@ def test_bootstrap_resample() :
     OLS = LeastSquares()
     DM  = DesignMatrix('polynomial', 2)
     bootstrap = Bootstrap(OLS, DM)
-    
+
+    x = np.ones(10)*2.25
+    y = x**3
+
+    bootstrap.resample(x, y, 10)
+    assert bootstrap.betaVariance == pytest.approx(np.zeros(3), abs=1e-15)
+
 
 
 

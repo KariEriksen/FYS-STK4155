@@ -10,7 +10,7 @@ class LeastSquares :
     changed later using the setBackend() method). 
     """
 
-    def __init__(self, backend='normal') :
+    def __init__(self, backend='manual') :
         """Constructor
 
         Determines the method(s) used in the fitting and evaluation with
@@ -26,7 +26,9 @@ class LeastSquares :
 
         Raises
         ------
-        ValueError : If the backend string is not equal to 'manual', 'skl', or 'sklearn'
+        ValueError 
+            If the backend string is not equal to 'manual', 'skl', or 
+            'sklearn'
         """
         self.backend        = backend
         self._checkManualBackend()
@@ -155,7 +157,7 @@ class LeastSquares :
         return self.beta
 
 
-    def _manualFit(self, X,y) :
+    def _manualFit(self, X, y) :
         """The manual version of the fitting method
 
         Performs the ordinary linear regression fit using the *from scratch* 

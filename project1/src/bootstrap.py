@@ -86,8 +86,8 @@ class Bootstrap :
 		self.beta 		  = np.average(self.betaMatrix, axis=1)
 		self.betaVariance = np.var 	  (self.betaMatrix, axis=1)
 
-		print(self.beta)
-		print(self.betaVariance)
+		#print(self.beta)
+		#print(self.betaVariance)
 
 		if __name__ == '__main__':
 			X = self.designMatrix.getMatrix(x)

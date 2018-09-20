@@ -118,18 +118,63 @@ def test_DesignMatrix_function() :
         def _f6(self, x) :
             return np.tanh(x)
 
+    # 1 function
     numberOfFunctions = 1
     f = f1(numberOfFunctions)
-    x = np.array([2.0])
+    x = np.array([np.pi/2])
     DM = DesignMatrix(f, numberOfFunctions)
     X  = DM.getMatrix(x)
-    X_true = np.array([ [1.0,  np.cos(2.0)] ])
+    X_true = np.array([ [1.0,  np.cos(np.pi/2)] ])
     assert X == pytest.approx(X_true, abs=1e-15)
 
+    # 2 functions
+    numberOfFunctions = 2
+    f = f1(numberOfFunctions)
+    x = np.array([np.pi/2, np.pi/3])
+    DM = DesignMatrix(f, numberOfFunctions)
+    X  = DM.getMatrix(x)
+    X_true = np.array([ [1.0,  np.cos(np.pi/2), np.sin(np.pi/2)],
+                        [1.0,  np.cos(np.pi/3), np.sin(np.pi/3)] ])
+    assert X == pytest.approx(X_true, abs=1e-15)
 
+    # 3 functions
+    numberOfFunctions = 3
+    f = f1(numberOfFunctions)
+    x = np.array([np.pi/2, np.pi/3, np.pi/4, np.pi/5, np.pi/6])
+    DM = DesignMatrix(f, numberOfFunctions)
+    X  = DM.getMatrix(x)
+    X_true = np.array([ [1.0,  np.cos(np.pi/2), np.sin(np.pi/2), np.tan(np.pi/2)],
+                        [1.0,  np.cos(np.pi/3), np.sin(np.pi/3), np.tan(np.pi/3)],
+                        [1.0,  np.cos(np.pi/4), np.sin(np.pi/4), np.tan(np.pi/4)],
+                        [1.0,  np.cos(np.pi/5), np.sin(np.pi/5), np.tan(np.pi/5)],
+                        [1.0,  np.cos(np.pi/6), np.sin(np.pi/6), np.tan(np.pi/6)] ])
+    assert X == pytest.approx(X_true, abs=1e-15)
 
+    # 4 functions
+    numberOfFunctions = 4
+    f = f1(numberOfFunctions)
+    x = np.array([np.pi/2, np.pi/3])
+    DM = DesignMatrix(f, numberOfFunctions)
+    X  = DM.getMatrix(x)
+    X_true = np.array([ [1.0,  np.cos(np.pi/2), np.sin(np.pi/2), np.tan(np.pi/2), np.cosh(np.pi/2)],
+                        [1.0,  np.cos(np.pi/3), np.sin(np.pi/3), np.tan(np.pi/3), np.cosh(np.pi/3)] ])
+    assert X == pytest.approx(X_true, abs=1e-15)
 
-
+    # 6 functions
+    numberOfFunctions = 6
+    f = f1(numberOfFunctions)
+    x = np.array([np.pi/2, np.pi/3, np.pi/4, np.pi/5, np.pi/6, np.pi/7, np.pi/8, np.pi/9])
+    DM = DesignMatrix(f, numberOfFunctions)
+    X  = DM.getMatrix(x)
+    X_true = np.array([ [1.0,  np.cos(np.pi/2), np.sin(np.pi/2), np.tan(np.pi/2), np.cosh(np.pi/2), np.sinh(np.pi/2), np.tanh(np.pi/2)],
+                        [1.0,  np.cos(np.pi/3), np.sin(np.pi/3), np.tan(np.pi/3), np.cosh(np.pi/3), np.sinh(np.pi/3), np.tanh(np.pi/3)],
+                        [1.0,  np.cos(np.pi/4), np.sin(np.pi/4), np.tan(np.pi/4), np.cosh(np.pi/4), np.sinh(np.pi/4), np.tanh(np.pi/4)],
+                        [1.0,  np.cos(np.pi/5), np.sin(np.pi/5), np.tan(np.pi/5), np.cosh(np.pi/5), np.sinh(np.pi/5), np.tanh(np.pi/5)],
+                        [1.0,  np.cos(np.pi/6), np.sin(np.pi/6), np.tan(np.pi/6), np.cosh(np.pi/6), np.sinh(np.pi/6), np.tanh(np.pi/6)],
+                        [1.0,  np.cos(np.pi/7), np.sin(np.pi/7), np.tan(np.pi/7), np.cosh(np.pi/7), np.sinh(np.pi/7), np.tanh(np.pi/7)],
+                        [1.0,  np.cos(np.pi/8), np.sin(np.pi/8), np.tan(np.pi/8), np.cosh(np.pi/8), np.sinh(np.pi/8), np.tanh(np.pi/8)],
+                        [1.0,  np.cos(np.pi/9), np.sin(np.pi/9), np.tan(np.pi/9), np.cosh(np.pi/9), np.sinh(np.pi/9), np.tanh(np.pi/9)] ])
+    assert X == pytest.approx(X_true, abs=1e-15)
 
 
 

@@ -115,7 +115,7 @@ class DesignMatrix :
             │  X  │ =  x  
             ╰   ij╯     i
         
-        with X being the design matrix and x being the input data set.
+        with X being the design matrix and x being the input data set. 
         
         Paramters
         ---------
@@ -144,8 +144,17 @@ class DesignMatrix :
             ╰   ij╯     j╰  i╯
         
         with X being the design matrix and x being the input data set. The 
-        function f subscripted j is the j-th function. 
-        
+        function f subscripted j is the j-th function. The self.degree 
+        value given as a parameter to the constructor dictates how many 
+        different functions are used. 
+
+        The input function must take two arguments, a number specifying 
+        which function index and a numpy.array of values on which to 
+        evaluate the function,
+
+                   ╭     → ╮
+            f  =  f│ j , x │
+                   ╰       ╯
         Paramters
         ---------
         x : numpy.array
@@ -156,9 +165,8 @@ class DesignMatrix :
         P = self.degree
         self.matrix = np.zeros(shape=(N,P+1))
         self.matrix[:,0] = 1.0
-        for i in range(N) :
-            for j in range(1,P+1) :
-                self.matrix[i,j] = self.model(j, x[i])
+        for j in range(1,P+1) :
+            self.matrix[:,j] = self.model(j, x)
 
 
 

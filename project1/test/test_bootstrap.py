@@ -60,36 +60,10 @@ def test_bootstrap_resample() :
     meanBetaVariance = np.zeros(6)
 
     ind = 0
-    for noiseScale in [0.0, 0.01, 0.1, 0.2, 0.5, 1.0] :
+    for noiseScale in [0.0, 0.1, 1.0] :
         y = np.sin(1.5*x) - 0.5*np.cos(2*x)**2 + np.random.normal(0, noiseScale, N)
         bootstrap.resample(x, y, 100)
         meanBetaVariance[ind] = np.mean(bootstrap.betaVariance)
         if ind > 0 :
             assert meanBetaVariance[ind-1] < meanBetaVariance[ind]
         ind += 1
-
-
-    if __name__ == '__main__':
-        plt.figure()
-        indices = np.argsort(x)
-        plt.plot(x[indices], y[indices], 'k-')
-
-        X = DM.getMatrix(x)
-        OLS.beta = bootstrap.beta
-        OLS.X = X
-        yHat = OLS.predict()
-        indices = np.argsort(x)
-
-        plt.plot(x[indices], yHat[indices], 'r-')
-        plt.show()
-
-
-
-
-
-    #assert bootstrap.betaVariance == pytest.approx(np.zeros(4), abs=1e-15)
-
-
-
-if __name__ == '__main__':
-    test_bootstrap_resample()

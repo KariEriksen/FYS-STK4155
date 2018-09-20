@@ -178,6 +178,25 @@ def test_DesignMatrix_function() :
 
 
 
+def test_DesignMatrix_polynomial2D() :
+    """Tests the polynomial2D method of the DesignMatrix class
+
+    The tests comprise setting up design matrices of different 
+    polynomials orders and comparing to manually setup matrices.
+    """
+    x = np.array( [ [2.0, 3.0],
+                    [4.0, 5.0],
+                    [6.0, 7.0],
+                    [8.0, 9.0] ])
+    DM = DesignMatrix('polynomial2D', 2)
+    X  = DM.getMatrix(x)
+    X_true = np.array([ [1.0,  2.0,  3.0,  2.0**2,  2.0*3.0,  3.0**2],
+                        [1.0,  4.0,  5.0,  4.0**2,  4.0*5.0,  5.0**2],
+                        [1.0,  6.0,  7.0,  6.0**2,  6.0*7.0,  7.0**2],
+                        [1.0,  8.0,  9.0,  8.0**2,  8.0*9.0,  9.0**2] ])
+
+    assert X == pytest.approx(X_true, abs=1e-15)
+
 
 
 

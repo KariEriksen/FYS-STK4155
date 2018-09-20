@@ -19,16 +19,17 @@ class DesignMatrix :
         that the degree argument will be ignored.
 
         If the model argument is provided in string form, but the string
-        is not 'polynomial', a ValueError is raised. If 'polynomial' is 
-        provided as the model argument but the degree argument is not 
-        present, a ValueError is also raised. If the degree argument is 
-        present but not an integer, a TypeError is raised.
+        is not 'polynomial', or 'polynomial2D' a ValueError is raised. 
+        If 'polynomial' or 'polynomial2D' is provided as the model argument 
+        but the degree argument is not present, a ValueError is also raised. 
+        If the degree argument is present but not an integer, a TypeError 
+        is raised.
 
         Parameters
         ----------
         model 
             Either a callable object or a string. In the latter case, only
-            'polynomial' is accepted.
+            'polynomial' or 'polynomial2D' is accepted.
         degree : int
             The degree of the polynomial model used, or the number of functions
             used in the case of a callable model input.
@@ -50,6 +51,7 @@ class DesignMatrix :
         self.degree = degree
         self.model  = model
         self.type_  = None
+        self.p2D    = {}
 
         if callable(model) :
             self.type_ = 'function'
@@ -68,6 +70,15 @@ class DesignMatrix :
                             raise TypeError("The provided polynomial degree is not an integer.")
                     else :
                         raise ValueError("Using the 'polynomial' type DesignMatrix requires providing a polynomial degree.")
+                elif model == 'polynomial2D' :
+                    self.type_ = 'polynomial2D'
+                    if degree != None :
+                        if type(degree) == int :
+                            self.degree = degree
+                        else :
+                            raise TypeError("The provided polynomial degree is not an integer.")
+                    else :
+                        raise ValueError("Using the 'polynomial2D' type DesignMatrix requires providing a polynomial degree.")
                 else :
                     raise ValueError("Model string <" + model +"> not recognized.")
             else :
@@ -81,16 +92,22 @@ class DesignMatrix :
         custom function type. If a callable object was given in the 
         constructor, the custom function design matrix is setup. If the 
         'polynomial' keyword was given, a polynomial design matrix of the
-        specified order is setup.
+        specified order is setup. If the 'polynomial2D' keyword was given,
+        a polynomial design matrix in 2D, including all combined 
+        polynomials up to and including self.degree is setup.
 
         In the former case, the self._getMatrixFunction method is called,
-        while the latter results in a self._getMatrixPolynomial call.
+        while the latter results in a self._getMatrixPolynomial call. If 
+        the 'polynomial2D' keyword is specified, the method
+        self._getMatrixPolynomial2D is called. In this case, the input
+        parameter x must be a 2D numpy array.
 
         Paramters
         ---------
         x : numpy.array
             The data set, a 1D numpy array, used for the construction of
-            the design matrix
+            the design matrix. If the 'polynomial2D' keyword is specified
+            in the constructor, a 2D numpy array is expected.
 
         Returns
         -------
@@ -99,6 +116,8 @@ class DesignMatrix :
         """
         if self.type_ == 'polynomial' :
             self._getMatrixPolynomial(x)
+        elif self.type_ == 'polynomial2D' :
+            self._getMatrixPolynomial2D(x)
         elif self.type_ == 'function' :
             self._getMatrixFunction(x)
         return self.matrix
@@ -129,6 +148,76 @@ class DesignMatrix :
         self.matrix[:,0] = 1.0
         for j in range(1,P+1) :
             self.matrix[:,j] = x**j
+
+
+    def _getMatrixPolynomial2D(self, x) :
+        """Computes the design matrix for a 2D polynomial of a given combined degree
+
+        Computes the design matrix of 2D polynomial type with degree specified 
+        in the input to the constructor. The first column contains unity, 
+        the subsequent columns are evaluated as 
+
+            ╭     ╮      ╭        ╮ 
+            │  X  │ =  p │ x , y  │ 
+            ╰   ij╯     j╰  i   i ╯ 
+        
+        with X being the design matrix and (x, y) being the 2D input data set. 
+        The polynomial p is the j-th polynomial in the set of linearly 
+        independent combined polynomials 
+                       2    2         3    3    2        2    4    4
+            x ,  y ,  x ,  y , xy ,  x ,  y ,  x y ,  x y ,  x ,  y , ...
+
+        of combined total degree self.degree.
+        
+        Paramters
+        ---------
+        x : numpy.array
+            The data set, a 2D numpy array, used for the construction of
+            the design matrix
+        """
+        self.p2D = {
+            # Degree 1
+            0:  lambda x,y : x,
+            1:  lambda x,y : y,
+
+            # Degree 2
+            2:  lambda x,y : x**2        ,
+            3:  lambda x,y : x    * y    ,
+            4:  lambda x,y :        y**2 ,
+
+            # Degree 3
+            5:  lambda x,y : x**3        ,
+            6:  lambda x,y : x**2 * y    ,   
+            7:  lambda x,y : x    * y**2 ,
+            8:  lambda x,y :        y**3 ,
+
+            # Degree 4
+            9:  lambda x,y : x**4        ,
+            10: lambda x,y : x**3 * y    ,
+            11: lambda x,y : x**2 * y**2 ,
+            12: lambda x,y : x    * y**3 ,
+            13: lambda x,y :        y**4,
+
+            # Degree 5
+            14: lambda x,y : x**5        ,
+            15: lambda x,y : x**4 * y    ,
+            16: lambda x,y : x**3 * y**2 ,
+            17: lambda x,y : x**2 * y**3 ,
+            18: lambda x,y : x    * y**4 ,
+            19: lambda x,y :        y**5 
+        }
+        N = x.shape
+        N = N[0]
+
+        # The total number of polynomials up to and including combined 
+        # total degree self.degree, i.e. 2, 5, 9, 14, 20, ...
+        P = int(self.degree*(self.degree+3)/2)
+
+        self.matrix = np.zeros(shape=(N,P+1))
+        self.matrix[:,0] = 1.0
+        for j in range(1,P+1) :
+            self.matrix[:,j] = self.p2D[j-1](x[:,0], x[:,1])
+
 
 
     def _getMatrixFunction(self, x) :

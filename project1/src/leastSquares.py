@@ -322,7 +322,7 @@ class LeastSquares :
         self._MSE
             The mean squared error in the prediction of the model.
         """
-        if self.yHat == None :
+        if self.yHat is None :
             self._manualPredict()
         N = self.yHat.size
         self._MSE = np.sum((self.y - self.yHat)**2) / N
@@ -340,7 +340,7 @@ class LeastSquares :
         self._MSE
             The mean squared error in the prediction of the model.
         """
-        if self.yHat == None :
+        if self.yHat is None :
             self._sklPredict()
         self._MSE = metrics.mean_squared_error(self.y, self.yHat)
 
@@ -389,7 +389,7 @@ class LeastSquares :
         self._MSE
             The mean squared error in the prediction of the model.
         """
-        if self.yHat == None :
+        if self.yHat is None :
             self._manualPredict()
         yMean = (1.0 / self.y.size) * np.sum(self.y)
         self._R2 = 1.0 - np.sum((self.yHat - self.y)**2) / np.sum((self.y - yMean)**2)
@@ -408,7 +408,7 @@ class LeastSquares :
         self._MSE
             The mean squared error in the prediction of the model.
         """
-        if self.yHat == None :
+        if self.yHat is None :
             self._sklPredict()
         self._R2 = metrics.r2_score(self.y, self.yHat)
         return self._R2

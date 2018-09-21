@@ -33,7 +33,11 @@ def timeit(func):
 """
 
 def part_a(plotting=False) :
-    for degree in [2,3,4,5,6,7,8,9] :
+    MSE_degree          = []
+    R2_degree           = []
+    betaVariance_degree = []
+
+    for degree in [2,3,4,5] : #,6,7,8,9] :
         designMatrix = DesignMatrix('polynomial2D', degree)
         leastSquares = LeastSquares(backend='manual')
         bootstrap    = Bootstrap(leastSquares, designMatrix)
@@ -53,12 +57,15 @@ def part_a(plotting=False) :
                 y[i] = franke(x_data[i,0], x_data[i,1])
 
         computeFrankeValues(x_data, y_data)
-        bootstrap.resample(x_data, y_data, 100)
-
+        bootstrap.resample(x_data, y_data, 1000)
+        
+        MSE_degree.         append(leastSquares.MSE())
+        R2_degree.          append(leastSquares.R2())
+        betaVariance_degree.append(bootstrap.betaVariance)
         if plotting :
-            print("MSE: ", leastSquares.MSE())
-            print("R2:  ", leastSquares.R2())
-            print("Beta Variance: ", bootstrap.betaVariance.T)
+            print("MSE: ", MSE_degree[-1])
+            print("R2:  ", R2_degree[-1])
+            print("Beta Variance: ", betaVariance_degree[-1].T)
 
             M = 100
             fig = plt.figure()
@@ -90,9 +97,12 @@ def part_a(plotting=False) :
             plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'OLS'+str(degree)+'.png'), transparent=True)
             plt.show()
 
-    
-
-
+    print("\nMSE :")
+    print(MSE_degree)
+    print("\nR2 :")
+    print(R2_degree)
+    print("\nσ²(β) :")
+    print(betaVariance_degree)
 
 if __name__ == '__main__':
     part_a(plotting=True)

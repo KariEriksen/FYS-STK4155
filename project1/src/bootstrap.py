@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 import os
+import math
 import matplotlib.pyplot as plt
 
 # Add the src/ directory to the python path so we can import the code 
@@ -78,7 +79,12 @@ class Bootstrap :
 				xi = x[indices]
 			Xi = self.designMatrix.getMatrix(xi)
 			self.betaMatrix[:,i] = self.leastSquares.fit(Xi, yi)
-			
+
+			# Simple progress bar
+			pp = math.floor(40*i/k)
+			print("Resampling %6d/%6d : [" % (i,k) + pp*"="+(40-pp)*" "+"]\r",end="")
+		print(17*" "+12*" "+40*" "+"\r", end="")
+		
 		self.beta 		  = np.average(self.betaMatrix, axis=1)
 		self.betaVariance = np.var 	  (self.betaMatrix, axis=1)
 

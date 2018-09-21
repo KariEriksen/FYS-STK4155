@@ -197,7 +197,3 @@ def test_DesignMatrix_polynomial2D() :
 
     assert X == pytest.approx(X_true, abs=1e-15)
 
-
-
-
-

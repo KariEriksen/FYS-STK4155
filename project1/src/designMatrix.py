@@ -167,7 +167,8 @@ class DesignMatrix :
                        2    2         3    3    2        2    4    4
             x ,  y ,  x ,  y , xy ,  x ,  y ,  x y ,  x y ,  x ,  y , ...
 
-        of combined total degree self.degree.
+        of combined total degree self.degree. There are n(n+3)/2 such 
+        different monomials/polynomials in a set of degree n.
         
         Paramters
         ---------
@@ -204,13 +205,74 @@ class DesignMatrix :
             16: lambda x,y : x**3 * y**2 ,
             17: lambda x,y : x**2 * y**3 ,
             18: lambda x,y : x    * y**4 ,
-            19: lambda x,y :        y**5 
+            19: lambda x,y :        y**5 ,
+
+            # Degree 6
+            20: lambda x,y : x**6        ,
+            21: lambda x,y : x**5 * y    ,
+            22: lambda x,y : x**4 * y**2 ,
+            23: lambda x,y : x**3 * y**3 ,
+            24: lambda x,y : x**2 * y**4 ,
+            25: lambda x,y : x   *  y**5 ,
+            26: lambda x,y :        y**6 ,
+
+            # Degree 7
+            27: lambda x,y : x**7        ,
+            28: lambda x,y : x**6 * y    ,
+            29: lambda x,y : x**5 * y**2 ,
+            30: lambda x,y : x**4 * y**3 ,
+            31: lambda x,y : x**3 * y**4 ,
+            32: lambda x,y : x**2 * y**5 ,
+            33: lambda x,y : x    * y**6 ,
+            34: lambda x,y :        y**7 ,
+
+            # Degree 8
+            35: lambda x,y : x**8        ,
+            36: lambda x,y : x**7 * y    ,
+            37: lambda x,y : x**6 * y**2 ,
+            38: lambda x,y : x**5 * y**3 ,
+            39: lambda x,y : x**4 * y**4 ,
+            40: lambda x,y : x**3 * y**5 ,
+            41: lambda x,y : x**2 * y**6 ,
+            42: lambda x,y : x    * y**7 ,
+            43: lambda x,y :        y**8 ,
+
+            # Degree 9
+            44: lambda x,y : x**9        ,
+            45: lambda x,y : x**8 * y    ,
+            46: lambda x,y : x**7 * y**2 ,
+            47: lambda x,y : x**6 * y**3 ,
+            48: lambda x,y : x**5 * y**4 ,
+            49: lambda x,y : x**4 * y**5 ,
+            50: lambda x,y : x**3 * y**6 ,
+            51: lambda x,y : x**2 * y**7 ,
+            52: lambda x,y : x    * y**8 ,
+            53: lambda x,y :        y**9 ,
+
+            # Degree 10
+            54: lambda x,y : x**10       ,
+            55: lambda x,y : x**9 * y    ,
+            56: lambda x,y : x**8 * y**2 ,
+            57: lambda x,y : x**7 * y**3 ,
+            58: lambda x,y : x**6 * y**4 ,
+            59: lambda x,y : x**5 * y**5 ,
+            60: lambda x,y : x**4 * y**6 ,
+            61: lambda x,y : x**3 * y**7 ,
+            62: lambda x,y : x**2 * y**8 ,
+            63: lambda x,y : x    * y**9 ,
+            64: lambda x,y :        y**10
         }
         N = x.shape
         N = N[0]
 
         # The total number of polynomials up to and including combined 
-        # total degree self.degree, i.e. 2, 5, 9, 14, 20, ...
+        # total degree self.degree, i.e. 2, 5, 9, 14, 20, 27... . This
+        # is just the sum of the integers, 
+        #
+        #     n+1         n (n + 3)
+        #      Σ   n   =  ─────────  =  P
+        #     k=2             2          n
+        #
         P = int(self.degree*(self.degree+3)/2)
 
         self.matrix = np.zeros(shape=(N,P+1))

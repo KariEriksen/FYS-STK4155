@@ -42,7 +42,7 @@ def part_a(plotting=False) :
         leastSquares = LeastSquares(backend='manual')
         bootstrap    = Bootstrap(leastSquares, designMatrix)
 
-        N = int(1e5)
+        N = int(1e4)
         x = np.random.rand(N)
         y = np.random.rand(N)
         x_data = np.zeros(shape=(N,2))
@@ -57,7 +57,7 @@ def part_a(plotting=False) :
                 y[i] = franke(x_data[i,0], x_data[i,1])
 
         computeFrankeValues(x_data, y_data)
-        bootstrap.resample(x_data, y_data, 1000)
+        bootstrap.resample(x_data, y_data, 200)
         
         MSE_degree.         append(leastSquares.MSE())
         R2_degree.          append(leastSquares.R2())
@@ -105,4 +105,18 @@ def part_a(plotting=False) :
     print(betaVariance_degree)
 
 if __name__ == '__main__':
-    part_a(plotting=True)
+    part_a(plotting=False)
+    """
+    n = 7
+    ind = 0
+    for i in range(1, n) :
+        print(" --------------------------------  %d" % i)
+        for j in range(i+1) :
+            print("%2d  :  x ** %d   *   y ** %d" % (ind,i-j,j))
+            ind += 1
+    """
+    
+
+
+
+

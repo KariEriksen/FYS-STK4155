@@ -1,4 +1,15 @@
 import numpy as np
+from numba import jit
+
+
+@jit(nopython=True)
+def computeMatrix(matrix, x, degree) :
+    ind = 1
+    for i in range(1,degree+1) :
+        for j in range(i+1) :
+            matrix[:,ind] = x[:,0]**(i-j) * x[:,1]**j
+            ind += 1
+
 
 
 class DesignMatrix :
@@ -176,6 +187,7 @@ class DesignMatrix :
             The data set, a 2D numpy array, used for the construction of
             the design matrix
         """
+        """
         self.p2D = {
             # Degree 1
             0:  lambda x,y : x,
@@ -262,6 +274,7 @@ class DesignMatrix :
             63: lambda x,y : x    * y**9 ,
             64: lambda x,y :        y**10
         }
+        """
         N = x.shape
         N = N[0]
 
@@ -277,8 +290,7 @@ class DesignMatrix :
 
         self.matrix = np.zeros(shape=(N,P+1))
         self.matrix[:,0] = 1.0
-        for j in range(1,P+1) :
-            self.matrix[:,j] = self.p2D[j-1](x[:,0], x[:,1])
+        computeMatrix(self.matrix, x, self.degree)
 
 
 

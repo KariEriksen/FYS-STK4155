@@ -84,7 +84,7 @@ class Bootstrap :
 			pp = math.floor(40*i/k)
 			print("Resampling %6d/%6d : [" % (i,k) + pp*"="+(40-pp)*" "+"]\r",end="")
 		print(17*" "+12*" "+40*" "+"\r", end="")
-		
+
 		self.beta 		  = np.average(self.betaMatrix, axis=1)
 		self.betaVariance = np.var 	  (self.betaMatrix, axis=1)
 

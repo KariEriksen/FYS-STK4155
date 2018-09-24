@@ -10,7 +10,7 @@ class LeastSquares :
     changed later using the setBackend() method). 
     """
 
-    def __init__(self, backend='manual') :
+    def __init__(self, method='ols', backend='manual') :
         """Constructor
 
         Determines the method(s) used in the fitting and evaluation with
@@ -31,7 +31,11 @@ class LeastSquares :
             'sklearn'
         """
         self.backend        = backend
+        self.method         = method
+        self.lambda_        = 0
+        self.lambdaSet      = False
         self._checkManualBackend()
+
 
         self.fitDone        = False
 
@@ -46,6 +50,10 @@ class LeastSquares :
         self._R2            = None
         self._betaVariance  = None
 
+
+    def setLambda(self, lambda_) :
+        self.lambda_ = lambda_
+        self.lambdaSet = True
 
     def setBackend(self, backend) :
         """Change the backend in use
@@ -149,9 +157,19 @@ class LeastSquares :
         self.y = y
 
         if self._checkManualBackend() :
-            self._manualFit(X,y)
+            if self.method == 'ols' :
+                self._manualFit(X,y)
+            elif self.method == 'ridge' :
+                self._manualFitRidge(X,y)
+            elif self.method == 'lasso' :
+                raise NotImplementedError(" ")
         else :
-            self._sklFit(X,y)
+            if self.method == 'ols' :
+                self._sklFit(X,y)
+            elif self.method == 'ridge' :
+                self._sklFitRidge(X,y)
+            elif self.method == 'lasso' :
+                raise NotImplementedError(" ")
         
         self.fitDone = True
         return self.beta
@@ -181,6 +199,22 @@ class LeastSquares :
             The optimized beta parameters from the performed fit
         """
         self.beta = np.dot(np.linalg.inv(np.dot(np.transpose(X),X)), np.dot(np.transpose(X),y))
+
+
+    def _manualFitRidge(self, X, y) :
+        if self.lambdaSet == False :
+            raise ValueError("No lambda value set for Ridge regression. Use LeastSquares.setLambda()")
+        #U,S,Vt = np.linalg.svd(X, full_matrices=False)
+        #self.beta = np.dot(np.dot(np.dot(np.dot(np.transpose(Vt), np.linalg.inv(np.dot(np.transpose(S),S)+self.lambda_*np.eye(S.shape[0]))),S),np.transpose(U)),y)
+        self.beta = np.dot(np.linalg.inv(np.dot(np.transpose(X),X) + self.lambda_ * np.eye(X.shape[1])), np.dot(np.transpose(X),y))
+
+    def _sklFitRidge(self, X, y) :
+        if self.lambdaSet == False :
+            raise ValueError("No lambda value set for Ridge regression. Use LeastSquares.setLambda()")
+        self.regression = linear_model.Ridge(fit_intercept=True, alpha=self.lambda_, solver='svd')
+        self.regression.fit(X,y)
+        self.beta = self.regression.coef_
+        self.beta[0] = self.regression.intercept_
 
 
     def _sklFit(self, X, y) :

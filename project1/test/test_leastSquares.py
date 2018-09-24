@@ -210,6 +210,49 @@ def test_LeastSquares_R2() :
     assert R2_manual == pytest.approx(R2_true, abs=1e-15)
 
 
+def test_LeastSquares_fit_ridge() :
+    """Tests the fit method of the Least Squares class with method='ridge'
+
+    The tests comprise fitting of models to known data.
+    """
+    N = 5
+    P = 5
+    x = np.linspace(0,1,N)
+    y = x + x**2 - (1.0 - x)**5
+    
+    X = np.zeros(shape=(N,P))
+    X[:,0] = 1.0
+    for j in range(1,P) :
+        X[:,j] = x**j
+
+    OLS = LeastSquares(method='ols', backend='manual')
+    beta_ols = OLS.fit(X,y)
+
+    OLS = LeastSquares(method='ridge', backend='manual')
+    OLS.setLambda(0.0)
+    beta_lambda0 = OLS.fit(X,y)
+
+    assert beta_lambda0 == pytest.approx(beta_ols, abs=1e-15)
+
+    # Make sure the skl and the manual backends give the same result
+    SKL = LeastSquares(method='ridge', backend='skl')
+    SKL.setLambda(0.0)
+    beta_skl = SKL.fit(X,y)
+    
+    assert beta_lambda0 == pytest.approx(beta_skl, abs=1e-10)
+
+    SKL.setLambda = 0.5
+    OLS.setLambda = 0.5
+    beta_skl = SKL.fit(X,y)
+    beta_lambda0 = OLS.fit(X,y)
+    print(beta_lambda0)
+    print(beta_skl)
+
+    assert beta_lambda0 == pytest.approx(beta_skl, abs=1e-10)
+
+
+
+
 if __name__ == '__main__':
     test_LeastSquares_R2()
 

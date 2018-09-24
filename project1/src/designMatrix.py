@@ -283,7 +283,7 @@ class DesignMatrix :
         # is just the sum of the integers, 
         #
         #     n+1         n (n + 3)
-        #      Σ   n   =  ─────────  =  P
+        #      Σ   k   =  ─────────  =  P
         #     k=2             2          n
         #
         P = int(self.degree*(self.degree+3)/2)

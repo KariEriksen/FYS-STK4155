@@ -2,7 +2,7 @@
 
 % Included packages ---------------------------------------------------------- %
 \usepackage{lipsum}                          % Generate random, blind, filler-text.
-\usepackage{inputenc}                        % utf-8 encoding, æ, ø , å, etc.
+\usepackage[utf8]{inputenc}                        % utf-8 encoding, æ, ø , å, etc.
 \usepackage{a4wide}                          % Adjust margins to better fit A4 format.
 \usepackage{array}                           % Matrices.
 \usepackage{amsmath}                         % Math symbols, and enhanced matrices.
@@ -21,10 +21,11 @@
 \usepackage{mathtools}                       % Underbrackets, overbrackets.
 \usepackage{multicol}                        % Multiple text columns.
 \usepackage{capt-of}                         % Caption things which are not floats.
+\usepackage{fontawesome}                     % Github icon, etc. \faGithub
 \usepackage{sidecap}                         % Floats with captions on the side.
 \usepackage[%                                % Interactive references and links, colored.
   colorlinks  = true,
-  linkcolor   = red,
+  linkcolor   = black,
   urlcolor    = blue,
   citecolor   = black,
   ]{hyperref}            
@@ -61,17 +62,20 @@
 
 % Title
 \title{{\sc Regression analysis and resampling methods \\ {\large FYS-STK4155: Project 1}}}
-\author{Morten Ledum \& Håkon Kristiansen}
+\author{Morten Ledum \& Håkon Kristiansen \\ \faGithub \ {\small \url{github.com/mortele/FYS-STK4155}}}
 % ---------------------------------------------------------------------------- %
 % ---------------------------------------------------------------------------- %
 \begin{document}
 
 \maketitle
 \begin{abstract}
-We parameterize digital terrain data using linear regression analysis algorithms: Ordinary least squares (OLS), Ridge regression, and Lasso regression. The bootstrap resampling technique is used to gauge the bias and variance of the models. We use basis sets of homogeneous monomials and polynomials in two variables, up to and including total degree 5. We find that xxxxxx.
+We parameterize digital terrain data using linear regression analysis algorithms: Ordinary least squares (OLS), Ridge regression, and Lasso regression. The bootstrap resampling technique is used to gauge the bias and variance of the models. We use basis sets of homogeneous monomials in two variables, up to and including total degree 5. We find that xxxxxx.
 
 For initial validation of our models, we employ the test function of R.\ Franke\autocite{franke1979critical}.
 \end{abstract}
+
+\tableofcontents 
+\newpage
 
 \begin{multicols}{2}
 \section{Introduction}
@@ -79,8 +83,47 @@ For initial validation of our models, we employ the test function of R.\ Franke\
 
 \section{Theory}
 In the following we briefly introduce the theory underlying the technical aspects of the present work. We begin by considering linear regression in general, and the ordinary least squares (OLS) method.
+
+\subsection{Linear regression}
+In order to introduce the least squares methods, we consider a case in which $p$ characteristics of $n$ samples are measured. The outcome, or the \textit{response}, is denoted $\mathbf{y}$: a vector of size $n$. The measured characteristics, denoted the predictors, are organized in a matrix $\mathbf{X}$ of size $n\times p$. This is called the \textit{design matrix}.
+
+In regression analysis, we aim to explain the response in terms of the predictors, i.e.\ construct a function $\mathbf{y}(\mathbf{X})$. Assuming a linear relationship between $\mathbf{X}$ and $\mathbf{y}$ gives rise to \textit{linear regression}, in which the response can be written as 
+\begin{align}
+\mathbf{y}=\mathbf{X}\bm{\beta}+\bm{\varepsilon},
+\end{align}
+where $\bm{\varepsilon}$ denotes the deviation of the linear model $\mathbf{X}\bm{\beta}$ and the response $\mathbf{y}$ and $\bm{\beta}$ is a parameter vector containing the linear regression coefficients $\beta_i$. The $\beta_i$ variables are the unknowns in the linear regression problem, and they represent the partial derivative of the \textit{modelled} response w.r.t.\ the descriptors. 
+
+In any non-trivial case, the error terms $\varepsilon_i$ in the error vector $\bm\varepsilon$ will be non-zero. In this case, we regard our linear anzats as a \textit{model} of the true response, the observed values $y_i$. We denote our model by $\tilde{\mathbf{y}}$, and define 
+\begin{align}
+\tilde{\mathbf{y}} &= \mathbf{X}\bm{\beta} \\
+%%
+&= \mathbf{y}-\bm{\varepsilon}. \nonumber
+\end{align}
+The objective of linear regression thus emerges: Determine $\bm\beta$ in such a way that $\bm\varepsilon$ is minimized, thus giving a best possible linear fit of the response (minimizing the deviation $|\mathbf{y}-\tilde{\mathbf{y}}|$).
+
 \subsection{Ordinary least squares}
-\lipsum[3]
+In order to \textit{minimize} the error $\bm\varepsilon$, we must define exactly what that means. We require a functional expression\textemdash commonly referred to as the \textit{cost function}\textemdash and a metric in which to calculate it's size. Choosing the Euclidean $L^2$ norm ($\Vert \mathbf{v} \Vert_2=\sqrt{\sum_i v_i^2}$) and the absolute value of $\bm\varepsilon$ as the metric and cost function, respectively, leads to the \textit{ordinary least squares} (OLS) method. We define the cost function 
+\begin{align}
+C(\bm\beta) &= \Vert \mathbf{y} - \tilde{\mathbf{y}}\Vert_2^2 \nonumber \\
+%
+&= \Vert \mathbf{y} - \mathbf{X}\bm\beta\Vert_2^2 \nonumber \\ 
+%%
+&= \sum_{i=1}^n \Big\Vert y_i - \sum_{j=1}^p X_{ip} \beta_p \Big\Vert_2^2.
+\end{align}
+
+...
+Before we continue describing the Ridge and Lasso regression schemes, we briefly introduce the basis sets used in this project.
+\subsection{Polynomial basis sets}
+Throughout the present work we employ a basis set of homogeneous monomials\footnote{A homogeneous polynomial is a polynomial in which all terms have the same total degree, e.g.\ $xy+y^2+x^2$ is a homogeneous polynomial, $x$ is a homogeneous monomial, while $xy+x^3$ is \textit{not}. Monomials are simply polynomials with only a single term.}. We will be working with 2D terrain data, and thus will need to consider monomials of up to and including two variables\textemdash $x$ and $y$\textemdash in all possible homogeneous combinations. Disregarding the zero degree monomial, there are two possible such terms of degree up to and including one. These are simply $x$ and $y$. Moving up to degree two, we must include $x^2$, $y^2$, and $xy$, for a total of five terms up to and including degree 2. Degree three adds an additional four terms: $x^3$, $x^2y$, $xy^2$, and $y^3$, and so on. In general, there are $n+1$ such terms for monomials of degree $n$, namely 
+\begin{align}
+x^n,\ x^{n-1}y, \ x^{n-2}y^2, \ \dots, \ xy^{n-1}, \ \text{and} \ y^n. \nonumber
+\end{align}
+
+The total basis sets of all such monomials of degree \textit{up to and including} degree $n$\textemdash $\mathcal{B}_n$\textemdash thus contains 
+\begin{align}
+\text{size}(\mathcal{B}_n) \sum_{k=2}^{n+1}k = \frac{n(n+3)}{2}
+\end{align}
+terms. 
 \subsection{Ridge regression}
 \lipsum[3]
 \subsection{Lasso regression}
@@ -92,9 +135,6 @@ In the following we briefly introduce the theory underlying the technical aspect
 We are chiefly interested in parametrizing digital terrain data. However, in order to test and validate our implementation of the regression model and the resampling technique, we employ the Franke function\autocite{franke1979critical} as a test case before considering real data.
 \subsection{The Franke function}
 The test function of Franke\textemdash originally developed to test and rate different surface interpolation techniques\textemdash is "a surface with a variety of behaviour" which consists of "two Gaussian peaks and a sharper Gaussian dip superimposed on a surface sloping towards the first quadrant."\autocite{franke1979critical} It is noted by Franke in the his original paper that the slope was introduced mainly as a visual aid and presumably had little impact on the actual interpolations performed. 
-
-\subsection{Terrain data}
-The terrain data used is taken from the U.S. Department of the Interior U.S. Geological Survey's (USGS) EarthExplorer\footnote{EarthExplorer website: \url{https://earthexplorer.usgs.gov/}.} website. The USGS stores data from the Shuttle Radar Topography Mission (SRTM) which maps the earth's land surface topology with a resolution of 1 arc-second (about $30\,\text{m}$). We will use SRTM data taken from the EarthExplorer website as the basis for our terrain parametrization.
 
 More specifically, the Franke function $f_\text{F}(x,y)$ takes the full form
 \begin{align}
@@ -114,9 +154,22 @@ A plot of the $f_\text{F}(x,y)$ surface can be seen in \fig{1}.
 \captionof{figure}{The Franke test function plotted for $0\le x,y\le 1$. \label{fig:1}}
 \end{Figure}
 
+\subsection{Terrain data}
+The terrain data used is taken from the U.S. Department of the Interior U.S. Geological Survey's (USGS) EarthExplorer\footnote{EarthExplorer website: \url{https://earthexplorer.usgs.gov/}.} website. The USGS stores data from the Shuttle Radar Topography Mission (SRTM) which maps the earth's land surface topology with a resolution of 1 arc-second (about $30\,\text{m}$). We will use SRTM data taken from the EarthExplorer website as the basis for our terrain parametrization.
+
+The specific terrain data we will use in the present project is taken from the Møsvatn Austfjell area in the municipality of Tinn in Telemark county, Norway. A visual representation of the data is shown in \fig{2}. 
+
+\begin{Figure}
+\centering
+\includegraphics[width=\linewidth]{terrain2.png}
+\captionof{figure}{The terrain data in use in the present work, taken from the Møsvatn Austfjell area in the municipality of Tinn in Telemark county, Norway. Retrieved using the USGS EarthExplorer website. The height data is scaled to fit in $0\le z\le 1$, and the reference zero point is set to zero. \label{fig:2}}
+\end{Figure}
 
 
 \section{Results and discussion}
+\subsection{Verification of the models: The Franke function}
+\lipsum[3]
+\subsection{Terrain data parametrization}
 \lipsum[3]
 
 \section{Conclusion}

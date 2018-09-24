@@ -94,8 +94,8 @@ def part_a(plotting=False) :
             ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
             ax.view_init(30, 45)
 
-            #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'franke.png'), transparent=True)
-            plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'OLS'+str(degree)+'.png'), transparent=True)
+            #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'franke.png'), transparent=True, bbox_inches='tight')
+            plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'OLS'+str(degree)+'.png'), transparent=True, bbox_inches='tight')
             plt.show()
 
     print("\nMSE :")
@@ -128,15 +128,15 @@ def plot_terrain(file_number=1) :
     ax.set_zlim(-0.10, 1.40)
     ax.zaxis.set_major_locator(LinearLocator(5))
     ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
-    ax.view_init(30, 45)
+    ax.view_init(30, 45+90)
+    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'terrain'+str(file_number)+'.png'), transparent=True, bbox_inches='tight')
     plt.show()
-    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'terrain'+str(file_number)+'.png'), transparent=True)
 
 
 
 
 if __name__ == '__main__':
-    part_a(plotting=False)
+    part_a(plotting=True)
     #plot_terrain(1)
 
 

@@ -3,3 +3,16 @@
 .coverage
 project1/frankevalues.m
 project1/franke2d.m
+*.bbl
+*.aux
+*.bcf
+*.blg
+*.flg
+*.fls
+*.fdb_latexmk
+*.out
+*.log
+*.run.xml
+*.synctex.gz
+*__pycache__
+.DS_Store

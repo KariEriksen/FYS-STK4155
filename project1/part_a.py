@@ -37,7 +37,7 @@ def part_a(plotting=False) :
     R2_degree           = []
     betaVariance_degree = []
 
-    for degree in [2,3,4,5] : #,6,7,8,9] :
+    for degree in [2,3,4,5]: #,6,7,8,9] :
         designMatrix = DesignMatrix('polynomial2D', degree)
         leastSquares = LeastSquares(backend='manual')
         bootstrap    = Bootstrap(leastSquares, designMatrix)
@@ -57,7 +57,7 @@ def part_a(plotting=False) :
                 y[i] = franke(x_data[i,0], x_data[i,1])
 
         computeFrankeValues(x_data, y_data)
-        bootstrap.resample(x_data, y_data, 200)
+        bootstrap.resample(x_data, y_data, 1000)
         
         MSE_degree.         append(leastSquares.MSE())
         R2_degree.          append(leastSquares.R2())

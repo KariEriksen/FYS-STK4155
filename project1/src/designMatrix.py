@@ -2,7 +2,7 @@ import numpy as np
 from numba import jit
 
 
-@jit(nopython=True)
+@jit(nopython=True, cache=True)
 def computeMatrix(matrix, x, degree) :
     ind = 1
     for i in range(1,degree+1) :

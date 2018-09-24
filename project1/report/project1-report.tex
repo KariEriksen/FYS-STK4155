@@ -48,6 +48,21 @@
 \newcommand{\tab}[1]{Table \ref{tab:#1}}
 \newcommand{\Tab}[1]{Table \ref{tab:#1}}
 
+% Matrices ------------------------------------------------------------------- %
+\newcommand{\mat} [2]{\begin{matrix}[#1] #2 \end{matrix}}    % Nothing enclosing it.
+\newcommand{\pmat}[2]{\begin{pmatrix}[#1] #2 \end{pmatrix}}  % Enclosing parentheses.
+\newcommand{\bmat}[2]{\begin{bmatrix}[#1] #2 \end{bmatrix}}  % Enclosing square brackets.
+\newcommand{\vmat}[2]{\begin{vmatrix}[#1] #2 \end{vmatrix}}  % Enclosing vertical bars.
+\newcommand{\Vmat}[2]{\begin{Vmatrix}[#1] #2 \end{Vmatrix}}  % Enclosing double bars.
+
+% Manually set alignment of rows / columns in matrices (mat, pmat, etc.) ----- %
+\makeatletter
+\renewcommand*\env@matrix[1][*\c@MaxMatrixCols c]{%
+  \hskip -\arraycolsep
+  \let\@ifnextchar\new@ifnextchar
+  \array{#1}}
+\makeatother
+
 % Figures in multicols environment ------------------------------------------- %
 \newenvironment{Figure}
   {\par\medskip\noindent\minipage{\linewidth}}
@@ -102,16 +117,50 @@ In any non-trivial case, the error terms $\varepsilon_i$ in the error vector $\b
 The objective of linear regression thus emerges: Determine $\bm\beta$ in such a way that $\bm\varepsilon$ is minimized, thus giving a best possible linear fit of the response (minimizing the deviation $|\mathbf{y}-\tilde{\mathbf{y}}|$).
 
 \subsection{Ordinary least squares}
-In order to \textit{minimize} the error $\bm\varepsilon$, we must define exactly what that means. We require a functional expression\textemdash commonly referred to as the \textit{cost function}\textemdash and a metric in which to calculate it's size. Choosing the Euclidean $L^2$ norm ($\Vert \mathbf{v} \Vert_2=\sqrt{\sum_i v_i^2}$) and the absolute value of $\bm\varepsilon$ as the metric and cost function, respectively, leads to the \textit{ordinary least squares} (OLS) method. We define the cost function 
+In order to \textit{minimize} the error $\bm\varepsilon$, we must define exactly what that means. We require a functional expression\textemdash commonly referred to as the \textit{cost function}\textemdash and a metric in which to calculate it's size. Choosing the Euclidean $L^2$ norm ($\Vert \mathbf{v} \Vert_2=\sqrt{\sum_i v_i^2}$) and the absolute value of $\bm\varepsilon$ as the metric and cost function, respectively, leads to the \textit{ordinary least squares} (OLS) method. Defining the cost function, 
 \begin{align}
 C(\bm\beta) &= \Vert \mathbf{y} - \tilde{\mathbf{y}}\Vert_2^2 \nonumber \\
 %
 &= \Vert \mathbf{y} - \mathbf{X}\bm\beta\Vert_2^2 \nonumber \\ 
 %%
-&= \sum_{i=1}^n \Big\Vert y_i - \sum_{j=1}^p X_{ip} \beta_p \Big\Vert_2^2.
+&= \sum_{i=1}^n \Big| y_i - \sum_{j=1}^p X_{ip} \beta_p \Big|^2,
+\end{align}
+we can formulate the OLS method as computing $\bm\beta_\text{optimal}$ by
+\begin{align}
+\bm\beta_\text{optimal}=\underset{\bm\beta}{\text{arg\,min}}\big\{C(\bm\beta)\big\}.
 \end{align}
 
-...
+In order to find $\bm\beta_\text{optimal}$, we may simply differentiate $C(\bm\beta)$ w.r.t.\ $\bm\beta$ and enforce $\partial C(\bm\beta)/\partial \bm\beta = 0$. Following Trevor, Hastie and Robert\autocite{trevor2009elements}, we find that
+\begin{align}
+\frac{\partial C(\bm\beta)}{\partial \bm\beta} &= \frac{\partial}{\partial \bm\beta} (\mathbf{y}-\mathbf{X}\bm\beta)^T (\mathbf{y}-\mathbf{X}\bm\beta) \nonumber \\
+%
+&= -2\mathbf{X}^T(\mathbf{y}-\mathbf{X}\bm\beta) \stackrel{!}{=} 0 \nonumber \\
+%
+\Rightarrow \mathbf{X}^T\mathbf{y} &= \mathbf{X}^T\mathbf{X}\bm\beta \nonumber \\
+%
+\bm\beta_\text{optimal} &= \left(\mathbf{X}^T\mathbf{X}\right)^{-1}\mathbf{X}^T\mathbf{y},
+\end{align}
+where we have written $\Vert \mathbf{y}-\mathbf{X}\bm\beta\Vert_2^2$ as $(\mathbf{y}-\mathbf{X}\bm\beta)^T (\mathbf{y}-\mathbf{X}\bm\beta)$. We note that even though $\mathbf{X}\in \mathbb{R}^{n\times p}$ is a "large" matrix (assuming the number of observations $n\gg p$ the number of predictors per observation), the product $\mathbf{X}^T\mathbf{X}\in \mathbb{R}^{p\times p}$ is "small". Thus explicitly inverting $\mathbf{X}^T\mathbf{X}$ is not a problem on a modern computer. 
+
+
+The design matrix, $\mathbf{X}$, can in principle contain any set of linearly independent functions of the predictors\footnote{We require linear independence to ensure the normal equations have a unique solution}. Every column in the design matrix corresponds to a mapping of the predictors, with elements $\mathbf{p}_i\mapsto \mathbf{X}_{ij}$. We will now consider an example of such a design matrix. We use two predictors\textemdash we will denote them $x$ and $y$\textemdash with the response $y$. We introduce our model using the mappings $(x,y)\mapsto x$, $(x,y)\mapsto y$, and $(x,y)\mapsto xy$. Including also what is commonly referred to as the intercept, this gives rise to the design matrix 
+\begin{align}
+\mathbf{X} &= \bmat{cccc}{
+  1 & x_1 & y_1 & x_1y_1 \\
+  1 & x_2 & y_2 & x_2y_2 \\
+    &     & \vdots       \\
+  1 & x_{n-1} & y_{n-1} & x_{n-1}y_{n-1} \\
+  1 & x_n & y_n & x_ny_n}.
+\end{align}
+For inputs $(x_i,y_i)$ our model $\tilde{\mathbf{y}}$ now returns 
+\begin{align}
+\tilde{\mathbf{y}}_i &= \mathbf{x}^T_i\bm\beta \nonumber \\
+%%
+&= \beta_0 + \beta_1 x_i + \beta_2 y_i + \beta_3 x_iy_i,
+\end{align}
+where we used the shorthand notation $\mathbf{x}^T_i$ to denote $\text{Row}_i(\mathbf{X})$.
+
+
 Before we continue describing the Ridge and Lasso regression schemes, we briefly introduce the basis sets used in this project.
 \subsection{Polynomial basis sets}
 Throughout the present work we employ a basis set of homogeneous monomials\footnote{A homogeneous polynomial is a polynomial in which all terms have the same total degree, e.g.\ $xy+y^2+x^2$ is a homogeneous polynomial, $x$ is a homogeneous monomial, while $xy+x^3$ is \textit{not}. Monomials are simply polynomials with only a single term.}. We will be working with 2D terrain data, and thus will need to consider monomials of up to and including two variables\textemdash $x$ and $y$\textemdash in all possible homogeneous combinations. Disregarding the zero degree monomial, there are two possible such terms of degree up to and including one. These are simply $x$ and $y$. Moving up to degree two, we must include $x^2$, $y^2$, and $xy$, for a total of five terms up to and including degree 2. Degree three adds an additional four terms: $x^3$, $x^2y$, $xy^2$, and $y^3$, and so on. In general, there are $n+1$ such terms for monomials of degree $n$, namely 

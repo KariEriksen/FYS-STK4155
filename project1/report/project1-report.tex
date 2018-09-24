@@ -202,9 +202,9 @@ In the same way as before, we may differentiate the cost function and enforce $C
 %
 &= -2\mathbf{X}^T(\mathbf{y}-\mathbf{X}\bm\beta) +2\lambda\mathds{1}\bm\beta \stackrel{!}{=} 0 \nonumber \\
 %
-\Rightarrow \mathbf{X}^T\mathbf{y} &= \mathbf{X}^T\mathbf{X}\bm\beta -\lambda \mathds{1} \bm\beta \nonumber \\
+\Rightarrow \mathbf{X}^T\mathbf{y} &= \mathbf{X}^T\mathbf{X}\bm\beta +\lambda \mathds{1} \bm\beta \nonumber \\
 %
-\bm\beta^\text{R}_\text{optimal} &= \left(\mathbf{X}^T\mathbf{X}-\lambda\mathds{1}\right)^{-1}\mathbf{X}^T\mathbf{y}.
+\bm\beta^\text{R}_\text{optimal} &= \left(\mathbf{X}^T\mathbf{X}+\lambda\mathds{1}\right)^{-1}\mathbf{X}^T\mathbf{y}. \label{eq:ridgebeta}
 \end{align}
 
 \subsubsection{Singular-value decomposition}
@@ -221,6 +221,40 @@ The (first $r$ columns of the) matrix $\mathbf{U}$ contains the eigenvectors of 
 Thus we can interpret the SVD loosely as finding the orthonormal bases of $\text{Col}\,\mathbf{A}$ and $\text{Row}\,\mathbf{A}$ such that application of $\mathbf{A}$ maps $\mathbf{v}_i\mapsto \sigma_i\mathbf{u}_i$.
 
 \subsubsection{Ridge regression using the SVD}
+If we consider the SVD of $\mathbf{X}$, $\mathbf{X}=\mathbf{U}\bm\Sigma \mathbf{V}^T$, and compute $\mathbf{X}^T\mathbf{X}$ we find that 
+\begin{align}
+\mathbf{X}^T\mathbf{X} &= \left(\mathbf{U}\bm\Sigma \mathbf{V}^T\right)^T \left(\mathbf{U}\bm\Sigma \mathbf{V}^T\right) \nonumber \\
+%
+&= \mathbf{V}\bm\Sigma^T \mathbf{U}^T \mathbf{U}\bm\Sigma \mathbf{V}^T \nonumber \\
+%
+&= \mathbf{V}\bm\Sigma^T \bm\Sigma \mathbf{V}^T = \mathbf{V}\bm\Sigma^2\mathbf{V}^T,
+\end{align}
+where the orthogonality of $\mathbf{U}$ made $\mathbf{U}^T\mathbf{U}=\mathds{1}$. Inserting this into the expression for the optimal $\bm\beta_\text{optimal}^\text{R}$ (\eq{ridgebeta}) yields\autocite{trevor2009elements}
+\begin{align}
+\bm\beta^\text{R}_\text{optimal} &= \left(\mathbf{X}^T\mathbf{X}+\lambda\mathds{1}\right)^{-1}\mathbf{X}^T\mathbf{y} \nonumber \\
+%
+&= \left(\mathbf{V}\bm\Sigma^2\mathbf{V}^T +\lambda\mathds{1}\right)^{-1}\mathbf{X}^T\mathbf{y} \nonumber \\
+%
+&= \left(\mathbf{V}\bm\Sigma^2\mathbf{V}^T +\lambda\mathds{1}\mathbf{V}\mathbf{V}^T\right)^{-1}\mathbf{X}^T\mathbf{y} \nonumber \\
+%
+&= \left(\mathbf{V}\bm\Sigma^2\mathbf{V}^T +\lambda\mathbf{V}\mathds{1}\mathbf{V}^T\right)^{-1}\mathbf{X}^T\mathbf{y}, \nonumber
+\end{align}
+where we multiplied by $\mathds{1}=\mathbf{V}\mathbf{V}^T$ (recall that $\mathbf{V}^{-1}=\mathbf{V}$ due to orthogonality) and used the fact that the identity matrix commutes with any other matrix. Furthermore, we find
+\begin{align}
+\bm\beta^\text{R}_\text{optimal}&= \left(\mathbf{V}\left[\bm\Sigma^2\mathbf{V}^T +\lambda\mathds{1}\right]\mathbf{V}^T\right)^{-1}\mathbf{X}^T\mathbf{y} \nonumber \\
+%
+&= \mathbf{V}\left[\bm\Sigma^2 +\lambda\mathds{1}\right]^{-1}\mathbf{V}^T\mathbf{X}^T\mathbf{y} \nonumber \\
+%
+&= \mathbf{V}\left[\bm\Sigma^2 +\lambda\mathds{1}\right]^{-1}\mathbf{V}^T\left(\mathbf{U}\bm\Sigma \mathbf{V}^T\right)^T\mathbf{y} \nonumber \\
+%
+&= \mathbf{V}\left[\bm\Sigma^2 +\lambda\mathds{1}\right]^{-1}\mathbf{V}^T \mathbf{V}\bm\Sigma^T \mathbf{U}^T \mathbf{y} \nonumber \\
+%
+&= \mathbf{V}\left[\bm\Sigma^2 +\lambda\mathds{1}\right]^{-1}\bm\Sigma \mathbf{U}^T \mathbf{y},
+\end{align}
+where we used that $\bm\Sigma$ is diagonal, so $\bm\Sigma^T =\bm\Sigma$. Since we are now taking the inverse of a diagonal matrix, we can simply write out the terms. Note that the inverse will itself be diagonal, and given by
+\begin{align}
+\left(\left[\bm\Sigma^2+\lambda\mathds{1}\right]^{-1}\right)_{ii} = \frac{1}{\sigma_{ii}^2+\lambda}.
+\end{align}
 
 
 \subsection{Lasso regression}

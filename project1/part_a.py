@@ -10,6 +10,7 @@ import numpy as np
 import functools
 import time
 from numba import jit
+from PIL import Image
 
 # Add the src/ directory to the python path so we can import the code 
 # we need to use directly as 'from <file name> import <function/class>'
@@ -104,18 +105,39 @@ def part_a(plotting=False) :
     print("\nσ²(β) :")
     print(betaVariance_degree)
 
+
+def plot_terrain(file_number=1) :
+    fileName = os.path.join(os.path.dirname(__file__),  
+                            'data', 
+                            'SRTM_data_Norway_' + str(file_number) + '.tif')
+    image = Image.open(fileName, mode='r')
+    print(image.mode)
+    print(image.size)
+    image.mode = 'I'
+    #image.show()
+    x = np.linspace(0, 1, image.size[0])
+    y = np.linspace(0, 1, image.size[1])
+    X,Y = np.meshgrid(x,y)
+    Z = np.array(image)
+    Z = Z - np.min(Z)
+    Z = Z / np.max(Z)
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+
+    ax.plot_surface(X,Y,Z,cmap=cm.coolwarm,linewidth=0, antialiased=False)
+    ax.set_zlim(-0.10, 1.40)
+    ax.zaxis.set_major_locator(LinearLocator(5))
+    ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+    ax.view_init(30, 45)
+    plt.show()
+    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'terrain'+str(file_number)+'.png'), transparent=True)
+
+
+
+
 if __name__ == '__main__':
     part_a(plotting=False)
-    """
-    n = 7
-    ind = 0
-    for i in range(1, n) :
-        print(" --------------------------------  %d" % i)
-        for j in range(i+1) :
-            print("%2d  :  x ** %d   *   y ** %d" % (ind,i-j,j))
-            ind += 1
-    """
-    
+    #plot_terrain(1)
 
 
 

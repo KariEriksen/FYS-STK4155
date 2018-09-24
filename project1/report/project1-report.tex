@@ -5,6 +5,7 @@
 \usepackage[utf8]{inputenc}                        % utf-8 encoding, æ, ø , å, etc.
 \usepackage{a4wide}                          % Adjust margins to better fit A4 format.
 \usepackage{array}                           % Matrices.
+\usepackage{dsfont}                          % Math symbols.
 \usepackage{amsmath}                         % Math symbols, and enhanced matrices.
 \usepackage{amsfonts}                        % Math fonts.
 \usepackage{amssymb}                         % Additional symbols.
@@ -20,6 +21,7 @@
 \usepackage{listings}                        % For including source code.
 \usepackage{mathtools}                       % Underbrackets, overbrackets.
 \usepackage{multicol}                        % Multiple text columns.
+\usepackage[dvipsnames]{xcolor}              % Colors.
 \usepackage{capt-of}                         % Caption things which are not floats.
 \usepackage{fontawesome}                     % Github icon, etc. \faGithub
 \usepackage{sidecap}                         % Floats with captions on the side.
@@ -73,7 +75,9 @@
 \bibliography{../ref/project1-references.bib}
 \graphicspath{{../figures/}}
 
-
+% Black frame with gray background ------------------------------------------ %
+\definecolor{gray}{gray}{0.9}
+\newmdenv[linecolor=white,backgroundcolor=gray]{grayframe}
 
 % Title
 \title{{\sc Regression analysis and resampling methods \\ {\large FYS-STK4155: Project 1}}}
@@ -116,21 +120,21 @@ In any non-trivial case, the error terms $\varepsilon_i$ in the error vector $\b
 \end{align}
 The objective of linear regression thus emerges: Determine $\bm\beta$ in such a way that $\bm\varepsilon$ is minimized, thus giving a best possible linear fit of the response (minimizing the deviation $|\mathbf{y}-\tilde{\mathbf{y}}|$).
 
-\subsection{Ordinary least squares}
+\subsection{Ordinary least squares \label{sect:OLS}}
 In order to \textit{minimize} the error $\bm\varepsilon$, we must define exactly what that means. We require a functional expression\textemdash commonly referred to as the \textit{cost function}\textemdash and a metric in which to calculate it's size. Choosing the Euclidean $L^2$ norm ($\Vert \mathbf{v} \Vert_2=\sqrt{\sum_i v_i^2}$) and the absolute value of $\bm\varepsilon$ as the metric and cost function, respectively, leads to the \textit{ordinary least squares} (OLS) method. Defining the cost function, 
 \begin{align}
 C(\bm\beta) &= \Vert \mathbf{y} - \tilde{\mathbf{y}}\Vert_2^2 \nonumber \\
 %
 &= \Vert \mathbf{y} - \mathbf{X}\bm\beta\Vert_2^2 \nonumber \\ 
 %%
-&= \sum_{i=1}^n \Big| y_i - \sum_{j=1}^p X_{ip} \beta_p \Big|^2,
+&= \sum_{i=1}^n \Big| y_i - \beta_0 - \sum_{j=1}^p X_{ip} \beta_p \Big|^2, \label{eq:cost}
 \end{align}
 we can formulate the OLS method as computing $\bm\beta_\text{optimal}$ by
 \begin{align}
 \bm\beta_\text{optimal}=\underset{\bm\beta}{\text{arg\,min}}\big\{C(\bm\beta)\big\}.
 \end{align}
 
-In order to find $\bm\beta_\text{optimal}$, we may simply differentiate $C(\bm\beta)$ w.r.t.\ $\bm\beta$ and enforce $\partial C(\bm\beta)/\partial \bm\beta = 0$. Following Trevor, Hastie and Robert\autocite{trevor2009elements}, we find that
+In order to find $\bm\beta_\text{optimal}$, we may simply differentiate $C(\bm\beta)$ w.r.t.\ $\bm\beta$ and enforce $\partial C(\bm\beta)/\partial \bm\beta = 0$. Following Trevor, Hastie \& Robert\autocite{trevor2009elements}, we find that
 \begin{align}
 \frac{\partial C(\bm\beta)}{\partial \bm\beta} &= \frac{\partial}{\partial \bm\beta} (\mathbf{y}-\mathbf{X}\bm\beta)^T (\mathbf{y}-\mathbf{X}\bm\beta) \nonumber \\
 %
@@ -142,7 +146,9 @@ In order to find $\bm\beta_\text{optimal}$, we may simply differentiate $C(\bm\b
 \end{align}
 where we have written $\Vert \mathbf{y}-\mathbf{X}\bm\beta\Vert_2^2$ as $(\mathbf{y}-\mathbf{X}\bm\beta)^T (\mathbf{y}-\mathbf{X}\bm\beta)$. We note that even though $\mathbf{X}\in \mathbb{R}^{n\times p}$ is a "large" matrix (assuming the number of observations $n\gg p$ the number of predictors per observation), the product $\mathbf{X}^T\mathbf{X}\in \mathbb{R}^{p\times p}$ is "small". Thus explicitly inverting $\mathbf{X}^T\mathbf{X}$ is not a problem on a modern computer. 
 
+We note that the \textit{model prediction} may now be calculated simply as $\tilde{\mathbf{y}}=\mathbf{X}\bm\beta_\text{optimal}$. This represents the optimal linear model subject under the Euclidean norm of the cost function as given in \eq{cost}. This method was first rigorously descriped by Legendre in 1805\autocite{legendre1805nouvelles}.
 
+\subsubsection{The design matrix}
 The design matrix, $\mathbf{X}$, can in principle contain any set of linearly independent functions of the predictors\footnote{We require linear independence to ensure the normal equations have a unique solution}. Every column in the design matrix corresponds to a mapping of the predictors, with elements $\mathbf{p}_i\mapsto \mathbf{X}_{ij}$. We will now consider an example of such a design matrix. We use two predictors\textemdash we will denote them $x$ and $y$\textemdash with the response $y$. We introduce our model using the mappings $(x,y)\mapsto x$, $(x,y)\mapsto y$, and $(x,y)\mapsto xy$. Including also what is commonly referred to as the intercept, this gives rise to the design matrix 
 \begin{align}
 \mathbf{X} &= \bmat{cccc}{
@@ -174,7 +180,49 @@ The total basis sets of all such monomials of degree \textit{up to and including
 \end{align}
 terms. 
 \subsection{Ridge regression}
-\lipsum[3]
+As mentioned in section \ref{sect:OLS}, defining exactly what we mean by \textit{minimizing the error} requires a cost function and a metric. The previous choice of $C(\bm\beta)=\Vert \mathbf{y}-\tilde{\mathbf{y}}\Vert_2^2$ is obviously not the only possible one. In fact, a possibly superiour method may be devised by keeping the Euclidean $L^2$ norm, but including a term in the cost function which penalizes large values of $\beta_i$. Such an approach was first used in statistics by Hoerl \& Kennard \autocite{hoerl1970ridge}, but was proposed already in the 1940s by Andrey Tikhonov\autocite{tikhonov1943stability}. Taking the cost function to be 
+\begin{align}
+C_\text{T}(\bm\beta) = \Vert \mathbf{y}-\tilde{\mathbf{y}}\Vert_2^2 + \Vert \bm\Gamma \bm\beta \Vert_2^2
+\end{align}
+gives rise to a regressions scheme known as Tikhonov regularization. The Tikhonov matrix $\bm\Gamma$ governs the form of the regularization term. A simple case of $\bm\Gamma=\sqrt{\lambda} \mathds{1}$, favoring solutions with small (in the $L^2$ norm sense) values of the parameters $\bm\beta$, results in the \textit{Ridge regression} of Hoerl \& Kennard. The $\lambda\ge 0$ parameter here represents a tuneable penalty for large $\bm\beta$ values. We note that $\lambda=0$ recovers the OLS method of section \ref{sect:OLS}.
+
+Writing out the cost function of Ridge regression, we find that 
+\begin{align}
+C_\text{R}(\bm\beta) &= \Vert \mathbf{y}-\tilde{\mathbf{y}}\Vert_2^2 + \lambda \Vert \bm\beta \Vert_2^2 \nonumber \\
+%
+&= \Vert \mathbf{y} - \mathbf{X}\bm\beta\Vert_2^2 + \lambda \Vert \bm\beta \Vert_2^2 \nonumber \\ 
+%%
+&= \sum_{i=1}^n \Big| y_i - \beta_0 - \sum_{j=1}^p X_{ip} \beta_p \Big|^2 + \lambda \sum_{j=1}^p \beta_j^2,
+\end{align}
+where we have left out the intercept $\beta_0$ from the regularization term. This is done to ensure the solutions do not explicitly depend on the zero point chosen for $\mathbf{y}$, i.e.\ adding a constant to each response value $y_i$ would not result in a simple shift of the predictions by the same amount\autocite{trevor2009elements}. 
+
+In the same way as before, we may differentiate the cost function and enforce $C_\text{R}(\bm\beta)=0$ in order to find the optimal $\bm\beta$. We obtain
+\begin{align}
+\frac{\partial C_\text{R}(\bm\beta)}{\partial \bm\beta} &= \frac{\partial}{\partial \bm\beta} \Big[(\mathbf{y}-\mathbf{X}\bm\beta)^T (\mathbf{y}-\mathbf{X}\bm\beta) + \lambda \mathds{1} \bm\beta^T\bm\beta\Big] \nonumber \\
+%
+&= -2\mathbf{X}^T(\mathbf{y}-\mathbf{X}\bm\beta) +2\lambda\mathds{1}\bm\beta \stackrel{!}{=} 0 \nonumber \\
+%
+\Rightarrow \mathbf{X}^T\mathbf{y} &= \mathbf{X}^T\mathbf{X}\bm\beta -\lambda \mathds{1} \bm\beta \nonumber \\
+%
+\bm\beta^\text{R}_\text{optimal} &= \left(\mathbf{X}^T\mathbf{X}-\lambda\mathds{1}\right)^{-1}\mathbf{X}^T\mathbf{y}.
+\end{align}
+
+\subsubsection{Singular-value decomposition}
+Before we continue, we introduce briefly the singular-value decomposition (SVD). Note carefully that \textit{any} $m\times n$ matrix $\mathbf{A}$ can be decomposed into a product like this. 
+\begin{grayframe}
+Let $\mathbf{A}$ be an $m\times n$ matrix with rank $r$. Then there exists an $m\times n$ matrix $\bm{\Sigma}$ in which the first $r$ diagonal entries are the singlar values of $\mathbf{A}$, $\sigma_1\ge\sigma_2\ge\dots\ge\sigma_r>0$, and there exist and $m\times m$ orthogonal matrix $\mathbf{U}$ and an $n\times n$ orthogonal matrix $\mathbf{V}$ such that 
+\begin{align}
+\mathbf{A}=\mathbf{U}\bm\Sigma \mathbf{V}^T.
+\end{align}
+All entries in $\bm \Sigma$ outside of the first $r$ diagonal elements are zero. The singular values of $\mathbf{A}$ denote the square roots of the eigenvalues of $\mathbf{A}^T\mathbf{A}$.\autocite{lay2012linear}
+\end{grayframe}
+The (first $r$ columns of the) matrix $\mathbf{U}$ contains the eigenvectors of $\mathbf{A}^T\mathbf{A}$ and represents an orthonormal basis for the column space of $\mathbf{A}$, $\text{Col}\,\mathbf{A}$. The (first $r$ columns of the) matrix $\mathbf{V}$ contains the eigenvectors of $\mathbf{A}\mathbf{A}^T$ and represents an orthonormal basis for the row space of $\mathbf{A}$, $\text{Row}\,\mathbf{A}$. The remaining $m-r$ and $n-r$ columns of $\mathbf{U}$ and $\mathbf{V}$ form orthonormal bases for $\text{Nul}\,\mathbf{A}$ and $\text{Nul}\,\mathbf{A}^T$.
+
+Thus we can interpret the SVD loosely as finding the orthonormal bases of $\text{Col}\,\mathbf{A}$ and $\text{Row}\,\mathbf{A}$ such that application of $\mathbf{A}$ maps $\mathbf{v}_i\mapsto \sigma_i\mathbf{u}_i$.
+
+\subsubsection{Ridge regression using the SVD}
+
+
 \subsection{Lasso regression}
 \lipsum[3]
 \subsection{Resampling and the \textit{Bootstrap} method}

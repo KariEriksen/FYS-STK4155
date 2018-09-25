@@ -208,6 +208,7 @@ class LeastSquares :
         #self.beta = np.dot(np.dot(np.dot(np.dot(np.transpose(Vt), np.linalg.inv(np.dot(np.transpose(S),S)+self.lambda_*np.eye(S.shape[0]))),S),np.transpose(U)),y)
         self.beta = np.dot(np.linalg.inv(np.dot(np.transpose(X),X) + self.lambda_ * np.eye(X.shape[1])), np.dot(np.transpose(X),y))
 
+
     def _sklFitRidge(self, X, y) :
         if self.lambdaSet == False :
             raise ValueError("No lambda value set for Ridge regression. Use LeastSquares.setLambda()")

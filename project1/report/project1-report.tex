@@ -134,7 +134,7 @@ we can formulate the OLS method as computing $\bm\beta_\text{optimal}$ by
 \bm\beta_\text{optimal}=\underset{\bm\beta}{\text{arg\,min}}\big\{C(\bm\beta)\big\}.
 \end{align}
 
-In order to find $\bm\beta_\text{optimal}$, we may simply differentiate $C(\bm\beta)$ w.r.t.\ $\bm\beta$ and enforce $\partial C(\bm\beta)/\partial \bm\beta = 0$. Following Trevor, Hastie \& Robert\autocite{trevor2009elements}, we find that
+In order to find $\bm\beta_\text{optimal}$, we may simply differentiate $C(\bm\beta)$ w.r.t.\ $\bm\beta$ and enforce $\partial C(\bm\beta)/\partial \bm\beta = 0$. Following Hastie, Tibshirani \& Friedman\autocite{trevor2009elements}, we find that
 \begin{align}
 \frac{\partial C(\bm\beta)}{\partial \bm\beta} &= \frac{\partial}{\partial \bm\beta} (\mathbf{y}-\mathbf{X}\bm\beta)^T (\mathbf{y}-\mathbf{X}\bm\beta) \nonumber \\
 %
@@ -179,7 +179,7 @@ The total basis sets of all such monomials of degree \textit{up to and including
 \text{size}(\mathcal{B}_n) \sum_{k=2}^{n+1}k = \frac{n(n+3)}{2}
 \end{align}
 terms. 
-\subsection{Ridge regression}
+\subsection{Ridge regression \label{sect:ridge}}
 As mentioned in section \ref{sect:OLS}, defining exactly what we mean by \textit{minimizing the error} requires a cost function and a metric. The previous choice of $C(\bm\beta)=\Vert \mathbf{y}-\tilde{\mathbf{y}}\Vert_2^2$ is obviously not the only possible one. In fact, a possibly superiour method may be devised by keeping the Euclidean $L^2$ norm, but including a term in the cost function which penalizes large values of $\beta_i$. Such an approach was first used in statistics by Hoerl \& Kennard \autocite{hoerl1970ridge}, but was proposed already in the 1940s by Andrey Tikhonov\autocite{tikhonov1943stability}. Taking the cost function to be 
 \begin{align}
 C_\text{T}(\bm\beta) = \Vert \mathbf{y}-\tilde{\mathbf{y}}\Vert_2^2 + \Vert \bm\Gamma \bm\beta \Vert_2^2
@@ -207,7 +207,7 @@ In the same way as before, we may differentiate the cost function and enforce $C
 \bm\beta^\text{R}_\text{optimal} &= \left(\mathbf{X}^T\mathbf{X}+\lambda\mathds{1}\right)^{-1}\mathbf{X}^T\mathbf{y}. \label{eq:ridgebeta}
 \end{align}
 
-\subsubsection{Singular-value decomposition}
+\subsubsection{Singular-value decomposition \label{sect:svd}}
 Before we continue, we introduce briefly the singular-value decomposition (SVD). Note carefully that \textit{any} $m\times n$ matrix $\mathbf{A}$ can be decomposed into a product like this. 
 \begin{grayframe}
 Let $\mathbf{A}$ be an $m\times n$ matrix with rank $r$. Then there exists an $m\times n$ matrix $\bm{\Sigma}$ in which the first $r$ diagonal entries are the singlar values of $\mathbf{A}$, $\sigma_1\ge\sigma_2\ge\dots\ge\sigma_r>0$, and there exist and $m\times m$ orthogonal matrix $\mathbf{U}$ and an $n\times n$ orthogonal matrix $\mathbf{V}$ such that 
@@ -239,11 +239,11 @@ where the orthogonality of $\mathbf{U}$ made $\mathbf{U}^T\mathbf{U}=\mathds{1}$
 %
 &= \left(\mathbf{V}\bm\Sigma^2\mathbf{V}^T +\lambda\mathbf{V}\mathds{1}\mathbf{V}^T\right)^{-1}\mathbf{X}^T\mathbf{y}, \nonumber
 \end{align}
-where we multiplied by $\mathds{1}=\mathbf{V}\mathbf{V}^T$ (recall that $\mathbf{V}^{-1}=\mathbf{V}$ due to orthogonality) and used the fact that the identity matrix commutes with any other matrix. Furthermore, we find
+where we multiplied by $\mathds{1}=\mathbf{V}\mathbf{V}^T$ (recall that $\mathbf{V}^{-1}=\mathbf{V}^T$ due to orthogonality) and used the fact that the identity matrix commutes with any other matrix. Furthermore, we find
 \begin{align}
-\bm\beta^\text{R}_\text{optimal}&= \left(\mathbf{V}\left[\bm\Sigma^2\mathbf{V}^T +\lambda\mathds{1}\right]\mathbf{V}^T\right)^{-1}\mathbf{X}^T\mathbf{y} \nonumber \\
+\bm\beta^\text{R}_\text{optimal}&= \left(\mathbf{V}\left[\bm\Sigma^2 +\lambda\mathds{1}\right]\mathbf{V}^T\right)^{-1}\mathbf{X}^T\mathbf{y} \nonumber \\
 %
-&= \mathbf{V}\left[\bm\Sigma^2 +\lambda\mathds{1}\right]^{-1}\mathbf{V}^T\mathbf{X}^T\mathbf{y} \nonumber \\
+&= \mathbf{V}\left[\bm\Sigma^2 +\lambda\mathds{1}\right]^{-1}\mathbf{V}^T\mathbf{X}^T\mathbf{y}  \label{eq:inv}\\
 %
 &= \mathbf{V}\left[\bm\Sigma^2 +\lambda\mathds{1}\right]^{-1}\mathbf{V}^T\left(\mathbf{U}\bm\Sigma \mathbf{V}^T\right)^T\mathbf{y} \nonumber \\
 %
@@ -251,14 +251,72 @@ where we multiplied by $\mathds{1}=\mathbf{V}\mathbf{V}^T$ (recall that $\mathbf
 %
 &= \mathbf{V}\left[\bm\Sigma^2 +\lambda\mathds{1}\right]^{-1}\bm\Sigma \mathbf{U}^T \mathbf{y},
 \end{align}
-where we used that $\bm\Sigma$ is diagonal, so $\bm\Sigma^T =\bm\Sigma$. Since we are now taking the inverse of a diagonal matrix, we can simply write out the terms. Note that the inverse will itself be diagonal, and given by
+where we used that $\bm\Sigma$ is diagonal, so $\bm\Sigma^T =\bm\Sigma$. Note that since $(\mathbf{A}\mathbf{B})^{-1}=\mathbf{B}^{-1}\mathbf{A}^{-1}$, we can rewrite the inverse product 
+\begin{align}
+\left(\mathbf{V}\left[\bm\Sigma^2+\lambda\mathds{1}\right]\mathbf{V}^T\right)^{-1} &= \left(\mathbf{V}^T\right)^{-1} \left[\bm\Sigma^2+\lambda \mathds{1}\right]^{-1}\mathbf{V}^{-1} \nonumber \\
+%
+&= \mathbf{V}\left[\bm\Sigma^2+\lambda \mathds{1}\right]^{-1}\mathbf{V}^T, \nonumber
+\end{align} 
+as was done in \eq{inv}. Since we are now taking the inverse of a diagonal matrix, we can simply write out the terms. Note that the inverse will itself be diagonal, and given by
 \begin{align}
 \left(\left[\bm\Sigma^2+\lambda\mathds{1}\right]^{-1}\right)_{ii} = \frac{1}{\sigma_{ii}^2+\lambda}.
 \end{align}
-
+Rewriting the OLS scheme in terms of the SVD yields a very similar 
+\begin{align}
+\bm\beta_\text{optimal} &= \mathbf{V}\left(\bm\Sigma^2\right)^{-1}\mathbf{V}^T \bm\Sigma^T \mathbf{U}^Ty.
+\end{align}
 
 \subsection{Lasso regression}
-\lipsum[3]
+As mentioned repeatedly, we are free to choose what we mean by \textit{minimizing the error} w.r.t.\ what metric and what cost function we use. Whereas the Ridge regression of section \ref{sect:ridge} used $L^2$ regularization by adding a $\lambda\Vert \bm\beta\Vert_2^2$ term to $C(\bm\beta)$, we may instead try a $L^1$ regularization. This constitutes setting up the cost function as
+\begin{align}
+C_\text{L}(\bm\beta) &= \Vert \mathbf{y} - \tilde{\mathbf{y}}\Vert_2^2 + \lambda \Vert \bm\beta \Vert_1 \nonumber \\
+%
+&= \Vert \mathbf{y} - \mathbf{X}\bm\beta\Vert_2^2 + \lambda \Vert \bm\beta \Vert_1 \nonumber \\
+%
+&= \sum_{i=1}^n\Big| y_i - \beta_0 - \sum_{j=1}^p X_{ip}\beta_p\Big|^2 + \lambda \sum_{j=1}^p |\beta_j|^2.
+\end{align}
+Originally popularized by Tibshirani\autocite{tibshirani1996regression}, the \textit{Lasso regression} has certain potential advantages over the OLS and Ridge regression schemes. Most notably, the Lasso can perform \textit{variable selection}, i.e.\ some $\beta_j$s may be identically zero as a result of the minimization. 
+
+
+\subsection{Principal components}
+The following section follows Hastie, Tibshirani \& Friedman\autocite{trevor2009elements}.
+
+Recall from section \ref{sect:svd} that the SVD matrix $\mathbf{U}$ represents an orthonormal basis for the column space of the decomposed matrix $\mathbf{A}$. If we consider the prediction resulting from OLS, and perform a SVD of $\mathbf{X}$ we find that
+\begin{align}
+\tilde{\mathbf{y}}_\text{OLS} &= \mathbf{X}\bm\beta_\text{OLS} \nonumber \\
+%
+&= \mathbf{X}\left(\mathbf{X}^T\mathbf{X}\right)^{-1}\mathbf{X}^T\mathbf{y} \nonumber \\
+%
+&= \mathbf{X} \left[ \left(\mathbf{U}\bm\Sigma \mathbf{V}^T\right)^T \mathbf{U}\bm\Sigma \mathbf{V}^T \right]^{-1} \mathbf{X}^T \mathbf{y} \nonumber \\
+%
+&= \mathbf{U}\bm\Sigma \mathbf{V}^T \left[\mathbf{V}\bm\Sigma^2 \mathbf{V}^T \right]^{-1} \mathbf{V}\bm\Sigma^T \mathbf{U}^T\mathbf{y} \nonumber \\
+%
+&= \mathbf{U}\bm\Sigma \mathbf{V}^T \mathbf{V} \left[\bm\Sigma^2  \right]^{-1}  \mathbf{V}^T \mathbf{V}\bm\Sigma^T \mathbf{U}^T\mathbf{y} \nonumber \\
+%
+&= \mathbf{U}\bm\Sigma \left[\bm\Sigma^2  \right]^{-1}  \mathbf{V}^T \mathbf{V}\bm\Sigma^T \mathbf{U}^T\mathbf{y} \nonumber \\
+%
+&= \mathbf{U}\bm\Sigma \left[\bm\Sigma^2  \right]^{-1} \bm\Sigma^T \mathbf{U}^T\mathbf{y} \nonumber \\
+%
+&= \mathbf{U}\mathbf{U}^T\mathbf{y}. \label{eq:principal1}
+\end{align}
+A similar derivation for $\tilde{\mathbf{y}}_\text{R}$ for the Ridge regression yields
+\begin{align}
+\tilde{\mathbf{y}}_\text{R} &= \mathbf{X}\bm\beta_\text{R} \nonumber \\
+%
+&= \mathbf{X}\left(\mathbf{X}^T\mathbf{X}+\lambda \mathds{1}\right)^{-1}\mathbf{X}^T\mathbf{y} \nonumber \\
+%
+&= \mathbf{U}\bm\Sigma\left(\bm\Sigma^2 + \lambda \mathds{1}\right)^{-1}\bm\Sigma \mathbf{U}^T\mathbf{y} \nonumber \\
+%
+&= \sum_{j=1}^p \mathbf{u}_j \frac{\sigma_j^2}{\sigma_j^2+\lambda}\mathbf{u}_j^T\mathbf{y}, \label{eq:principal2}
+\end{align}
+where $\sigma_j$ denotes the diagonal elements of the diagonal matrix $\bm\Sigma$, i.e.\ $(\bm\Sigma)_{jj}=\sigma_j$. Note now that $\mathbf{U}^T\mathbf{y}$ are the coordinates of $\mathbf{y}$ w.r.t.\ the orthonormal basis $\mathbf{U}$. Comparing Eqs. (\ref{eq:principal1}) and (\ref{eq:principal2}), we note that the coordinates of $\mathbf{y}$ in both cases are computed in the orthonormal basis of $\text{Col}\,\mathbf{X}$ (as specified by the SVD matrix $\mathbf{U}$), but the Ridge scheme also \textit{shrinks} the coordinates. The shrinkage is large whenever $\sigma_j^2$ is small. Recalling that $\mathbf{X}^T\mathbf{X}=\mathbf{V}\bm\Sigma^2\mathbf{V}^T$ is an eigendecomposition of $\mathbf{X}^T\mathbf{X}$, with $\mathbf{V}$ containing the eigenvectors, we denote these eigenvectors $\mathbf{v}_j$ to be the \textit{principal components} of $\mathbf{X}$. The eigenvalues contained in $\bm\Sigma^2$ are precicely the proportionality factors, $\sigma^2_j$, involved in the shrinkage. 
+
+The diagonalization of $\mathbf{X}^T\mathbf{X}$ constitutes a coordinate transform into a coordinate system in which $\mathbf{X}^T\mathbf{X}$ itself is diagonal. The matrix $\mathbf{X}^T\mathbf{X}$ is the covariance matrix (apart from a constant factor $1/N$). In the orthonormal basis of $\mathbf{V}$, the covariance matrix is diagonal and contains the variances $\sigma_j^2$ of these linear combinations of the columns of $\mathbf{X}$.
+
+The first principal component direction has the property that $\mathbf{z}_1=\mathbf{X}\mathbf{v}_1$ has the largest variance of all the linear combinations of the columns of $\mathbf{X}$. In general, the principal components are ordered such that $\text{Var}\,\mathbf{z}_1\ge \text{Var}\,\mathbf{z}_2\ge\dots \text{Var}\,\mathbf{z}_N$.
+
+In essence, the first principal component represent the direction in $\text{Col}\,\mathbf{X}$ in which the variance is highest, the second principal component represents the corresponding direction in which the variance is highest, apart from the first, and so on. 
+
 \subsection{Resampling and the \textit{Bootstrap} method}
 \lipsum[3]
 

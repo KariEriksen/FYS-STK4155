@@ -162,14 +162,14 @@ class LeastSquares :
             elif self.method == 'ridge' :
                 self._manualFitRidge(X,y)
             elif self.method == 'lasso' :
-                raise NotImplementedError(" ")
+                raise NotImplementedError("Lasso regression is not implemented from scratch. Use backend='skl'")
         else :
             if self.method == 'ols' :
                 self._sklFit(X,y)
             elif self.method == 'ridge' :
                 self._sklFitRidge(X,y)
             elif self.method == 'lasso' :
-                raise NotImplementedError(" ")
+                self._sklFitLasso(X,y)
         
         self.fitDone = True
         return self.beta
@@ -217,6 +217,13 @@ class LeastSquares :
         self.beta = self.regression.coef_
         self.beta[0] = self.regression.intercept_
 
+    def _sklFitLasso(self, X, y) :
+        if self.lambdaSet == False :
+            raise ValueError("No lambda value set for Lasso regression. Use LeastSquares.setLambda()")
+        self.regression = linear_model.Lasso(fit_intercept=True, alpha=self.lambda_)
+        self.regression.fit(X,y)
+        self.beta = self.regression.coef_
+        self.beta[0] = self.regression.intercept_        
 
     def _sklFit(self, X, y) :
         """The scikit-learn version of the fitting method

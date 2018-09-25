@@ -277,6 +277,19 @@ C_\text{L}(\bm\beta) &= \Vert \mathbf{y} - \tilde{\mathbf{y}}\Vert_2^2 + \lambda
 \end{align}
 Originally popularized by Tibshirani\autocite{tibshirani1996regression}, the \textit{Lasso regression} has certain potential advantages over the OLS and Ridge regression schemes. Most notably, the Lasso can perform \textit{variable selection}, i.e.\ some $\beta_j$s may be identically zero as a result of the minimization. The name Lasso is short for "least absolute shrinkage and selection operator".
 
+Computing the derivative of the Lasso cost function yields
+\begin{align}
+\frac{\partial C_\text{L}(\bm\beta)}{\partial \bm\beta_j} &=  \frac{\partial C_\text{OLS}(\bm\beta)}{\partial \bm\beta_j} + \lambda \sum_{j=1}^p \frac{\partial}{\partial \beta_j} |\beta_j| \nonumber \\
+%
+&= \frac{\partial C_\text{OLS}(\bm\beta)}{\partial \bm\beta_j} + \lambda\frac{\beta_j}{\sqrt{\beta_j^2}} \nonumber \\
+%
+&= \frac{\partial C_\text{OLS}(\bm\beta)}{\partial \bm\beta_j} + \lambda\,\text{sgn}(\beta_j) \stackrel{!}{=} 0.
+\end{align}
+In general, this can not be directly solved for $\bm\beta_\text{optimal}^\text{L}$ as in the case of OLS or the Ridge scheme. Under the assumption that $\mathbf{X}$ is orthogonal, an explicit solution exists and is given by\autocite{mehta2018highbias}
+\begin{align}
+\left(\beta_\text{optimal}^\text{L}(\lambda)\right)_j &= \text{sgn}(\beta_j^\text{OLS})\left(|\beta_j^\text{OLS}| - \lambda\right)_+,
+\end{align}
+where $(\cdot)_+$ represents the positive part of $\cdot\,$.
 
 \subsection{Principal components}
 The following section follows Hastie, Tibshirani \& Friedman\autocite{trevor2009elements}.

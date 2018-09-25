@@ -212,8 +212,6 @@ def test_LeastSquares_R2() :
 
 def test_LeastSquares_fit_ridge() :
     """Tests the fit method of the Least Squares class with method='ridge'
-
-    The tests comprise fitting of models to known data.
     """
     N = 5
     P = 5
@@ -251,9 +249,31 @@ def test_LeastSquares_fit_ridge() :
     assert beta_lambda0 == pytest.approx(beta_skl, abs=1e-10)
 
 
+def test_LeastSquares_fit_lasso() :
+    """Tests the fit method of the Least Squares class with method='lasso'
+    """
+    N = 500
+    P = 5
+    x = np.linspace(0,1,N)
+    y = 2.0 + x + x**2
+    
+    X = np.zeros(shape=(N,P))
+    X[:,0] = 1.0
+    for j in range(1,P) :
+        X[:,j] = x**j
+
+    lasso = LeastSquares(method='lasso', backend='skl')
+    lasso.setLambda(0.01)
+    beta_lasso = lasso.fit(X,y)
+    
+    # Make sure lasso regression zeroes out x*3 and x**4 beta terms.
+    assert beta_lasso[-2:] == pytest.approx(np.zeros(2), abs=1e-15)
+
+
+
 
 
 if __name__ == '__main__':
-    test_LeastSquares_R2()
+    test_LeastSquares_fit_lasso()
 
 

@@ -275,7 +275,7 @@ C_\text{L}(\bm\beta) &= \Vert \mathbf{y} - \tilde{\mathbf{y}}\Vert_2^2 + \lambda
 %
 &= \sum_{i=1}^n\Big| y_i - \beta_0 - \sum_{j=1}^p X_{ip}\beta_p\Big|^2 + \lambda \sum_{j=1}^p |\beta_j|^2.
 \end{align}
-Originally popularized by Tibshirani\autocite{tibshirani1996regression}, the \textit{Lasso regression} has certain potential advantages over the OLS and Ridge regression schemes. Most notably, the Lasso can perform \textit{variable selection}, i.e.\ some $\beta_j$s may be identically zero as a result of the minimization. 
+Originally popularized by Tibshirani\autocite{tibshirani1996regression}, the \textit{Lasso regression} has certain potential advantages over the OLS and Ridge regression schemes. Most notably, the Lasso can perform \textit{variable selection}, i.e.\ some $\beta_j$s may be identically zero as a result of the minimization. The name Lasso is short for "least absolute shrinkage and selection operator".
 
 
 \subsection{Principal components}
@@ -315,7 +315,7 @@ The diagonalization of $\mathbf{X}^T\mathbf{X}$ constitutes a coordinate transfo
 
 The first principal component direction has the property that $\mathbf{z}_1=\mathbf{X}\mathbf{v}_1$ has the largest variance of all the linear combinations of the columns of $\mathbf{X}$. In general, the principal components are ordered such that $\text{Var}\,\mathbf{z}_1\ge \text{Var}\,\mathbf{z}_2\ge\dots \text{Var}\,\mathbf{z}_N$.
 
-In essence, the first principal component represent the direction in $\text{Col}\,\mathbf{X}$ in which the variance is highest, the second principal component represents the corresponding direction in which the variance is highest, apart from the first, and so on. 
+In essence, the first principal component represent the direction in $\text{Col}\,\mathbf{X}$ in which the variance is highest, the second principal component represents the corresponding direction in which the variance is highest, apart from the first, and so on. It is clear that the Ridge regression scheme simply rotates the OLS solution into the principal components of the design matrix, and then shrinks the coefficients corresponding to low-variance components. 
 
 \subsection{Resampling and the \textit{Bootstrap} method}
 \lipsum[3]

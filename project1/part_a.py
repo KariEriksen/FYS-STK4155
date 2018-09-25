@@ -78,8 +78,8 @@ def part_a(plotting=False) :
             x_data = np.vstack([X.ravel(), Y.ravel()]).T
             
             # When plotting the Franke function itself, we use these lines.
-            #y_data = np.zeros(shape=(x_data.data.shape[0]))
-            #computeFrankeValues(x_data, y_data)
+            yy_data = np.zeros(shape=(x_data.data.shape[0]))
+            computeFrankeValues(x_data, yy_data)
 
             # When plotting the linear regression model:
             XX = designMatrix.getMatrix(x_data)
@@ -87,15 +87,18 @@ def part_a(plotting=False) :
             y_data = leastSquares.predict()
 
             Z = np.reshape(y_data.T, X.shape)
+            ZF = np.reshape(yy_data.T, X.shape)
 
-            ax.plot_surface(X,Y,Z,cmap=cm.coolwarm,linewidth=0, antialiased=False)
+            #ax.plot_surface(X,Y,Z,cmap=cm.coolwarm,linewidth=0, antialiased=False)
+            ax.plot_surface(X,Y,abs(Z-ZF),cmap=cm.coolwarm,linewidth=0, antialiased=False)
             ax.set_zlim(-0.10, 1.40)
             ax.zaxis.set_major_locator(LinearLocator(5))
             ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
             ax.view_init(30, 45)
 
             #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'franke.png'), transparent=True, bbox_inches='tight')
-            plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'OLS'+str(degree)+'.png'), transparent=True, bbox_inches='tight')
+            #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'OLS'+str(degree)+'.png'), transparent=True, bbox_inches='tight')
+            plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'OLS'+str(degree)+'_diff.png'), transparent=True, bbox_inches='tight')
             plt.show()
 
     print("\nMSE :")
@@ -137,7 +140,7 @@ def plot_terrain(file_number=1) :
 
 if __name__ == '__main__':
     part_a(plotting=True)
-    #plot_terrain(1)
+    #plot_terrain()
 
 
 

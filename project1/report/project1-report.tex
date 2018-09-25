@@ -289,7 +289,7 @@ In general, this can not be directly solved for $\bm\beta_\text{optimal}^\text{L
 \begin{align}
 \left(\beta_\text{optimal}^\text{L}(\lambda)\right)_j &= \text{sgn}(\beta_j^\text{OLS})\left(|\beta_j^\text{OLS}| - \lambda\right)_+,
 \end{align}
-where $(\cdot)_+$ represents the positive part of $\cdot\,$.
+where $(\cdot)_+$ represents the positive part of $\cdot\,$. In the general case, an iterative solver must be used to compute $\bm\beta_\text{optimal}^\text{L}$.
 
 \subsection{Principal components}
 The following section follows Hastie, Tibshirani \& Friedman\autocite{trevor2009elements}.
@@ -326,7 +326,7 @@ where $\sigma_j$ denotes the diagonal elements of the diagonal matrix $\bm\Sigma
 
 The diagonalization of $\mathbf{X}^T\mathbf{X}$ constitutes a coordinate transform into a coordinate system in which $\mathbf{X}^T\mathbf{X}$ itself is diagonal. The matrix $\mathbf{X}^T\mathbf{X}$ is the covariance matrix (apart from a constant factor $1/N$). In the orthonormal basis of $\mathbf{V}$, the covariance matrix is diagonal and contains the variances $\sigma_j^2$ of these linear combinations of the columns of $\mathbf{X}$.
 
-The first principal component direction has the property that $\mathbf{z}_1=\mathbf{X}\mathbf{v}_1$ has the largest variance of all the linear combinations of the columns of $\mathbf{X}$. In general, the principal components are ordered such that $\text{Var}\,\mathbf{z}_1\ge \text{Var}\,\mathbf{z}_2\ge\dots \text{Var}\,\mathbf{z}_N$.
+The first principal component direction has the property that $\mathbf{z}_1=\mathbf{X}\mathbf{v}_1$ has the largest variance of all the linear combinations of the columns of $\mathbf{X}$. In general, the principal components are ordered such that $\text{Var}\,\mathbf{z}_1\ge \text{Var}\,\mathbf{z}_2\ge\dots \ge\text{Var}\,\mathbf{z}_N$.
 
 In essence, the first principal component represent the direction in $\text{Col}\,\mathbf{X}$ in which the variance is highest, the second principal component represents the corresponding direction in which the variance is highest, apart from the first, and so on. It is clear that the Ridge regression scheme simply rotates the OLS solution into the principal components of the design matrix, and then shrinks the coefficients corresponding to low-variance components. 
 
@@ -370,7 +370,24 @@ The specific terrain data we will use in the present project is taken from the M
 
 \section{Results and discussion}
 \subsection{Verification of the models: The Franke function}
-\lipsum[3]
+\begin{figure*}
+\centering
+\includegraphics[width=0.4\linewidth]{OLS2.png}
+\includegraphics[width=0.4\linewidth]{OLS3.png}
+\includegraphics[width=0.4\linewidth]{OLS4.png}
+\includegraphics[width=0.4\linewidth]{OLS5.png}
+\captionof{figure}{Ordinary least squares fits, using data from the Franke function with polynomials of degree $2$ (top left), $3$ (top right), $4$ (bottom left), and $5$ (bottom right). The target function of Franke can be seen in \fig{1}. \label{fig:3}}
+\end{figure*}
+\begin{figure*}
+\centering
+\includegraphics[width=0.4\linewidth]{OLS2_diff.png}
+\includegraphics[width=0.4\linewidth]{OLS3_diff.png}
+\includegraphics[width=0.4\linewidth]{OLS4_diff.png}
+\includegraphics[width=0.4\linewidth]{OLS5_diff.png}
+\captionof{figure}{The absolute difference between the ordinary least squares fits of \fig{3} and the true data, the Franke function. Polynomials of degree $2$ (top left), $3$ (top right), $4$ (bottom left), and $5$ (bottom right) have been used in the fitting. \label{fig:4}}
+\end{figure*}
+
+
 \subsection{Terrain data parametrization}
 \lipsum[3]
 

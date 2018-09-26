@@ -27,13 +27,16 @@
 \usepackage{sidecap}                         % Floats with captions on the side.
 \usepackage{tabularx}                        % Tables and stuff.
 \usepackage{tabulary}                        % Tables and stuff.
-\usepackage[sf,sl,outermarks]{titlesec}              % Change fonts in section{}, subsection{}, etc.
+\usepackage[sf,sl,outermarks]{titlesec}      % Change fonts in section{}, subsection{}, etc.
+\usepackage[subfigure]{tocloft}              % Change spacing between numbers and titles in TOC.
 \usepackage{booktabs}                        % \toprule, \midrule, etc. for tables.
+\usepackage{siunitx}                         % 
 \usepackage[%                                % Interactive references and links, colored.
   colorlinks  = true,
   linkcolor   = black,
   urlcolor    = blue,
   citecolor   = black,
+  linktocpage = true,
   ]{hyperref}            
 \usepackage[%                                % References, in super-script form.
   autocite    = superscript,
@@ -47,12 +50,17 @@
 \MakeOuterQuote{"}
 
 % Package settings ----------------------------------------------------------- %
-\renewcommand{\thesection}{\Roman{section}} 
-\renewcommand{\thesubsection}{\Alph{subsection}}
-\renewcommand{\thesubsubsection}{}
-\floatsetup[table]{capposition=top}          % Place table captions above the table.
-\captionsetup[subfigure]{labelformat=empty}  % Remove the (a), (b), etc. tags from subfigures.
+\renewcommand{\thesection}{\Roman{section}}         % I, II, III, IV, etc. section numbering
+\renewcommand{\thesubsection}{\Alph{subsection}}    % A, B, C, etc. subsection numbering
+\renewcommand{\thesubsubsection}{}                  % Remove subsubsection numbering.
+\floatsetup[table]{capposition=top}                 % Place table captions above the table.
+\captionsetup[subfigure]{labelformat=empty}         % Remove the (a), (b), etc. tags from subfigures.
+\advance\cftsecnumwidth 1.0em\relax                 % Set the spacing between section headings and titles in TOC with tocloft.
+\advance\cftsubsecindent 1.0em\relax                % Set the spacing between subsection headings and titles in TOC with tocloft.
+\advance\cftsubsecnumwidth 1.0em\relax              % Set the spacing between subsubsection headings and titles in TOC with tocloft.
 
+
+% Section headings settings -------------------------------------------------- %
 \titleformat{\section}[hang]  % {command}[shape]
   {\normalfont\bfseries}      % {format}
   {\thesection.}              % {label}
@@ -404,39 +412,42 @@ The specific terrain data we will use in the present project is taken from the M
 \subsection{Verification of the models: The Franke function}
 
 \newlength{\myrowskip}
-\setlength{\myrowskip}{20pt}
+\setlength{\myrowskip}{10pt}
 \begin{table*}
-\caption[position=top]{Parameters $\beta$ and their bootstrap computed variance $\sigma^2(\beta)$ for the OLS fits of the Franke function, shown in \fig{3}. \label{tab:1}}
-\begin{tabularx}{\textwidth}{lXXXXXXXr}
-\
-          & $p=2$   &                   & $p=3$   &                   & $p=4$   &                   & $p=5$   &                    \\
-          & $\beta$ & $\sigma^2(\beta)$ & $\beta$ & $\sigma^2(\beta)$ & $\beta$ & $\sigma^2(\beta)$ & $\beta$ & $\sigma^2(\beta)$  \\
-\hline
-$1$       & $ 1.17606$ & $0.00007$ & $ 0.99432$ & $0.00014$ & $  0.60714$ & $0.00006$ & $  0.37920$ & $0.00052$ \\[\myrowskip]
-$x$       & $-1.06533$ & $0.00047$ & $-0.60390$ & $0.00314$ & $  4.23195$ & $0.00478$ & $  8.05787$ & $0.03989$ \\
-$y$       & $-0.74196$ & $0.00041$ & $ 1.36710$ & $0.00206$ & $  3.18895$ & $0.00399$ & $  3.77385$ & $0.03382$ \\[\myrowskip]
-$x^2$     & $ 0.12032$ & $0.00026$ & $-1.40195$ & $0.00885$ & $-19.38216$ & $0.05541$ & $-35.01195$ & $0.52045$ \\
-$xy$      & $ 0.87501$ & $0.00025$ & $ 2.04306$ & $0.00597$ & $ -2.28349$ & $0.02825$ & $-15.64235$ & $0.50091$ \\
-$y^2$     & $-0.36720$ & $0.00029$ & $-6.65928$ & $0.00585$ & $-12.53672$ & $0.04434$ & $ -8.30869$ & $0.44047$ \\[\myrowskip]
-$x^3$     & $        $ & $       $ & $ 0.89177$ & $0.00288$ & $ 25.25628$ & $0.10794$ & $ 49.21854$ & $1.61746$ \\
-$x^2y$    & $        $ & $       $ & $ 0.36261$ & $0.00219$ & $  8.10444$ & $0.05690$ & $ 45.87508$ & $1.70397$ \\
-$xy^2$    & $        $ & $       $ & $-1.50662$ & $0.00188$ & $  1.40554$ & $0.05242$ & $ 21.25127$ & $1.47419$ \\
-$y^3$     & $        $ & $       $ & $ 4.69644$ & $0.00207$ & $ 12.61520$ & $0.08471$ & $ -9.03064$ & $1.50607$ \\[\myrowskip]
-$x^4$     & $        $ & $       $ & $        $ & $       $ & $-10.84136$ & $0.02548$ & $-24.13509$ & $1.25784$ \\
-$x^3y$    & $        $ & $       $ & $        $ & $       $ & $ -5.15114$ & $0.01948$ & $-54.81283$ & $1.39124$ \\
-$x^2y^2$  & $        $ & $       $ & $        $ & $       $ & $  0.00764$ & $0.01437$ & $ -8.23581$ & $1.14134$ \\
-$xy^3$    & $        $ & $       $ & $        $ & $       $ & $ -1.90524$ & $0.02013$ & $-30.19186$ & $1.12319$ \\
-$y^4$     & $        $ & $       $ & $        $ & $       $ & $ -3.51179$ & $0.02032$ & $ 30.20166$ & $1.28260$ \\[\myrowskip]
-$x^5$     & $        $ & $       $ & $        $ & $       $ & $         $ & $       $ & $  1.53882$ & $0.16041$ \\
-$x^4y$    & $        $ & $       $ & $        $ & $       $ & $         $ & $       $ & $ 19.53504$ & $0.18567$ \\
-$x^3y^2$  & $        $ & $       $ & $        $ & $       $ & $         $ & $       $ & $ 10.83952$ & $0.17047$ \\
-$x^2y^3$  & $        $ & $       $ & $        $ & $       $ & $         $ & $       $ & $ -5.29938$ & $0.15935$ \\
-$xy^4$    & $        $ & $       $ & $        $ & $       $ & $         $ & $       $ & $ 16.91243$ & $0.15035$ \\
-$y^5$     & $        $ & $       $ & $        $ & $       $ & $         $ & $       $ & $-16.84369$ & $0.16920$ \\
-\hline 
-\hline
+\centering\sisetup{table-number-alignment=center}
+\setlength\extrarowheight{2pt}
+\begin{tabularx}{\textwidth}{X*{9}{S[table-format=-2.3]}}
+\toprule
+$p$       & \multicolumn{2}{>{\hsize=\dimexpr2\hsize}c}{$2$}                         & \multicolumn{2}{>{\hsize=\dimexpr2\hsize}c}{$3$}                        & \multicolumn{2}{>{\hsize=\dimexpr2\hsize}c}{$4$}                            & \multicolumn{2}{>{\hsize=\dimexpr2\hsize}c}{$5$}                             \\
+          & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}c}{$\beta$} & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}c}{$\sigma^2(\beta)$}   & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}c}{$\sigma^2(\beta)$} & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}c}{$\beta$} & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}c}{$\sigma^2(\beta)$}& \multicolumn{1}{>{\hsize=\dimexpr1\hsize}c}{$\beta$} & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}c}{$\sigma^2(\beta)$}& \multicolumn{1}{>{\hsize=\dimexpr1\hsize}c}{$\beta$} &  \\
+\midrule
+$1$       &  1.17606 & 0.00007 &  0.99432 & 0.00014 &   0.60714 & 0.00006 &   0.37920 & 0.00052 \\[\myrowskip]
+$x$       & -1.06533 & 0.00047 & -0.60390 & 0.00314 &   4.23195 & 0.00478 &   8.05787 & 0.03989 \\
+$y$       & -0.74196 & 0.00041 &  1.36710 & 0.00206 &   3.18895 & 0.00399 &   3.77385 & 0.03382 \\[\myrowskip]
+$x^2$     &  0.12032 & 0.00026 & -1.40195 & 0.00885 & -19.38216 & 0.05541 & -35.01195 & 0.52045 \\
+$xy$      &  0.87501 & 0.00025 &  2.04306 & 0.00597 &  -2.28349 & 0.02825 & -15.64235 & 0.50091 \\
+$y^2$     & -0.36720 & 0.00029 & -6.65928 & 0.00585 & -12.53672 & 0.04434 &  -8.30869 & 0.44047 \\[\myrowskip]
+$x^3$     &          &         &  0.89177 & 0.00288 &  25.25628 & 0.10794 &  49.21854 & 1.61746 \\
+$x^2y$    &          &         &  0.36261 & 0.00219 &   8.10444 & 0.05690 &  45.87508 & 1.70397 \\
+$xy^2$    &          &         & -1.50662 & 0.00188 &   1.40554 & 0.05242 &  21.25127 & 1.47419 \\
+$y^3$     &          &         &  4.69644 & 0.00207 &  12.61520 & 0.08471 &  -9.03064 & 1.50607 \\[\myrowskip]
+$x^4$     &          &         &          &         & -10.84136 & 0.02548 & -24.13509 & 1.25784 \\
+$x^3y$    &          &         &          &         &  -5.15114 & 0.01948 & -54.81283 & 1.39124 \\
+$x^2y^2$  &          &         &          &         &   0.00764 & 0.01437 &  -8.23581 & 1.14134 \\
+$xy^3$    &          &         &          &         &  -1.90524 & 0.02013 & -30.19186 & 1.12319 \\
+$y^4$     &          &         &          &         &  -3.51179 & 0.02032 &  30.20166 & 1.28260 \\[\myrowskip]
+$x^5$     &          &         &          &         &           &         &   1.53882 & 0.16041 \\
+$x^4y$    &          &         &          &         &           &         &  19.53504 & 0.18567 \\
+$x^3y^2$  &          &         &          &         &           &         &  10.83952 & 0.17047 \\
+$x^2y^3$  &          &         &          &         &           &         &  -5.29938 & 0.15935 \\
+$xy^4$    &          &         &          &         &           &         &  16.91243 & 0.15035 \\
+$y^5$     &          &         &          &         &           &         & -16.84369 & 0.16920 \\
+\bottomrule 
 \end{tabularx}
+\caption{Parameters $\beta$ and their bootstrap computed variance $\sigma^2(\beta)$ for the OLS fits of the Franke function, shown in \fig{3}. \label{tab:1}}
 \end{table*}
+
+
 
 \begin{figure*}[p]
 \vspace{-50pt}

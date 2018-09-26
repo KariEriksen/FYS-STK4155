@@ -2,7 +2,7 @@
 
 % Included packages ---------------------------------------------------------- %
 \usepackage{lipsum}                          % Generate random, blind, filler-text.
-\usepackage[utf8]{inputenc}                        % utf-8 encoding, æ, ø , å, etc.
+\usepackage[utf8]{inputenc}                  % utf-8 encoding, æ, ø , å, etc.
 \usepackage{a4wide}                          % Adjust margins to better fit A4 format.
 \usepackage{array}                           % Matrices.
 \usepackage{dsfont}                          % Math symbols.
@@ -15,7 +15,7 @@
 \usepackage{enumerate}                       % Change counters (arabic, roman, etc.).
 \usepackage{floatrow}                        % Multi-figure floats.
 \usepackage{subfig}                          % Multi-figure floats.
-\usepackage{caption}                         % Adds functionality to captions.
+\usepackage[tableposition=top]{caption}      % Adds functionality to captions.
 \usepackage{bm}                              % Bolded text in math mode.
 \usepackage[framemethod=default]{mdframed}   % Make boxes.
 \usepackage{listings}                        % For including source code.
@@ -25,6 +25,10 @@
 \usepackage{capt-of}                         % Caption things which are not floats.
 \usepackage{fontawesome}                     % Github icon, etc. \faGithub
 \usepackage{sidecap}                         % Floats with captions on the side.
+\usepackage{tabularx}                        % Tables and stuff.
+\usepackage{tabulary}                        % Tables and stuff.
+\usepackage[sf,sl,outermarks]{titlesec}              % Change fonts in section{}, subsection{}, etc.
+\usepackage{booktabs}                        % \toprule, \midrule, etc. for tables.
 \usepackage[%                                % Interactive references and links, colored.
   colorlinks  = true,
   linkcolor   = black,
@@ -41,6 +45,32 @@
   ]{biblatex}
 \usepackage[autostyle, english = american]{csquotes} % Assure quotation marks are inserted correctly aligned left/right.
 \MakeOuterQuote{"}
+
+% Package settings ----------------------------------------------------------- %
+\renewcommand{\thesection}{\Roman{section}} 
+\renewcommand{\thesubsection}{\Alph{subsection}}
+\renewcommand{\thesubsubsection}{}
+\floatsetup[table]{capposition=top}          % Place table captions above the table.
+\captionsetup[subfigure]{labelformat=empty}  % Remove the (a), (b), etc. tags from subfigures.
+
+\titleformat{\section}[hang]  % {command}[shape]
+  {\normalfont\bfseries}      % {format}
+  {\thesection.}              % {label}
+  {2ex}                       % {sep}
+  {\centering\MakeUppercase}  % {before-code}[after-code]
+
+\titleformat{\subsection}[hang] % {command}[shape]
+  {\normalfont\bfseries}        % {format}
+  {\thesubsection.}             % {label}
+  {1ex}                         % {sep}
+  {\centering}                  % {before-code}[after-code]
+
+\titleformat{\subsubsection}[hang]  % {command}[shape]
+  {\normalfont\bfseries}            % {format}
+  {}                                % {label}
+  {1ex}                             % {sep}
+  {\centering}                      % {before-code}[after-code]
+
 
 % References ----------------------------------------------------------------- %
 \newcommand{\Fig}[1]{Fig.\ \ref{fig:#1}}
@@ -79,6 +109,7 @@
 \definecolor{gray}{gray}{0.9}
 \newmdenv[linecolor=white,backgroundcolor=gray]{grayframe}
 
+
 % Title
 \title{{\sc Regression analysis and resampling methods \\ {\large FYS-STK4155: Project 1}}}
 \author{Morten Ledum \& Håkon Kristiansen \\ \faGithub \ {\small \url{github.com/mortele/FYS-STK4155}}}
@@ -87,6 +118,7 @@
 \begin{document}
 
 \maketitle
+
 \begin{abstract}
 We parameterize digital terrain data using linear regression analysis algorithms: Ordinary least squares (OLS), Ridge regression, and Lasso regression. The bootstrap resampling technique is used to gauge the bias and variance of the models. We use basis sets of homogeneous monomials in two variables, up to and including total degree 5. We find that xxxxxx.
 
@@ -333,7 +365,7 @@ In essence, the first principal component represent the direction in $\text{Col}
 \subsection{Resampling and the \textit{Bootstrap} method}
 \lipsum[3]
 
-\section{Data sets: The Franke function and U.S. Geological Survey terrain data}
+\section{Data sets}
 We are chiefly interested in parametrizing digital terrain data. However, in order to test and validate our implementation of the regression model and the resampling technique, we employ the Franke function\autocite{franke1979critical} as a test case before considering real data.
 \subsection{The Franke function}
 The test function of Franke\textemdash originally developed to test and rate different surface interpolation techniques\textemdash is "a surface with a variety of behaviour" which consists of "two Gaussian peaks and a sharper Gaussian dip superimposed on a surface sloping towards the first quadrant."\autocite{franke1979critical} It is noted by Franke in the his original paper that the slope was introduced mainly as a visual aid and presumably had little impact on the actual interpolations performed. 
@@ -370,21 +402,58 @@ The specific terrain data we will use in the present project is taken from the M
 
 \section{Results and discussion}
 \subsection{Verification of the models: The Franke function}
-\begin{figure*}
+
+\newlength{\myrowskip}
+\setlength{\myrowskip}{20pt}
+\begin{table*}
+\caption[position=top]{Parameters $\beta$ and their bootstrap computed variance $\sigma^2(\beta)$ for the OLS fits of the Franke function, shown in \fig{3}. \label{tab:1}}
+\begin{tabularx}{\textwidth}{lXXXXXXXr}
+\
+          & $p=2$   &                   & $p=3$   &                   & $p=4$   &                   & $p=5$   &                    \\
+          & $\beta$ & $\sigma^2(\beta)$ & $\beta$ & $\sigma^2(\beta)$ & $\beta$ & $\sigma^2(\beta)$ & $\beta$ & $\sigma^2(\beta)$  \\
+\hline
+$1$       & $ 1.17606$ & $0.00007$ & $ 0.99432$ & $0.00014$ & $  0.60714$ & $0.00006$ & $  0.37920$ & $0.00052$ \\[\myrowskip]
+$x$       & $-1.06533$ & $0.00047$ & $-0.60390$ & $0.00314$ & $  4.23195$ & $0.00478$ & $  8.05787$ & $0.03989$ \\
+$y$       & $-0.74196$ & $0.00041$ & $ 1.36710$ & $0.00206$ & $  3.18895$ & $0.00399$ & $  3.77385$ & $0.03382$ \\[\myrowskip]
+$x^2$     & $ 0.12032$ & $0.00026$ & $-1.40195$ & $0.00885$ & $-19.38216$ & $0.05541$ & $-35.01195$ & $0.52045$ \\
+$xy$      & $ 0.87501$ & $0.00025$ & $ 2.04306$ & $0.00597$ & $ -2.28349$ & $0.02825$ & $-15.64235$ & $0.50091$ \\
+$y^2$     & $-0.36720$ & $0.00029$ & $-6.65928$ & $0.00585$ & $-12.53672$ & $0.04434$ & $ -8.30869$ & $0.44047$ \\[\myrowskip]
+$x^3$     & $        $ & $       $ & $ 0.89177$ & $0.00288$ & $ 25.25628$ & $0.10794$ & $ 49.21854$ & $1.61746$ \\
+$x^2y$    & $        $ & $       $ & $ 0.36261$ & $0.00219$ & $  8.10444$ & $0.05690$ & $ 45.87508$ & $1.70397$ \\
+$xy^2$    & $        $ & $       $ & $-1.50662$ & $0.00188$ & $  1.40554$ & $0.05242$ & $ 21.25127$ & $1.47419$ \\
+$y^3$     & $        $ & $       $ & $ 4.69644$ & $0.00207$ & $ 12.61520$ & $0.08471$ & $ -9.03064$ & $1.50607$ \\[\myrowskip]
+$x^4$     & $        $ & $       $ & $        $ & $       $ & $-10.84136$ & $0.02548$ & $-24.13509$ & $1.25784$ \\
+$x^3y$    & $        $ & $       $ & $        $ & $       $ & $ -5.15114$ & $0.01948$ & $-54.81283$ & $1.39124$ \\
+$x^2y^2$  & $        $ & $       $ & $        $ & $       $ & $  0.00764$ & $0.01437$ & $ -8.23581$ & $1.14134$ \\
+$xy^3$    & $        $ & $       $ & $        $ & $       $ & $ -1.90524$ & $0.02013$ & $-30.19186$ & $1.12319$ \\
+$y^4$     & $        $ & $       $ & $        $ & $       $ & $ -3.51179$ & $0.02032$ & $ 30.20166$ & $1.28260$ \\[\myrowskip]
+$x^5$     & $        $ & $       $ & $        $ & $       $ & $         $ & $       $ & $  1.53882$ & $0.16041$ \\
+$x^4y$    & $        $ & $       $ & $        $ & $       $ & $         $ & $       $ & $ 19.53504$ & $0.18567$ \\
+$x^3y^2$  & $        $ & $       $ & $        $ & $       $ & $         $ & $       $ & $ 10.83952$ & $0.17047$ \\
+$x^2y^3$  & $        $ & $       $ & $        $ & $       $ & $         $ & $       $ & $ -5.29938$ & $0.15935$ \\
+$xy^4$    & $        $ & $       $ & $        $ & $       $ & $         $ & $       $ & $ 16.91243$ & $0.15035$ \\
+$y^5$     & $        $ & $       $ & $        $ & $       $ & $         $ & $       $ & $-16.84369$ & $0.16920$ \\
+\hline 
+\hline
+\end{tabularx}
+\end{table*}
+
+\begin{figure*}[p]
+\vspace{-50pt}
 \centering
-\includegraphics[width=0.4\linewidth]{OLS2.png}
-\includegraphics[width=0.4\linewidth]{OLS3.png}
-\includegraphics[width=0.4\linewidth]{OLS4.png}
-\includegraphics[width=0.4\linewidth]{OLS5.png}
-\captionof{figure}{Ordinary least squares fits, using data from the Franke function with polynomials of degree $2$ (top left), $3$ (top right), $4$ (bottom left), and $5$ (bottom right). The target function of Franke can be seen in \fig{1}. \label{fig:3}}
+\subfloat[$p=2$]{\includegraphics[width=0.4\linewidth]{OLS2.png}}
+\subfloat[$p=3$]{\includegraphics[width=0.4\linewidth]{OLS3.png}} \\[-20pt]
+\subfloat[$p=4$]{\includegraphics[width=0.4\linewidth]{OLS4.png}}
+\subfloat[$p=5$]{\includegraphics[width=0.4\linewidth]{OLS5.png}}
+\captionof{figure}{Ordinary least squares fits, using data from the Franke function with polynomials of degree $2$, $3$, $4$, and $5$. The $p$ parameter indicates what order of polynomials are used. The target function of Franke can be seen in \fig{1}. \label{fig:3}}
 \end{figure*}
-\begin{figure*}
+\begin{figure*}[p]
 \centering
-\includegraphics[width=0.4\linewidth]{OLS2_diff.png}
-\includegraphics[width=0.4\linewidth]{OLS3_diff.png}
-\includegraphics[width=0.4\linewidth]{OLS4_diff.png}
-\includegraphics[width=0.4\linewidth]{OLS5_diff.png}
-\captionof{figure}{The absolute difference between the ordinary least squares fits of \fig{3} and the true data, the Franke function. Polynomials of degree $2$ (top left), $3$ (top right), $4$ (bottom left), and $5$ (bottom right) have been used in the fitting. \label{fig:4}}
+\subfloat[$p=2$]{\includegraphics[width=0.4\linewidth]{OLS2_diff.png}}
+\subfloat[$p=3$]{\includegraphics[width=0.4\linewidth]{OLS3_diff.png}} \\[-20pt]
+\subfloat[$p=4$]{\includegraphics[width=0.4\linewidth]{OLS4_diff.png}}
+\subfloat[$p=5$]{\includegraphics[width=0.4\linewidth]{OLS5_diff.png}}
+\captionof{figure}{The absolute difference between the ordinary least squares fits of \fig{3} and the true data, the Franke function. Polynomials of degree $2$, $3$, $4$, and $5$ have been used in the fitting. The $p$ parameter indicates what order of polynomials are used. \label{fig:4}}
 \end{figure*}
 
 

@@ -66,7 +66,11 @@ def part_a(plotting=False) :
         if plotting :
             print("MSE: ", MSE_degree[-1])
             print("R2:  ", R2_degree[-1])
-            print("Beta Variance: ", betaVariance_degree[-1].T)
+            print("Beta Variance: ")
+            for b in betaVariance_degree[-1] : print(b)
+            print("Beta: ")
+            for b in leastSquares.beta : print(b)
+            print(" ")
 
             M = 100
             fig = plt.figure()
@@ -98,7 +102,7 @@ def part_a(plotting=False) :
 
             #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'franke.png'), transparent=True, bbox_inches='tight')
             #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'OLS'+str(degree)+'.png'), transparent=True, bbox_inches='tight')
-            plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'OLS'+str(degree)+'_diff.png'), transparent=True, bbox_inches='tight')
+            #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'OLS'+str(degree)+'_diff.png'), transparent=True, bbox_inches='tight')
             plt.show()
 
     print("\nMSE :")

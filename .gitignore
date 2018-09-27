@@ -16,3 +16,4 @@ project1/franke2d.m
 *.synctex.gz
 *__pycache__
 .DS_Store
+*.toc

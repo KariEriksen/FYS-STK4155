@@ -30,7 +30,8 @@
 \usepackage[sf,sl,outermarks]{titlesec}      % Change fonts in section{}, subsection{}, etc.
 \usepackage[subfigure]{tocloft}              % Change spacing between numbers and titles in TOC.
 \usepackage{booktabs}                        % \toprule, \midrule, etc. for tables.
-\usepackage{siunitx}                         % 
+\usepackage{siunitx}                         % Allows S table column, aligning on decimal point.
+\usepackage{chngcntr}                        % Change counter behaviour, supress increment of sub counters.
 \usepackage[%                                % Interactive references and links, colored.
   colorlinks  = true,
   linkcolor   = black,
@@ -58,7 +59,10 @@
 \advance\cftsecnumwidth 1.0em\relax                 % Set the spacing between section headings and titles in TOC with tocloft.
 \advance\cftsubsecindent 1.0em\relax                % Set the spacing between subsection headings and titles in TOC with tocloft.
 \advance\cftsubsecnumwidth 1.0em\relax              % Set the spacing between subsubsection headings and titles in TOC with tocloft.
-
+\newcommand{\listingsfont}{\ttfamily}
+\newcommand{\inlinepy}[1]{\lstinline[language={python}]{#1}}
+\newcommand{\inlinecc}[1]{\lstinline[language={c++}]{#1}}
+\counterwithout*{subsection}{section}               % Dont reset the subsection counter on new \section{} calls.
 
 % Section headings settings -------------------------------------------------- %
 \titleformat{\section}[hang]  % {command}[shape]
@@ -370,12 +374,13 @@ The first principal component direction has the property that $\mathbf{z}_1=\mat
 
 In essence, the first principal component represent the direction in $\text{Col}\,\mathbf{X}$ in which the variance is highest, the second principal component represents the corresponding direction in which the variance is highest, apart from the first, and so on. It is clear that the Ridge regression scheme simply rotates the OLS solution into the principal components of the design matrix, and then shrinks the coefficients corresponding to low-variance components. 
 
-\subsection{Resampling and the \textit{Bootstrap} method}
+\subsection{Resampling and the \textit{Bootstrap} method \label{sect:resampling}}
 \lipsum[3]
 
 \section{Data sets}
 We are chiefly interested in parametrizing digital terrain data. However, in order to test and validate our implementation of the regression model and the resampling technique, we employ the Franke function\autocite{franke1979critical} as a test case before considering real data.
-\subsection{The Franke function}
+
+\subsection{The Franke function \label{sect:franke}}
 The test function of Franke\textemdash originally developed to test and rate different surface interpolation techniques\textemdash is "a surface with a variety of behaviour" which consists of "two Gaussian peaks and a sharper Gaussian dip superimposed on a surface sloping towards the first quadrant."\autocite{franke1979critical} It is noted by Franke in the his original paper that the slope was introduced mainly as a visual aid and presumably had little impact on the actual interpolations performed. 
 
 More specifically, the Franke function $f_\text{F}(x,y)$ takes the full form
@@ -410,16 +415,27 @@ The specific terrain data we will use in the present project is taken from the M
 
 \section{Results and discussion}
 \subsection{Verification of the models: The Franke function}
-
 \newlength{\myrowskip}
 \setlength{\myrowskip}{10pt}
 \begin{table*}
 \centering\sisetup{table-number-alignment=center}
 \setlength\extrarowheight{2pt}
-\begin{tabularx}{\textwidth}{X*{9}{S[table-format=-2.3]}}
+\begin{tabularx}{\textwidth}{X*{9}{S[table-format=4.3]}}
 \toprule
-$p$       & \multicolumn{2}{>{\hsize=\dimexpr2\hsize}c}{$2$}                         & \multicolumn{2}{>{\hsize=\dimexpr2\hsize}c}{$3$}                        & \multicolumn{2}{>{\hsize=\dimexpr2\hsize}c}{$4$}                            & \multicolumn{2}{>{\hsize=\dimexpr2\hsize}c}{$5$}                             \\
-          & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}c}{$\beta$} & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}c}{$\sigma^2(\beta)$}   & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}c}{$\sigma^2(\beta)$} & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}c}{$\beta$} & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}c}{$\sigma^2(\beta)$}& \multicolumn{1}{>{\hsize=\dimexpr1\hsize}c}{$\beta$} & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}c}{$\sigma^2(\beta)$}& \multicolumn{1}{>{\hsize=\dimexpr1\hsize}c}{$\beta$} &  \\
+$p$ & \multicolumn{2}{>{\hsize=\dimexpr2\hsize}c}{\ \ \ \ $2$} 
+    & \multicolumn{2}{>{\hsize=\dimexpr2\hsize}c}{\ \ \ \ $3$}                        
+    & \multicolumn{2}{>{\hsize=\dimexpr2\hsize}c}{\ \ \ \ $4$}                            
+    & \multicolumn{2}{>{\hsize=\dimexpr2\hsize}c}{\ \ \ \ $5$} \\
+%%
+    & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}r}{$\beta$} 
+    & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}r}{$\sigma^2(\beta)$}   
+    & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}r}{$\beta$} 
+    & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}r}{$\sigma^2(\beta)$} 
+    & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}r}{$\beta$} 
+    & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}r}{$\sigma^2(\beta)$}
+    & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}r}{$\beta$}  
+    & \multicolumn{1}{>{\hsize=\dimexpr1\hsize}r}{$\sigma^2(\beta)$} \\
+%%
 \midrule
 $1$       &  1.17606 & 0.00007 &  0.99432 & 0.00014 &   0.60714 & 0.00006 &   0.37920 & 0.00052 \\[\myrowskip]
 $x$       & -1.06533 & 0.00047 & -0.60390 & 0.00314 &   4.23195 & 0.00478 &   8.05787 & 0.03989 \\
@@ -444,11 +460,8 @@ $xy^4$    &          &         &          &         &           &         &  16.
 $y^5$     &          &         &          &         &           &         & -16.84369 & 0.16920 \\
 \bottomrule 
 \end{tabularx}
-\caption{Parameters $\beta$ and their bootstrap computed variance $\sigma^2(\beta)$ for the OLS fits of the Franke function, shown in \fig{3}. \label{tab:1}}
+\caption{Parameters $\beta$ and their bootstrap computed variance $\sigma^2(\beta)$ for the OLS fits of the Franke function, shown in \fig{3}. Pair wise columns represent $\beta$ and $\sigma^2(\beta)$ for each polynomial degree $p$ used. Each row shows the $\beta_j$ coefficient and $\sigma^2(\beta)$ for the corresponding monomial${}_j$ term. \label{tab:1}}
 \end{table*}
-
-
-
 \begin{figure*}[p]
 \vspace{-50pt}
 \centering
@@ -466,6 +479,14 @@ $y^5$     &          &         &          &         &           &         & -16.
 \subfloat[$p=5$]{\includegraphics[width=0.4\linewidth]{OLS5_diff.png}}
 \captionof{figure}{The absolute difference between the ordinary least squares fits of \fig{3} and the true data, the Franke function. Polynomials of degree $2$, $3$, $4$, and $5$ have been used in the fitting. The $p$ parameter indicates what order of polynomials are used. \label{fig:4}}
 \end{figure*}
+Our first tests comprise simple OLS fitting of the Franke function described in section \ref{sect:franke}. We perform the fits using the scheme described in section \ref{sect:OLS}. Basic testing is done automatically using the \texttt{pytest} unit test framework.\footnote{All tests can be run automatically by calling \texttt{pytest -v} from anywhere within the Github respository} These ensure e.g.\ that the fits performed by the manual matrix inversion are identical to the ones performed automatically by sci-kit learn, that intercepts and polynomial coefficients are fitted correctly when the underlying functional form is itself a polynomial of known order, etc. In addition to the small scale automatic testing, we perform more thorough, extensive testing on the results of the fittings. First off we visualize and compare the performed OLS fits to the underlying Franke function. These are shown in \fig{3} (the Franke function, for reference, is shown in \fig{1}). We note that, as expected, higher degree polynomials appear to recreate the underlying exponentials better than lower degree polynomials. 
+
+The fact that higher order polynomials are better able to reproduce the Franke function is in itself not surprising. Remember that Franke formed his function from a sum of exponentials. The power series expansion of this function is thus just a sum over all possible monomials in $x$ and $y$ with prefactors proportional to $1/n!$. 
+
+The resampling scheme described in section \ref{sect:resampling}, we compute the variance of the computed $\beta$coefficients. These are shown in \tab{1} for all the different polynomial degrees used, ranging from $p=2$ to $p=5$. We note that increasing the polynomial degrees apparently tends to increase the variance of the computed $\beta$ coefficients. This is in line with the statement of the bias-variance tradeoff: Higher model complexity leads to an increased sensitivity to small fluctuations in the training set, and the variance goes up. 
+
+The absolute difference between the fitted models and the Franke function is shown in \fig{4}. We note that the magnitude of the error decreases as the polynomial order increases, but the error for higher order polynomial fits exhibit faster oscillating behaviour. 
+
 
 
 \subsection{Terrain data parametrization}

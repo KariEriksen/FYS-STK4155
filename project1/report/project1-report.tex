@@ -374,6 +374,48 @@ The first principal component direction has the property that $\mathbf{z}_1=\mat
 
 In essence, the first principal component represent the direction in $\text{Col}\,\mathbf{X}$ in which the variance is highest, the second principal component represents the corresponding direction in which the variance is highest, apart from the first, and so on. It is clear that the Ridge regression scheme simply rotates the OLS solution into the principal components of the design matrix, and then shrinks the coefficients corresponding to low-variance components. 
 
+\subsection{Assessing model accuracy}
+The goal in machine learning is to use a chosen model to make predictions. In particular, we need to quantify how close 
+a predicted response value for a given observation is to the true response value.
+In the regression setting, a common measure is the \textit{mean squared error} (MSE), given by 
+\begin{equation}
+ \text{MSE} = \frac{1}{n} \sum_{i=1}^n \left( y_i - \hat{f}(x_i) \right)^2,
+\end{equation}
+where $\hat{f}(x_i)$ is the prediction for the ith observation $y_i$. Computing the MSE on the training set result in what we 
+could call the training MSE and gives a measure of how well the model fits the training data. However, we are mainly interested 
+in how good predictions are on previously unseen data.
+
+Suppose that we have set of test data, $\{x_i,y_i\}$, which is not used during training. Then we could compute the MSE on 
+the test set, giving a measure on how well the method works on unseen data. We would like to select the method which has 
+the lowest test MSE. 
+
+The challenge now is how do we estimate the test MSE? Of course, if test data are available we just compute. The problem is  
+that test data are not available in general. So if do not have test data at hand, a natural approach seems to choose 
+the method that minimizes the training MSE. However, there is no guarantee that low training MSE results in the lowest test MSE. 
+As an extreme example suppose you draw a curve that passes through every point in a data set, this would result in perfect train 
+MSE. If you try to use this model on another data set where I move one datapoint significantly it would result in a high test MSE.
+
+One can show that the expected test MSE, for a given value $x_0$, can always be decomposed as 
+\begin{equation}
+ E[(y_0 - \hat{f}(x_0))]^2 = \text{Var}(\hat{f}(x_0)) + [\text{Bias}(\hat{f}(x_0))]^2 + \text{Var}(\epsilon) \label{BiasVarTradeOff}.
+\end{equation}
+Here $E[(y_0 - \hat{f}(x_0))]^2$ defines the expected test MSE, and refers
+to the average test MSE that we would obtain if we repeatedly estimated $f$ using a large number of training sets, 
+and tested each at $x_0$. 
+
+The variance, $\text{Var}(\hat{f}(x_0))$, measures how much $\hat{f}$ would change if we trained the 
+model on a different data set. Ideally $\hat{f}$ should not vary to much between training sets. Generally more flexible methods 
+have higher variance, which can give large deviations in $\hat{f}$ when changes in the training set is small.
+
+Bias measures the the error introduced by assuming for example a linear relationship between the response $\mathbf{y}$ and the 
+predictors $\mathbf{X}$. Thus, if the true relation is non-linear this will result in bias. In particular, if the data is highly 
+non-linear it would be impossible to produce accurate estimates by assuming a linear relationship between the response and predictors.
+Generally more flexible methods will have less bias. 
+
+Equation \ref{BiasVarTradeOff} suggests that we want both low variance and low bias in order to minimize the expected 
+test error. The above discussion implies that these are conflicting interests. 
+
+
 \subsection{Resampling and the \textit{Bootstrap} method \label{sect:resampling}}
 \lipsum[3]
 

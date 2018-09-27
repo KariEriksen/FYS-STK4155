@@ -421,11 +421,32 @@ non-linear it would be impossible to produce accurate estimates by assuming a li
 Generally more flexible methods will have less bias. 
 
 Equation \ref{BiasVarTradeOff} suggests that we want both low variance and low bias in order to minimize the expected 
-test error. The above discussion implies that these are conflicting interests. 
+test error. The above discussion implies that these are conflicting interests, in the sense that increasing flexibility of a model 
+reduces bias, but increases variance. This phenomena is referred to as the \textit{bias-variance trade-off}.
 
+In practice, with test data unavailable, it is generally not possible to compute the test MSE, bias or variance for a specific 
+method. Thus we need tools to estimate the test MSE (or other quantities of interest) from training data. Two such methods are 
+cross-validation and the \textit{bootstrap}, which belongs to a class of methods called \textit{resampling} methods.
 
-\subsection{Resampling and the \textit{Bootstrap} method \label{sect:resampling}}
-\lipsum[3]
+\subsection{Resampling methods \label{sect:resampling}}
+Resampling methods is an important tool in statistics. The idea is to repeatedly draw samples from a training set and refit 
+the model on each sample in order to gain additional information about the fitted model.
+
+One drawback of resampling methods is that they can be computationally expensive, since they have to fit the same model 
+multiple times using different subsets of the training data. In particular, if there is a large number of samples or if 
+each instance of training is expensive this can be time consuming. However, the computational requirement of resampling methods 
+are in general not prohibitive. Two of the most commonly used resampling methods are cross-validation and 
+the \textit{bootstrap}.
+
+Cross-validation can be used to estimate the test error in order to assess the performance of a particular model, or to select 
+the suitable level of flexibility. Evaluating a model's performance is known as \textit{model assessment}, while selecting the 
+proper level of flexibility for a model is known as \textit{model selection}. The bootstrap is commonly used to provide 
+a measure of accuracy of a parameter estimate.
+
+\subsection{Cross-validation}
+\lipsum[4]
+\subsection{The \textit{bootstrap}}
+\lipsum[2]
 
 \section{Data sets}
 We are chiefly interested in parametrizing digital terrain data. However, in order to test and validate our implementation of the regression model and the resampling technique, we employ the Franke function\autocite{franke1979critical} as a test case before considering real data.

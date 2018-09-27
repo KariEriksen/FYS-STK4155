@@ -15,7 +15,6 @@
 \usepackage{enumerate}                       % Change counters (arabic, roman, etc.).
 \usepackage{floatrow}                        % Multi-figure floats.
 \usepackage{subfig}                          % Multi-figure floats.
-\usepackage[tableposition=top]{caption}      % Adds functionality to captions.
 \usepackage{bm}                              % Bolded text in math mode.
 \usepackage[framemethod=default]{mdframed}   % Make boxes.
 \usepackage{listings}                        % For including source code.
@@ -32,6 +31,12 @@
 \usepackage{booktabs}                        % \toprule, \midrule, etc. for tables.
 \usepackage{siunitx}                         % Allows S table column, aligning on decimal point.
 \usepackage{chngcntr}                        % Change counter behaviour, supress increment of sub counters.
+\usepackage[%                                % Adds functionality to captions.
+  tableposition = top,
+  labelsep      = period,
+  justification = raggedright,
+  format        = hang,
+  ]{caption}                                 
 \usepackage[%                                % Interactive references and links, colored.
   colorlinks  = true,
   linkcolor   = black,
@@ -63,6 +68,9 @@
 \newcommand{\inlinepy}[1]{\lstinline[language={python}]{#1}}
 \newcommand{\inlinecc}[1]{\lstinline[language={c++}]{#1}}
 \counterwithout*{subsection}{section}               % Dont reset the subsection counter on new \section{} calls.
+\renewcommand{\figurename}{FIG.}                    % Captions of figures read FIG.
+\renewcommand{\tablename}{TABLE}                    % Captions of tables read TABLE 
+\renewcommand{\thetable}{\Roman{table}}             % Number tables with roman numerals.
 
 % Section headings settings -------------------------------------------------- %
 \titleformat{\section}[hang]  % {command}[shape]
@@ -483,7 +491,13 @@ Our first tests comprise simple OLS fitting of the Franke function described in 
 
 The fact that higher order polynomials are better able to reproduce the Franke function is in itself not surprising. Remember that Franke formed his function from a sum of exponentials. The power series expansion of this function is thus just a sum over all possible monomials in $x$ and $y$ with prefactors proportional to $1/n!$. 
 
-The resampling scheme described in section \ref{sect:resampling}, we compute the variance of the computed $\beta$coefficients. These are shown in \tab{1} for all the different polynomial degrees used, ranging from $p=2$ to $p=5$. We note that increasing the polynomial degrees apparently tends to increase the variance of the computed $\beta$ coefficients. This is in line with the statement of the bias-variance tradeoff: Higher model complexity leads to an increased sensitivity to small fluctuations in the training set, and the variance goes up. 
+The resampling scheme described in section \ref{sect:resampling}, we compute the variance of the computed $\beta$coefficients. These are shown in \tab{1} for all the different polynomial degrees used, ranging from $p=2$ to $p=5$. We note that increasing the polynomial degrees apparently tends to increase the variance of the computed $\beta$ coefficients. This is in line with the statement of the bias-variance tradeoff: Higher model complexity leads to an increased sensitivity to small fluctuations in the training set, and the variance goes up. This is illustrated in \fig{5}, where the mean values of the variances of all $\beta$ parameters corresponding to a total monomial degree is plotted for each model. 
+
+\begin{Figure}
+\centering
+\includegraphics[width=\linewidth]{beta_variance_OLS.png}
+\captionof{figure}{Mean values of the variances of the $\beta$ coefficients resulting from OLS fitting, e.g.\ $\text{mean} \sigma^2(\beta_2)$ is the mean of all $\beta$s corresponding to monomials of total degree two, i.e. $\beta_{x^2}$, $\beta_{xy}$, and $\beta_{y^2}$. We note that as the overall complexity of the model increases (increasing $p$), the variance of each family of $\beta$s tends to increase. \label{fig:5}}
+\end{Figure}
 
 The absolute difference between the fitted models and the Franke function is shown in \fig{4}. We note that the magnitude of the error decreases as the polynomial order increases, but the error for higher order polynomial fits exhibit faster oscillating behaviour. 
 

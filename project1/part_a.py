@@ -105,12 +105,88 @@ def part_a(plotting=False) :
             #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'OLS'+str(degree)+'_diff.png'), transparent=True, bbox_inches='tight')
             plt.show()
 
-    print("\nMSE :")
-    print(MSE_degree)
-    print("\nR2 :")
-    print(R2_degree)
-    print("\nσ²(β) :")
-    print(betaVariance_degree)
+            print("\nMSE :")
+            print(MSE_degree)
+            print("\nR2 :")
+            print(R2_degree)
+            print("\nσ²(β) :")
+            print(betaVariance_degree)
+
+    return MSE_degree, R2_degree, betaVariance_degree
+
+def plot_betaVariance() :
+    MSE, R2, var = part_a()
+    fig = plt.figure()
+    ax = fig.gca()
+
+    colors = [  
+                'r-o',
+                'b-o',
+                'g-o',
+                'k-o',
+                'y-o',
+                'c-o'
+            ]
+    var = [None, None, *var]
+    for i in var : 
+        print(i)
+    print(" ")
+
+
+    plot_var = [None for i in range(6)]
+    for k in range(2,5+1) : # polynomial degree
+        plot_var[k]   = [None for i in range(k+1)]
+        
+        plot_var[k][0] = var[k][0]
+        plot_var[k][1] = np.mean(var[k][1:3])
+        
+        for d in range(2,k+1) : # monomials in this degree
+            n  = int(round(d*(d+3)/2))
+            nn = int(round((d-1)*((d-1)+3)/2))
+            N = n-nn
+            #print(n,nn,N)
+
+            plot_var[k][d] = np.mean(var[k][nn+1:n+1])
+            #print(var[k][nn+1:n+1])
+    """
+    """
+    print(" ")
+    plot_var = plot_var[2:]
+    print(plot_var)
+    print(" ")
+    for i in plot_var : print(i)
+    print(" ")
+    print(plot_var[:][1])
+    
+    b0 = [plot_var[0][0], plot_var[1][0], plot_var[2][0], plot_var[3][0]]
+    b1 = [plot_var[0][1], plot_var[1][1], plot_var[2][1], plot_var[3][1]]
+    b2 = [plot_var[0][2], plot_var[1][2], plot_var[2][2], plot_var[3][2]]
+    b3 = [                plot_var[1][3], plot_var[2][3], plot_var[3][3]]
+    b4 = [                                plot_var[2][4], plot_var[3][4]]
+    b5 = [                                                plot_var[3][5]]
+
+    plt.semilogy(range(2,6), b0, colors[0], markersize=3)
+    plt.semilogy(range(2,6), b1, colors[1], markersize=3)
+    plt.semilogy(range(2,6), b2, colors[2], markersize=3)
+    plt.semilogy(range(3,6), b3, colors[3], markersize=3)
+    plt.semilogy(range(4,6), b4, colors[4], markersize=3)
+    plt.semilogy(range(5,6), b5, colors[5], markersize=3)
+    
+    plt.rc('text', usetex=True)
+    #plt.rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+    ## for Palatino and other serif fonts use:
+    #plt.rc('font',**{'family':'serif','serif':['Palatino']})    plt.xlabel(r"$p$", fontsize=16)
+    plt.xlabel(r"$p$", fontsize=10)
+    plt.ylabel(r"mean $ \sigma^2(\beta_{p})$", fontsize=10)
+    plt.legend([r"intercept", r"$\beta_0$", r"$\beta_1$", r"$\beta_2$", r"$\beta_3$", r"$\beta_4$", r"$\beta_5$"], fontsize=10)
+
+    plt.subplots_adjust(left=0.2,bottom=0.2)
+    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'beta_variance_OLS.png'), transparent=True, bbox_inches='tight')
+    plt.show()
+
+
+    #ax.plot()
+
 
 
 def plot_terrain(file_number=1) :
@@ -143,7 +219,8 @@ def plot_terrain(file_number=1) :
 
 
 if __name__ == '__main__':
-    part_a(plotting=True)
+    #part_a(plotting=True)
+    plot_betaVariance()
     #plot_terrain()
 
 

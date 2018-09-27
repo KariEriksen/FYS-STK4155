@@ -413,8 +413,12 @@ non-linear it would be impossible to produce accurate estimates by assuming a li
 Generally more flexible methods will have less bias. 
 
 Equation \ref{BiasVarTradeOff} suggests that we want both low variance and low bias in order to minimize the expected 
-test error. The above discussion implies that these are conflicting interests. 
+test error. The above discussion implies that these are conflicting interests, in the sense that increasing flexibility of a model 
+reduces bias, but increases variance. This phenomena is referred to as the \textit{bias-variance trade-off}.
 
+In practice, with test data unavailable, it is generally not possible to compute the test MSE, bias or variance for a specific 
+method. Thus we need tools to estimate the test MSE (or other quantities of interest) from training data. Two such methods are 
+cross-validation and the \textit{bootstrap}, which belongs to a class of methods called \textit{resampling} methods.
 
 \subsection{Resampling and the \textit{Bootstrap} method \label{sect:resampling}}
 \lipsum[3]

@@ -255,7 +255,7 @@ class LeastSquares :
         self.beta[0] = self.regression.intercept_
 
 
-    def predict(self) :
+    def predict(self, X=None) :
         """Calculates the prediction of the linear model based on the input data after having performed a fit
 
         Performs the computation of the prediction of the optimized linear model
@@ -276,6 +276,9 @@ class LeastSquares :
             user that getting a prediction out of the model before the fit is 
             done does not make much sense.
         """
+        if X is not None :
+            self.X
+            
         if self._checkFitDoneAndManualBackend() :
             self._manualPredict()
         else :

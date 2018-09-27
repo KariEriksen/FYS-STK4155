@@ -382,7 +382,7 @@ The first principal component direction has the property that $\mathbf{z}_1=\mat
 
 In essence, the first principal component represent the direction in $\text{Col}\,\mathbf{X}$ in which the variance is highest, the second principal component represents the corresponding direction in which the variance is highest, apart from the first, and so on. It is clear that the Ridge regression scheme simply rotates the OLS solution into the principal components of the design matrix, and then shrinks the coefficients corresponding to low-variance components. 
 
-\subsection{Assessing model accuracy}
+\subsection{Assessing model accuracy \label{sect:accuracy}}
 The goal in machine learning is to use a chosen model to make predictions. In particular, we need to quantify how close 
 a predicted response value for a given observation is to the true response value.
 In the regression setting, a common measure is the \textit{mean squared error} (MSE), given by 

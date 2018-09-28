@@ -274,43 +274,51 @@ def plot_terrain(file_number=1) :
 
 
 def fit_franke_noise() :
+
+    R2           = []
+    MSE          = []
+
     R2_noise           = []
     MSE_noise          = []
     beta_noise         = []
     betaVariance_noise = []
 
-    noise = np.linspace(1e-2,1,25)
-    k = 5
+    noise = np.logspace(-4,0,50)
+    k = 1
+
+    @jit(nopython=True, cache=True)
+    def computeFrankeValues(x_data, y) :    
+        N = x_data.shape[0]
+        for i in range(N) :
+            y[i] = franke(x_data[i,0], x_data[i,1])
     
     for eta in noise :
-        designMatrix = DesignMatrix('polynomial2D', 2)
+        designMatrix = DesignMatrix('polynomial2D', 10)
         leastSquares = LeastSquares(backend='manual')
         bootstrap    = Bootstrap(leastSquares, designMatrix)
 
-        N = int(1e4)
+        N = int(1e5)
         x = np.random.rand(N)
         y = np.random.rand(N)
         x_data = np.zeros(shape=(N,2))
         x_data[:,0] = x
         x_data[:,1] = y
         y_data = np.zeros(shape=(N))
-
-        @jit(nopython=True, cache=True)
-        def computeFrankeValues(x_data, y) :    
-            N = x_data.shape[0]
-            for i in range(N) :
-                y[i] = franke(x_data[i,0], x_data[i,1])
-
         computeFrankeValues(x_data, y_data)
-        y_data += eta * np.random.standard_normal(size=N)
+        y_data_noise = y_data +  eta * np.random.standard_normal(size=N)
 
-        bootstrap.resample(x_data, y_data, k)
+        bootstrap.resample(x_data, y_data_noise, k)
         
+
         MSE_noise.         append(leastSquares.MSE())
         R2_noise.          append(leastSquares.R2())
         beta_noise.        append(bootstrap.beta)
         betaVariance_noise.append(bootstrap.betaVariance)
 
+        leastSquares.y = y_data
+        MSE.append(leastSquares.MSE())
+        R2. append(leastSquares.R2())
+    """
     betaVariance_noise = np.array(betaVariance_noise)
     for beta in betaVariance_noise :
         print(beta)
@@ -319,7 +327,8 @@ def fit_franke_noise() :
               '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
               '#bcbd22', '#17becf']
     for i in range(6) :
-        plt.semilogx(noise, betaVariance_noise[:,i], colors[i]+'-o', markersize=2)
+        plt.loglog(noise, betaVariance_noise[:,i], colors[i]+'-o', markersize=2)
+        
     
     plt.rc('text', usetex=True)
     #plt.rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
@@ -335,7 +344,29 @@ def fit_franke_noise() :
                 r"$\beta_{y^2}$"], fontsize=10)
 
     plt.subplots_adjust(left=0.2,bottom=0.2)
-    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'beta_variance_OLS_noise.png'), transparent=True, bbox_inches='tight')
+    #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'beta_variance_OLS_noise.png'), transparent=True, bbox_inches='tight')
+    #plt.show()
+
+    """
+    print(R2_noise)
+    print(1-np.array(R2_noise))
+    fig, ax1 = plt.subplots()
+    ax1.loglog(noise, 1-np.array(R2_noise),'r-o',markersize=2)
+    ax1.loglog(noise, 1-np.array(R2),'r--',markersize=2)
+    plt.xlabel(r"noise scale $\eta$", fontsize=10)
+    plt.ylabel(r"$1-R^2$", color='r', fontsize=10)
+
+    ax2 = ax1.twinx()
+    ax2.loglog(noise, np.array(MSE_noise), 'b-o',markersize=2)
+    ax2.loglog(noise, np.array(MSE), 'b--',markersize=2)
+    plt.ylabel(r"MSE", color='b', fontsize=10)
+    plt.subplots_adjust(left=0.2,bottom=0.2,right=0.9)
+
+    ax1.set_ylim([0.95*min(min(MSE_noise), min(R2_noise)), 1.05*(max(max(MSE_noise), max(R2_noise)))])
+    ax2.set_ylim([0.95*min(min(MSE_noise), min(R2_noise)), 1.05*(max(max(MSE_noise), max(R2_noise)))])
+    ax2.get_yaxis().set_ticks([])
+    
+    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'R2MSE_OLS_noise.png'), transparent=True, bbox_inches='tight')
     plt.show()
 
 

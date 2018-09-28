@@ -588,7 +588,7 @@ where $\mathcal{N}(\mu,\sigma)$ is normally distributed stochastic noise with me
 
 The variance increases as the noise overlying the Franke function increases. This is not unexpected, but it may be more interested to investigate how well the OLS model is able to fit the underlying function when the noise is included in the fitting. In order to visualize this, we plot $R^2$ and the mean squared error as functions of the noise scale factor $\eta$, \textit{and} the corresponding $R^2$ and MSE values \textit{relative to the plain Franke function with no noise}. For convenience we denote the $R^2$ score and the MSE values relative to the Franke function with no noise $R^2_{\eta=0}$ and MSE$_{\eta=0}$.
 
-If the model is able to fit the underlying function despite the noise, then the values of $1-R^2_{\eta=0}$ and MSE${}_{\eta=0}$ will remain low even as $1-R^2$ and the MSE relative to the noisy Franke function increases. Once $1-R^2_{\eta=0}$ and MSE${}_{\eta=0}$ start increasing, it means the noise is too much for the OLS scheme to handle and the fit is no longer representative of the underlying function. An example of this is shown in \fig{8}, where a $p=10$ order polynomial was used to fit for different $\eta$ values. We note that the dotted lines ($1-R^2_{\eta=0}$ and MSE${}_{\eta=0}$) remain essentially unchanged up to $\eta\approx 0.1$, meaning a signal to noise ratio of $\propto10$ is easily handled by our model. As $\eta$ increases further, the fit to the underlying Franke function becomes poorer, but surprisingly at $\eta=1$\textemdash at which the size of the noise is on the order of the size of the function itself\textemdash the model still represents a good fit to $f_\text{F}(x,y)$ at MSE$\approx10^{-3}$. Comparing to \fig{6} we see that this is close to the MSE of $p=6$ degree fit with $\eta=0$. 
+If the model is able to fit the underlying function despite the noise, then the values of $1-R^2_{\eta=0}$ and MSE${}_{\eta=0}$ will remain low even as $1-R^2$ and the MSE relative to the noisy Franke function increases. Once $1-R^2_{\eta=0}$ and MSE${}_{\eta=0}$ start increasing, it means the noise is too much for the OLS scheme to handle and the fit is no longer representative of the underlying function. An example of this is shown in \fig{8}, where a $p=10$ order polynomial was used to fit for different $\eta$ values. We note that the dotted lines ($1-R^2_{\eta=0}$ and MSE${}_{\eta=0}$) remain essentially unchanged up to $\eta\approx 0.1$, meaning a signal to noise ratio of $\propto10$ is easily handled by our model. As $\eta$ increases further, the fit to the underlying Franke function becomes poorer, but surprisingly at $\eta=1$\textemdash at which the size of the noise is on the order of the size of the function itself\textemdash the model still represents a good fit to $f_\text{F}(x,y)$ at MSE$\approx10^{-3}$. Comparing to \fig{6} we see that this is close to the MSE of $p=6$ degree fit with $\eta=0$.
 
 \begin{Figure}
 \centering
@@ -599,7 +599,7 @@ If the model is able to fit the underlying function despite the noise, then the 
 
 
 \subsubsection{Ridge regression on the Franke function}
-
+Having investigated the behaviour of the OLS scheme in some detail, we now turn to the Ridge regression method. Since this introduces a shrinkage parameter $\lambda$ it is natural to start with exploring how the MSE and the coefficient of determination depends on it.
 
 
 

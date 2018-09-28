@@ -351,10 +351,10 @@ def fit_franke_noise() :
     print(R2_noise)
     print(1-np.array(R2_noise))
     fig, ax1 = plt.subplots()
-    ax1.loglog(noise, 1-np.array(R2_noise),'r-o',markersize=2)
-    ax1.loglog(noise, 1-np.array(R2),'r--',markersize=2)
+    ax1.loglog(noise, 1-np.array(R2_noise),'k-o',markersize=2)
+    ax1.loglog(noise, 1-np.array(R2),'k--',markersize=2)
     plt.xlabel(r"noise scale $\eta$", fontsize=10)
-    plt.ylabel(r"$1-R^2$", color='r', fontsize=10)
+    plt.ylabel(r"$1-R^2$", color='k', fontsize=10)
 
     ax2 = ax1.twinx()
     ax2.loglog(noise, np.array(MSE_noise), 'b-o',markersize=2)
@@ -376,7 +376,8 @@ if __name__ == '__main__':
     #plot_betaVariance()
     #plot_terrain()
     #plot_MSE_R2()
-    fit_franke_noise()
+    #fit_franke_noise()
+    
 
 
 

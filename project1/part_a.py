@@ -188,6 +188,55 @@ def plot_betaVariance() :
     #ax.plot()
 
 
+def plot_MSE_R2() :
+    leastSquares = LeastSquares(backend='manual')
+
+    N = int(1e4)
+    x = np.random.rand(N)
+    y = np.random.rand(N)
+    x_data = np.zeros(shape=(N,2))
+    x_data[:,0] = x
+    x_data[:,1] = y
+    y_data = np.zeros(shape=(N))
+
+    @jit(nopython=True, cache=True)
+    def computeFrankeValues(x_data, y) :    
+        N = x_data.shape[0]
+        for i in range(N) :
+            y[i] = franke(x_data[i,0], x_data[i,1])
+
+    computeFrankeValues(x_data, y_data)
+
+    p_max = 10
+    p   = [i for i in range(2, p_max+1)]
+    R2  = [None for i in range(2, p_max+1)]
+    MSE = [None for i in range(2, p_max+1)]
+
+    for degree in p :
+        designMatrix = DesignMatrix('polynomial2D', degree)
+        X = designMatrix.getMatrix(x_data) 
+        leastSquares.fit(X, y_data)
+        _ = leastSquares.predict()
+
+        R2[degree-2] = leastSquares.R2()
+        MSE[degree-2] = leastSquares.MSE()
+
+        print(R2[degree-2])
+        print(MSE[degree-2])
+
+    plt.semilogy(p, 1-np.array(R2))
+    plt.rc('text', usetex=True)
+    #plt.rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+    ## for Palatino and other serif fonts use:
+    #plt.rc('font',**{'family':'serif','serif':['Palatino']})    plt.xlabel(r"$p$", fontsize=16)
+    plt.xlabel(r"$p$", fontsize=10)
+    plt.ylabel(r"$1-(R^2$ score$)$", fontsize=10)
+    plt.subplots_adjust(left=0.2,bottom=0.2)
+    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'OLS_R2.png'), transparent=True, bbox_inches='tight')
+    plt.show()
+
+
+
 
 def plot_terrain(file_number=1) :
     fileName = os.path.join(os.path.dirname(__file__),  
@@ -220,8 +269,9 @@ def plot_terrain(file_number=1) :
 
 if __name__ == '__main__':
     #part_a(plotting=True)
-    plot_betaVariance()
+    #plot_betaVariance()
     #plot_terrain()
+    plot_MSE_R2()
 
 
 

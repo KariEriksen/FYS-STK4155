@@ -564,7 +564,21 @@ The resampling scheme described in section \ref{sect:resampling}, we compute the
 
 The absolute difference between the fitted models and the Franke function is shown in \fig{4}. We note that the magnitude of the error decreases as the polynomial order increases, but the error for higher order polynomial fits exhibit faster oscillating behaviour. 
 
+The mean squared error, introduced in section \ref{sect:accuracy} gives a measure of the accuracy of each model in a single number, the expectation value of the squared difference between each model prediction and the true underlying function value at each data point. We compute the MSE and the \textit{coefficient of determination}, the $R^2$ score, as a function of the polynomial degrees used. This is shown in \fig{6} (note that $1-R^2$ is shown, not $R^2$ itself). As expected, both decrease as model complexity increases. We note that the MSE and the $R^2$ score are approximately proportional to $\propto 10^{-p/4}$ in the range plotted here.
 
+\subsubsection{Noisy Franke function}
+The next step in our validation scheme is to investigate how our OLS handles normally distributed noise added to the underlying functional values. Instead of $f_\text{F}(x,y)$ as we have fitted against previously, we now consider
+\begin{align}
+\tilde{f}_\text{F}(x,y) &= f_\text{F}(x,y) + \mathcal{N}(0,1),
+\end{align}
+where $\mathcal{N}(\mu,\sigma)$ is normally distributed stochastic noise with mean $\mu=0$ and variance and standard deviation $\sigma=\sigma^2=1$.
+
+\begin{figure*}
+\centering
+\includegraphics[width=0.49\linewidth]{OLS_R2.png}
+\includegraphics[width=0.49\linewidth]{OLS_MSE.png}
+\captionof{figure}{Mean squared error and coefficient of determination, $R^2$, for the ordinary least squares fits on the Franke function. The parameter $p$ indicates the order of polynomials used in the fitting. \label{fig:6}}
+\end{figure*}
 
 \subsection{Terrain data parametrization}
 \lipsum[3]

@@ -224,18 +224,27 @@ def plot_MSE_R2() :
         print(R2[degree-2])
         print(MSE[degree-2])
 
-    plt.semilogy(p, 1-np.array(R2))
+    p = np.array(p)
+
+    plt.semilogy(p, 1-np.array(R2),'r-')
     plt.rc('text', usetex=True)
-    #plt.rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-    ## for Palatino and other serif fonts use:
-    #plt.rc('font',**{'family':'serif','serif':['Palatino']})    plt.xlabel(r"$p$", fontsize=16)
     plt.xlabel(r"$p$", fontsize=10)
     plt.ylabel(r"$1-(R^2$ score$)$", fontsize=10)
     plt.subplots_adjust(left=0.2,bottom=0.2)
-    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'OLS_R2.png'), transparent=True, bbox_inches='tight')
+    #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'OLS_R2.png'), transparent=True, bbox_inches='tight')
+    #plt.show()
+
+    plt.figure()
+    ax = plt.gca()
+    plt.semilogy(p, MSE)
+    #plt.semilogy(p, 10.0**(-0.25*p), 'k-')
+
+    plt.rc('text', usetex=True)
+    plt.xlabel(r"$p$", fontsize=10)
+    plt.ylabel(r"MSE", fontsize=10)
+    plt.subplots_adjust(left=0.2,bottom=0.2)
+    #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'OLS_MSE.png'), transparent=True, bbox_inches='tight')
     plt.show()
-
-
 
 
 def plot_terrain(file_number=1) :

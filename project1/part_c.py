@@ -60,16 +60,16 @@ def part_c() :
         MSE_noise = []
 
         for eta in noise :
-            designMatrix = DesignMatrix('polynomial2D', 10)
+            designMatrix = DesignMatrix('polynomial2D', 8)
             if ind == 0 :
-                leastSquares = LeastSquares(backend='skl', method='ols')
+                leastSquares = LeastSquares(backend='manual', method='ols')
             else :
                 leastSquares = LeastSquares(backend='skl', method='lasso')
             
             leastSquares.setLambda(lambda_)
             bootstrap    = Bootstrap(leastSquares, designMatrix)
 
-            N = int(1e4)
+            N = int(1e3)
             x = np.random.rand(N)
             y = np.random.rand(N)
             x_data = np.zeros(shape=(N,2))
@@ -108,13 +108,13 @@ def part_c() :
     plt.show()
 
 
-def plot_beta_ridge() :
+def plot_beta_lasso() :
     beta = []
     betaVariance = []
     MSE = []
     R2 = []
 
-    k = 10000
+    k = 100
     fig, ax1 = plt.subplots()
     plt.rc('text', usetex=True)
 
@@ -128,13 +128,13 @@ def plot_beta_ridge() :
 
 
     ind = -1
-    lam = np.logspace(-3, 5, 20)
+    lam = np.logspace(-4, 1, 20)
 
     for lambda_ in lam :
         if ind == 0 :
             leastSquares = LeastSquares(backend='manual', method='ols')
         else : 
-            leastSquares = LeastSquares(backend='manual', method='ridge')
+            leastSquares = LeastSquares(backend='manual', method='lasso')
 
         designMatrix = DesignMatrix('polynomial2D', 3)
         bootstrap    = Bootstrap(leastSquares, designMatrix)
@@ -200,7 +200,7 @@ def plot_beta_ridge() :
     plt.legend(fontsize=8)
 
     for i in range(10) :
-        plt.errorbar(1e-3, beta[0,i], 
+        plt.errorbar(1e-4, beta[0,i], 
                             yerr=2*betaVariance[0,i], 
                             fmt='-o',
                             markersize=2,
@@ -211,15 +211,15 @@ def plot_beta_ridge() :
                             capthick=0.5)
 
     fig.gca().set_xscale('log')
-    #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'beta_ridge.png'), transparent=True, bbox_inches='tight')
+    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'beta_lasso.png'), transparent=True, bbox_inches='tight')
 
     plt.show()
 
     
 
 if __name__ == '__main__':
-    part_c()
-    #plot_beta_ridge()
+    #part_c()
+    plot_beta_lasso()
     
 
 

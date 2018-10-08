@@ -142,7 +142,7 @@
 \maketitle
 
 \begin{abstract}
-We parameterize digital terrain data using linear regression analysis algorithms: Ordinary least squares (OLS), Ridge regression, and Lasso regression. The bootstrap resampling technique is used to gauge the bias and variance of the models. We use basis sets of homogeneous monomials in two variables, up to and including total degree 5. We find that xxxxxx.
+We parameterize digital terrain data using linear regression analysis algorithms: Ordinary least squares (OLS), Ridge regression, and Lasso regression. The bootstrap resampling technique is used to gauge the bias and variance of the models. We use basis sets of homogeneous monomials in two variables, up to and including total degree 5. We find that the ordinary least squares scheme produces the best fit overall, with the Lasso regression method coming in a distand second. Visualizing the bias-variance tradeoff reveals that we are most likely in a region of bias dominated MSE, with the variance having essentially no impact on the mean error. In order for the Ridge and Lasso regularizations to become more effective than the OLS scheme, we postulate that much higher model complexities than those achieved currently are needed (polynomials on the order of $p>20$).
 
 For initial validation of our models, we employ the test function of R.\ Franke\autocite{franke1979critical}.
 \end{abstract}
@@ -154,7 +154,11 @@ For initial validation of our models, we employ the test function of R.\ Franke\
 
 %\begin{multicols}{2}
 \section{Introduction}
-\lipsum[3]
+Linear regression methods are fundamental in the field of statistical modelling. In the simplest variant of regression analysis\textemdash modelling a response dependent on some predictor variables\textemdash a linear ansatz is assumed for the relasionship between response and predictors. The ansatz is linear in the sense of a linear combination of (possibly non-linear) functions of a single predictor. This linearity allows the matrix-vector equations resulting from minimizing the error between the observed data and the predicted model data to be swiftly solved, which is the main advantage of the method (and the main reason why linear regression is extensively used today). 
+
+In the modern society, data is ubiquitous and abundant. However, with an ever increasing volume of data available, drawing sensible conclusions about the relasionships between variables is highly non-trivial. Suppose you were given a complete set of statistics about every school district in Norway: The grade point average (and indeed individual grades) of every single student, the size and composition (in terms of nationalities, gender, height, weight, etc.) of every class, a full description of the teaching load of every teacher, as well as their personal data, educational history, and work history. Such a data set might be readily available, but drawing conclusions from it is not easy. Say e.g.\ that you wanted to know if increasing the number of teachers per pupil would result in overall better grades. Or\textemdash a more complex questions\textemdash what is the most efficient way to increase the overall grades of students? 
+
+Such questions pertaining to relationships between data of varying types are possible to answer using regression analysis, and bound on the statistical significance of the answers are possible to find. In the following, we will consider a much simpler toy problem as a simple introduction to the topic: Fitting a real valued function of two real variables. We will start out by considering the theory behind linear regression.
 
 \section{Theory}
 In the following we briefly introduce the theory underlying the technical aspects of the present work. We begin by considering linear regression in general, and the ordinary least squares (OLS) method.
@@ -408,9 +412,11 @@ As an extreme example suppose you draw a curve that passes through every point i
 MSE. If you try to use this model on another data set where I move one datapoint significantly it would result in a high test MSE.
 
 One can show that the expected test MSE, for a given value $x_0$, can always be decomposed as 
-\begin{equation}
- E[(y_0 - \hat{f}(x_0))]^2 = \text{Var}(\hat{f}(x_0)) + [\text{Bias}(\hat{f}(x_0))]^2 + \text{Var}(\epsilon) \label{BiasVarTradeOff}.
-\end{equation}
+\begin{align}
+ E[(y_0 - \hat{f}(x_0))]^2 &= \text{Var}(\hat{f}(x_0)) + [\text{Bias}(\hat{f}(x_0))]^2 \nonumber \\
+ %
+ & \ \ \ \ \ \ \  \ \ \ \ \ \ \ + \text{Var}(\epsilon) \label{eq:BiasVarTradeOff}.
+\end{align}
 Here $E[(y_0 - \hat{f}(x_0))]^2$ defines the expected test MSE, and refers
 to the average test MSE that we would obtain if we repeatedly estimated $f$ using a large number of training sets, 
 and tested each at $x_0$. 
@@ -424,7 +430,7 @@ predictors $\mathbf{X}$. Thus, if the true relation is non-linear this will resu
 non-linear it would be impossible to produce accurate estimates by assuming a linear relationship between the response and predictors.
 Generally more flexible methods will have less bias. 
 
-Equation \ref{BiasVarTradeOff} suggests that we want both low variance and low bias in order to minimize the expected 
+\eq{BiasVarTradeOff} suggests that we want both low variance and low bias in order to minimize the expected 
 test error. The above discussion implies that these are conflicting interests, in the sense that increasing flexibility of a model 
 reduces bias, but increases variance. This phenomena is referred to as the \textit{bias-variance trade-off}.
 
@@ -479,7 +485,7 @@ A plot of the $f_\text{F}(x,y)$ surface can be seen in \fig{1}.
 \captionof{figure}{The Franke test function plotted for $0\le x,y\le 1$. \label{fig:1}}
 \end{figure}
 
-\subsection{Terrain data}
+\subsection{Terrain data \label{sect:terraindata}}
 The terrain data used is taken from the U.S. Department of the Interior U.S. Geological Survey's (USGS) EarthExplorer\footnote{EarthExplorer website: \url{https://earthexplorer.usgs.gov/}.} website. The USGS stores data from the Shuttle Radar Topography Mission (SRTM) which maps the earth's land surface topology with a resolution of 1 arc-second (about $30\,\text{m}$). We will use SRTM data taken from the EarthExplorer website as the basis for our terrain parametrization.
 
 The specific terrain data we will use in the present project is taken from the Møsvatn Austfjell area in the municipality of Tinn in Telemark county, Norway. A visual representation of the data is shown in \fig{2}. 
@@ -625,18 +631,68 @@ As discussed in section \ref{sect:principal}, the Ridge regression method shrink
 \end{figure}
 
 \subsubsection{Lasso regression on the Franke function}
-Finally, we consider the Lasso regression scheme applied to the Franke function. As with the Ridge method, we first take a look at the MSE as a function of the shrinkage factor $\lambda$. 
+Finally, we consider the Lasso regression scheme applied to the Franke function. As with the Ridge method, we first take a look at the MSE as a function of the shrinkage factor $\lambda$. This is shown in \fig{12}. As with the Ridge regression, we note that no value of $\lambda$ gives better MSE results than OLS.
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth]{MSE_lasso_noise.png}
+\captionof{figure}{The mean squared error as a function of the signal-to-noise ratio $\eta$ for Lasso regression at various different shrinkage values $\lambda$. The OLS result (corresponding to $\lambda=0$) is inset for comparison. A $p=8$ order polynomial was used in these fittings. \label{fig:12}}
+\end{figure}
+
+Whereas Ridge regression is unable to selectively put $\beta_j$ parameters to zero, the Lasso regression can perform variable selection as well as regularization. \fig{13} illustrates this. It is the corresponding Lasso regression version of \fig{10}, showing the evolution of $\beta_j$ as $\lambda$ increases. The same degree $p=3$ basis as was used in the Ridge case is also used in \fig{13}.
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth]{beta_lasso.png}
+\captionof{figure}{The coefficients $\beta_j$ for varying shrinkage parameter $\lambda$ for Lasso regression fitting of the noisy Franke function with noise-to-signal ratio $\eta=1.0$. The error bars represent the confidence intervals for each $\beta_j$, calculated as $\beta_j\pm2\sigma^2(\beta_j)$, where $\sigma^2(\beta_j)$ is the Bootstrap computed variance for each $\beta_j$. Note carefully: The disconnected first point plotted at $\lambda=10^{-4}$ represents the ordinary least squares $\beta_j$s and their confidence intervals. The number of Bootstrap samples used to compute the variance in every case was $k=100$. \label{fig:13}}
+\end{figure}
 
 
-\subsection{Terrain data parametrization}
-\lipsum[3]
+\subsubsection{Bias-variance tradeoff}
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth]{bias_variance_tradeoff_2.png}
+\captionof{figure}{The mean squared error, the bias, and the variance for Ridge regression with $\lambda=1$ on the Franke function with noise scale $\eta=0.3$. The number of Bootstrap samples used to calculate the variance is $k=100$. Note carefully the different axes for the variance (right hand side of the figure). \label{fig:11}}
+\end{figure}
+As discussed in section \ref{sect:accuracy}, increasing the flexibility of the model increases the variance but reduces the bias. Since the expected value of the error\textemdash the MSE\textemdash is the sum of the bias, the varaince, and the irreducible error, there must exist some sweet spot in which the total MSE is minimal. It is customary to plot the MSE, the bias, and the variance in a single plot and observe that as the bias initially decreases as complexity increases, so does the MSE. As complexity increases too much, and the variance begins to dominate the total MSE (overfitting), the error will start to increase. The bias-variance sweetspot is then found somewhere in the middle: The model complexity which minimizes the MSE. For the noisy Franke function we present such a plot in \fig{11}. 
+
+Note that, although the overall shape of the three lines are correct, the variance rises extremely slowly in comparison to the bias (note carefully the different vertical scales). Because of this, it appears that higher complexity is objectively better for the current problem example with the Franke function, up to and including polynomial degrees $p=20$. Since we are computationally restricted to relatively low polynomial degrees in the present work, we are not able to explore regions $p>20$ for which the variance eventually begins to dominate the MSE expression. 
+
+This may be the reason why we find that the OLS scheme is strictly better (in terms of the MSE) than both the Ridge and Lasso methods in the present work: We are simply in a complexity region in which the variance is a non-issue for the MSE as a whole. Essentially, we are too far from overfitting our model, that $L^1$ and $L^2$ regularization (and even the variable selection of Lasso regression) does not benefit us much.
+
+\subsection{Terrain data parametrization \label{sect:terrain_param}}
+We turn now to terrain data parametrization, and use a subsection of the data shown in section \ref{sect:terraindata} and \fig{2}. The raw data set is $3601\times 1801$ points, of which we extract every $60$ points in the first dimension and every $30$ in the second. This results in a training set of size $60\times 60$. For testing purposes, we extract a similar $60\times60$ testing data set by performing the same subsectioning only with indices shifted $30$ points in each direction. This yields $3600$ training points and $3600$ testing points on which to evaluate our models. 
+
+In order to give our models the best possible chance of giving good fits, we prepare the data set by normalizing it and subtracting the minimum value, i.e.\ for every $(x,y)$ point and height $z$ we perform the following assignments:
+\begin{align}
+z \ &\leftarrow \ z-\min_\text{all points}(z) \\
+z \ &\leftarrow \ \frac{z}{\max_\text{all points}(z)} .
+\end{align}
+We consider the $x$ and $y$ coordinates to take values in $(0,1]$ as for the Franke function of section \ref{sect:franke}.
+
+Having already developed and extensively tested our methods, all that remains is simply to apply OLS, Ridge, and Lasso regression to this data set. The resulting fits for $\lambda_\text{R}=10^{-3}$ and $\lambda_\text{L}=10^{-4}$ is shown in \fig{14}. These shrinkage factors are simply used as an example. A comparison of the MSE calculated on the same data set using different values of $\lambda$ is shown in \fig{15}. We note that the OLS scheme is superior all around, with the Lasso method a distant second and the Ridge coming in third. The ordinary scheme produces the best MSE at $\text{MSE}_\text{OLS}\simeq0.00928$.
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth]{lambda_terrain.png}
+\captionof{figure}{The calculated mean squared error for the test data set described in section \ref{sect:terrain_param} for varying values of the shrinkage parameter $\lambda$. The OLS, the Ridge regression, and the Lasso scheme are all shown. \label{fig:15}}
+\end{figure}
+
+
+\begin{figure*}[p]
+\centering
+\subfloat[Test data] {\includegraphics[width=0.5\linewidth]{test_terrain.png}}
+\subfloat[OLS]  {\includegraphics[width=0.5\linewidth]{olsterrain.png}} \\[-20pt]
+\subfloat[Ridge]{\includegraphics[width=0.5\linewidth]{ridgeterrain.png}}
+\subfloat[Lasso]{\includegraphics[width=0.5\linewidth]{lassoterrain.png}}
+\captionof{figure}{Linear regression fits of a subset of the terrain data shown in \fig{2}. A $60\times60$ cutout of the original data is used as training data, while a separate equally large batch of points is used as test data for evaluating the fits. The test data itself is shown in the upper left hand corner. A shrinkage parameter $\lambda=10^{-3}$ is used for the Ridge regression, while $\lambda=10^{-4}$ is used for the Lasso scheme. We note that the OLS fit appears to best approximate the underlying data. This is also corroborated by the MSE calculations, which yields $\text{MSE}_\text{OLS}<\text{MSE}_\text{Ridge}<\text{MSE}_\text{Lasso}$.\label{fig:14}}
+\end{figure*}
+
 
 \section{Conclusion}
-\lipsum[3]
+In the present work we have performed linear regression fits of real-valued functions of two variables. The Franke test function, as well as the terrain data considered in section \ref{sect:terrain_param}, both reveal that the ordinary least squares fits are superior to the regularized Ridge and Lasso fits for the present data sets. We propose that this is because we are in a bias-dominated region of the MSE, where the variance hardly matters at all for the overall error. This means that the variance-reducing regularization schemes do not benefit the MSE calculation much, giving OLS the edge. 
+
 %\end{multicols}
-
-
-\printbibliography[heading=bibintoc]
+\onecolumn{
+\printbibliography
+}
 \end{document}
 
 

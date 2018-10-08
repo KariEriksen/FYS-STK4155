@@ -173,7 +173,7 @@ def part_e(plotting=False) :
             ax.zaxis.set_major_locator(LinearLocator(5))
             ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
             ax.view_init(30, 45+90)
-            plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', method+'terrain.png'), transparent=True, bbox_inches='tight')
+            #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', method+'terrain.png'), transparent=True, bbox_inches='tight')
             plt.show()
     if plotting :
         x = np.linspace(0, 1, 60)
@@ -188,12 +188,86 @@ def part_e(plotting=False) :
         ax.zaxis.set_major_locator(LinearLocator(5))
         ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
         ax.view_init(30, 45+90)
-        plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'test_terrain.png'), transparent=True, bbox_inches='tight')
+        #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'test_terrain.png'), transparent=True, bbox_inches='tight')
         plt.show()
+
+def part_e_2() :
+    x_train, y_train, x_test, y_test = real_data(file_number=2, plotting=False)
+
+    degree = 10
+
+    designMatrix = DesignMatrix('polynomial2D', degree)
+    leastSquares = LeastSquares(backend='manual', method='ols')
+    X = designMatrix.getMatrix(x_train)
+    leastSquares.fit(X,y_train)
+
+    X_test = designMatrix.getMatrix(x_test)
+    leastSquares.predict()
+    leastSquares.y = y_test
+    ols_MSE = leastSquares.MSE()
+    print(ols_MSE)
+    ols_MSE = np.array([ols_MSE, ols_MSE])
+    ols_lambda = np.array([1e-5, 1])
+
+
+    ridge_lambda = np.logspace(-5,0,20)
+    ridge_MSE = []
+    for lambda_ in ridge_lambda : 
+        print("ridge "+ str(lambda_))
+
+        designMatrix = DesignMatrix('polynomial2D', degree)
+        leastSquares = LeastSquares(backend='manual', method='ridge')
+        leastSquares.setLambda(lambda_)
+        
+        X = designMatrix.getMatrix(x_train)
+        leastSquares.fit(X,y_train)
+
+        X_test = designMatrix.getMatrix(x_test)
+        leastSquares.predict()
+        leastSquares.y = y_test
+        ridge_MSE.append(leastSquares.MSE())
+        print(leastSquares.MSE())
+
+    ridge_MSE = np.array(ridge_MSE)
+
+    lasso_lambda = np.logspace(-4,0,20)
+    lasso_MSE = []
+    for lambda_ in lasso_lambda : 
+        print("lasso " + str(lambda_))
+        designMatrix = DesignMatrix('polynomial2D', degree)
+        leastSquares = LeastSquares(backend='manual', method='lasso')
+        leastSquares.setLambda(lambda_)
+        
+        X = designMatrix.getMatrix(x_train)
+        leastSquares.fit(X,y_train)
+
+        X_test = designMatrix.getMatrix(x_test)
+        leastSquares.predict()
+        leastSquares.y = y_test
+        lasso_MSE.append(leastSquares.MSE())
+
+    lasso_MSE = np.array(ridge_MSE)
+    
+    ########################################################
+    plt.rc('text', usetex=True)
+
+    plt.loglog(ols_lambda,   ols_MSE,   'k--o', markersize=1, linewidth=1, label=r'OLS')
+    plt.loglog(ridge_lambda, ridge_MSE, 'r-o', markersize=1, linewidth=1, label=r'Ridge')
+    plt.loglog(lasso_lambda, lasso_MSE, 'b-o', markersize=1, linewidth=1, label=r'Lasso')
+
+    plt.xlabel(r"$\lambda$",  fontsize=10)
+    plt.ylabel(r"MSE",  fontsize=10)
+    #plt.subplots_adjust(left=0.2,bottom=0.2)
+    plt.legend(fontsize=10)
+    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'lambda_terrain.png'), transparent=True, bbox_inches='tight')
+    plt.show()
+
+
 
 
 if __name__ == '__main__':
     #real_data()
     #mesh_test()
-    part_e(plotting=True)
+    #part_e(plotting=True)
+    part_e_2()
 

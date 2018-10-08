@@ -447,10 +447,13 @@ the suitable level of flexibility. Evaluating a model's performance is known as 
 proper level of flexibility for a model is known as \textit{model selection}. The bootstrap is commonly used to provide 
 a measure of accuracy of a parameter estimate.
 
-\subsection{Cross-validation}
-\lipsum[4]
 \subsection{The \textit{bootstrap}}
-\lipsum[2]
+The bootstrap method is a statistical technique for estimating quantities about a population by taking averages 
+over estimates from several small data samples. Samples are constructed by drawing observations from a large 
+data sample -in our case the training set- with replacement. The bootstrap method estimates a quantity of a 
+population by taking small samples repeatedly, calculating the statistic, 
+and taking the average of the calculated statistics. In particular we use the bootstrap to estimate the MSE, bias and variance
+which will give an indication of the appropriate order of complexity for a given model. 
 
 \section{Data sets}
 We are chiefly interested in parametrizing digital terrain data. However, in order to test and validate our implementation of the regression model and the resampling technique, we employ the Franke function\autocite{franke1979critical} as a test case before considering real data.

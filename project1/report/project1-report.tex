@@ -131,7 +131,7 @@
 
 % Title
 \title{{\sc Regression analysis and resampling methods \\ {\large FYS-STK4155: Project 1}}}
-\author{Morten Ledum \& Håkon Kristiansen \\ \faGithub \ {\small \url{github.com/mortele/FYS-STK4155}}}
+\author{Morten Ledum \& Håkon Kristiansen \\ \faGithub \ {\small \href{https://github.com/mortele/FYS-STK4155/tree/master/project1}{github.com/mortele/FYS-STK4155}}}
 % ---------------------------------------------------------------------------- %
 % ---------------------------------------------------------------------------- %
 \begin{document}
@@ -688,6 +688,8 @@ Having already developed and extensively tested our methods, all that remains is
 
 \section{Conclusion}
 In the present work we have performed linear regression fits of real-valued functions of two variables. The Franke test function, as well as the terrain data considered in section \ref{sect:terrain_param}, both reveal that the ordinary least squares fits are superior to the regularized Ridge and Lasso fits for the present data sets. We propose that this is because we are in a bias-dominated region of the MSE, where the variance hardly matters at all for the overall error. This means that the variance-reducing regularization schemes do not benefit the MSE calculation much, giving OLS the edge. 
+
+An alternative explanation may be that we have some errors in our code (or more fundamentally, in our understanding of the subject) which skews our results in favour of the OLS. Being fresh in the field, our confidence is not exactly super high in this regard.
 
 %\end{multicols}
 \onecolumn{

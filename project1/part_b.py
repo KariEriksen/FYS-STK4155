@@ -43,7 +43,7 @@ def part_b() :
     beta_noise         = []
     betaVariance_noise = []
 
-    noise = np.logspace(-4,-1,10)
+    noise = np.logspace(-3,-0.5,50)
     k = 1
     fig, ax1 = plt.subplots()
     plt.rc('text', usetex=True)
@@ -55,7 +55,7 @@ def part_b() :
         for i in range(N) :
             y[i] = franke(x_data[i,0], x_data[i,1])
     ind = -1
-    for lambda_ in np.linspace(0.00001, 0.01, 5) :    
+    for lambda_ in np.logspace(-4, 0, 5) :    
         ind += 1
         MSE_noise = []
 
@@ -91,14 +91,12 @@ def part_b() :
             MSE.append(leastSquares.MSE())
             R2. append(leastSquares.R2())
         
-        colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k','#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
-                  '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
-                  '#bcbd22', '#17becf']
+        colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
         if ind == 0 :
-            ax1.loglog(noise, np.array(MSE_noise), colors[ind]+'-o', markersize=2, label=r"OLS")
+            ax1.loglog(noise, np.array(MSE_noise), colors[ind]+'--', markersize=1, label=r"OLS")
         else :
-            ax1.loglog(noise, np.array(MSE_noise), colors[ind]+'-o', markersize=2, label=r"$\lambda=%5.3f$"%(lambda_))
+            ax1.loglog(noise, np.array(MSE_noise), colors[ind]+'-', markersize=1, label=r"$\lambda=10^{%d}$"%(int(np.log10(lambda_))))
         plt.ylabel(r"MSE", fontsize=10)
         plt.xlabel(r"noise scale $\eta$", fontsize=10)
         plt.subplots_adjust(left=0.2,bottom=0.2)
@@ -106,7 +104,7 @@ def part_b() :
         #ax1.set_ylim([0.95*min(min(MSE_noise), min(R2_noise)), 1.05*(max(max(MSE_noise), max(R2_noise)))])
         
     ax1.legend()
-    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'MSE_ridge_noise.png'), transparent=True, bbox_inches='tight')
+    #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'MSE_ridge_noise.png'), transparent=True, bbox_inches='tight')
     plt.show()
 
 

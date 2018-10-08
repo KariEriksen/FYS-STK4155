@@ -212,7 +212,7 @@ class LeastSquares :
     def _sklFitRidge(self, X, y) :
         if self.lambdaSet == False :
             raise ValueError("No lambda value set for Ridge regression. Use LeastSquares.setLambda()")
-        self.regression = linear_model.Ridge(fit_intercept=True, alpha=self.lambda_, solver='svd')
+        self.regression = linear_model.Ridge(fit_intercept=True, alpha=self.lambda_)
         self.regression.fit(X,y)
         self.beta = self.regression.coef_
         self.beta[0] = self.regression.intercept_

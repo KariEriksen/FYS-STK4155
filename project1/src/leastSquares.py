@@ -32,6 +32,8 @@ class LeastSquares :
         """
         self.backend        = backend
         self.method         = method
+        if self.method == 'lasso' and self.backend == 'manual' :
+            self.backend = 'skl'
         self.lambda_        = 0
         self.lambdaSet      = False
         self._checkManualBackend()

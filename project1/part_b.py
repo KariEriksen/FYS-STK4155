@@ -60,7 +60,7 @@ def part_b() :
         MSE_noise = []
 
         for eta in noise :
-            designMatrix = DesignMatrix('polynomial2D', 5)
+            designMatrix = DesignMatrix('polynomial2D', 10)
             if ind == 0 :
                 leastSquares = LeastSquares(backend='manual', method='ols')
             else :

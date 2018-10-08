@@ -19,7 +19,6 @@
 \usepackage[framemethod=default]{mdframed}   % Make boxes.
 \usepackage{listings}                        % For including source code.
 \usepackage{mathtools}                       % Underbrackets, overbrackets.
-\usepackage{multicol}                        % Multiple text columns.
 \usepackage[dvipsnames]{xcolor}              % Colors.
 \usepackage{capt-of}                         % Caption things which are not floats.
 \usepackage{fontawesome}                     % Github icon, etc. \faGithub
@@ -323,7 +322,7 @@ Rewriting the OLS scheme in terms of the SVD yields a very similar
 \bm\beta_\text{optimal} &= \mathbf{V}\left(\bm\Sigma^2\right)^{-1}\mathbf{V}^T \bm\Sigma^T \mathbf{U}^Ty.
 \end{align}
 
-\subsection{Lasso regression}
+\subsection{Lasso regression \label{sect:lasso}}
 As mentioned repeatedly, we are free to choose what we mean by \textit{minimizing the error} w.r.t.\ what metric and what cost function we use. Whereas the Ridge regression of section \ref{sect:ridge} used $L^2$ regularization by adding a $\lambda\Vert \bm\beta\Vert_2^2$ term to $C(\bm\beta)$, we may instead try a $L^1$ regularization. This constitutes setting up the cost function as
 \begin{align}
 C_\text{L}(\bm\beta) &= \Vert \mathbf{y} - \tilde{\mathbf{y}}\Vert_2^2 + \lambda \Vert \bm\beta \Vert_1 \nonumber \\
@@ -348,7 +347,7 @@ In general, this can not be directly solved for $\bm\beta_\text{optimal}^\text{L
 \end{align}
 where $(\cdot)_+$ represents the positive part of $\cdot\,$. In the general case, an iterative solver must be used to compute $\bm\beta_\text{optimal}^\text{L}$.
 
-\subsection{Principal components}
+\subsection{Principal components \label{sect:principal}}
 The following section follows Hastie, Tibshirani \& Friedman\autocite{trevor2009elements}.
 
 Recall from section \ref{sect:svd} that the SVD matrix $\mathbf{U}$ represents an orthonormal basis for the column space of the decomposed matrix $\mathbf{A}$. If we consider the prediction resulting from OLS, and perform a SVD of $\mathbf{X}$ we find that
@@ -614,7 +613,16 @@ The corresponding plot of the coefficient of determination, $R^2$, shows behavio
 \captionof{figure}{The mean squared error as a function of the signal-to-noise ratio $\eta$ for Ridge regression at various different shrinkage values $\lambda$. The OLS result (corresponding to $\lambda=0$) is inset for comparison. A $p=5$ order polynomial was used in these fittings. \label{fig:9}}
 \end{figure}
 
+As discussed in section \ref{sect:principal}, the Ridge regression method shrinks the $\beta_j$ parameters corresponding to low-variance principal components of the OLS solutions. We can visualize the shrinkage done in the Ridge regression scheme by considering the $\beta_j$ parameters as a function of $\lambda$ for some fixed model. In order to keep the number of $\beta_j$s relatively low, we consider in the follwing a $p=3$ polynomial model. We set the noise factor to $\eta=1.0$ and consider the sizes of the parameters $\beta_j$ for varying $\lambda$. This is shown in \fig{10}. Note carefully that the Ridge scheme is unable to set individual $\beta_j$s to zero, but rather shrinks all $\beta$ values. This is as expected, c.f.\ section \ref{sect:lasso}.
 
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth]{beta_ridge.png}
+\captionof{figure}{The coefficients $\beta_j$ for varying shrinkage parameter $\lambda$ for Ridge regression fitting of the noisy Franke function with noise-to-signal ratio $\eta=1.0$. The error bars represent the confidence intervals for each $\beta_j$, calculated as $\beta_j\pm2\sigma^2(\beta_j)$, where $\sigma^2(\beta_j)$ is the Bootstrap computed variance for each $\beta_j$. Note carefully: The disconnected first point plotted at $\lambda=10^{-3}$ represents the ordinary least squares $\beta_j$s and their confidence intervals. The number of Bootstrap samples used to compute the variance in every case was $k=10\,000$. \label{fig:10}}
+\end{figure}
+
+\subsubsection{Lasso regression on the Franke function}
+Finally, we consider the Lasso regression scheme applied to the Franke function. As with the Ridge method, we first take a look at the MSE as a function of the shrinkage factor $\lambda$. 
 
 
 \subsection{Terrain data parametrization}

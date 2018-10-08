@@ -33,7 +33,7 @@ def timeit(func):
     return newfunc
 """
 
-def part_b() :
+def part_c() :
 
     R2           = []
     MSE          = []
@@ -218,8 +218,8 @@ def plot_beta_ridge() :
     
 
 if __name__ == '__main__':
-    #part_b()
-    plot_beta_ridge()
+    part_c()
+    #plot_beta_ridge()
     
 
 

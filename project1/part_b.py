@@ -43,7 +43,7 @@ def part_b() :
     beta_noise         = []
     betaVariance_noise = []
 
-    noise = np.logspace(-3,-0.5,50)
+    noise = np.linspace(0, 1.0, 50)
     k = 1
     fig, ax1 = plt.subplots()
     plt.rc('text', usetex=True)
@@ -55,21 +55,21 @@ def part_b() :
         for i in range(N) :
             y[i] = franke(x_data[i,0], x_data[i,1])
     ind = -1
-    for lambda_ in np.logspace(-4, 0, 5) :    
+    for lambda_ in np.logspace(-2, 0, 3) :    
         ind += 1
         MSE_noise = []
 
         for eta in noise :
             designMatrix = DesignMatrix('polynomial2D', 5)
             if ind == 0 :
-                leastSquares = LeastSquares(backend='skl', method='ols')
+                leastSquares = LeastSquares(backend='manual', method='ols')
             else :
-                leastSquares = LeastSquares(backend='skl', method='ridge')
+                leastSquares = LeastSquares(backend='manual', method='ridge')
             
             leastSquares.setLambda(lambda_)
             bootstrap    = Bootstrap(leastSquares, designMatrix)
 
-            N = int(1e4)
+            N = int(1000)
             x = np.random.rand(N)
             y = np.random.rand(N)
             x_data = np.zeros(shape=(N,2))
@@ -87,10 +87,25 @@ def part_b() :
             beta_noise.        append(bootstrap.beta)
             betaVariance_noise.append(bootstrap.betaVariance)
 
-            leastSquares.y = y_data
+            # Different noise, test data
+            N = int(1000)
+            x = np.random.rand(N)
+            y = np.random.rand(N)
+            x_data = np.zeros(shape=(N,2))
+            x_data[:,0] = x
+            x_data[:,1] = y
+            y_data = np.zeros(shape=(N))
+            computeFrankeValues(x_data, y_data)
+            y_data_noise = y_data +  eta * np.random.standard_normal(size=N)
+
+            X = designMatrix.getMatrix(x_data)
+            leastSquares.X = X
+            leastSquares.predict()
+            leastSquares.y = y_data_noise
+
             MSE.append(leastSquares.MSE())
             R2. append(leastSquares.R2())
-        
+
         colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
         if ind == 0 :
@@ -218,8 +233,8 @@ def plot_beta_ridge() :
     
 
 if __name__ == '__main__':
-    #part_b()
-    plot_beta_ridge()
+    part_b()
+    #plot_beta_ridge()
     
 
 

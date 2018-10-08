@@ -64,7 +64,7 @@ def part_c() :
             if ind == 0 :
                 leastSquares = LeastSquares(backend='skl', method='ols')
             else :
-                leastSquares = LeastSquares(backend='skl', method='ridge')
+                leastSquares = LeastSquares(backend='skl', method='lasso')
             
             leastSquares.setLambda(lambda_)
             bootstrap    = Bootstrap(leastSquares, designMatrix)
@@ -104,7 +104,7 @@ def part_c() :
         #ax1.set_ylim([0.95*min(min(MSE_noise), min(R2_noise)), 1.05*(max(max(MSE_noise), max(R2_noise)))])
         
     ax1.legend()
-    #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'MSE_ridge_noise.png'), transparent=True, bbox_inches='tight')
+    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'MSE_lasso_noise.png'), transparent=True, bbox_inches='tight')
     plt.show()
 
 

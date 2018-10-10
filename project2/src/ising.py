@@ -27,10 +27,10 @@ class Ising :
         if (self.systemSize is None) or (self.numberOfStates is None) :
             raise ValueError("System size and/or number of states not specified.")
 
-        self.states  = np.random.choice([-1, 1], size=(self.numberOfStates, self.systemSize))
+        self.states  = np.random.choice([-1.0, 1.0], size=(self.numberOfStates, self.systemSize))
         self.J  = np.zeros((self.systemSize, self.systemSize),)
-        np.fill_diagonal(self.J[:,1:], -1)
-        self.J[-1,0] = -1
+        np.fill_diagonal(self.J[:,1:], -1.0)
+        self.J[-1,0] = -1.0
 
         return self.states, self.computeEnergy1D()
 

@@ -200,16 +200,13 @@ class LeastSquares :
         beta : numpy.array
             The optimized beta parameters from the performed fit
         """
-        self.beta = np.dot(np.linalg.inv(np.dot(np.transpose(X),X)), np.dot(np.transpose(X),y))
+        #self.beta = np.dot(np.linalg.inv(np.dot(np.transpose(X),X)), np.dot(np.transpose(X),y))
+        self.beta = np.linalg.pinv(X).dot(y)
 
 
     def _manualFitRidge(self, X, y) :
         if self.lambdaSet == False :
             raise ValueError("No lambda value set for Ridge regression. Use LeastSquares.setLambda()")
-        #U,S,Vt = np.linalg.svd(X, full_matrices=False)
-        #self.beta = np.dot(np.dot(np.dot(np.dot(np.transpose(Vt), np.linalg.inv(np.dot(np.transpose(S),S)+self.lambda_*np.eye(S.shape[0]))),S),np.transpose(U)),y)
-        print(X.flags)
-        print(y.flags)
         self.beta = np.dot(np.linalg.inv(np.dot(np.transpose(X),X) + self.lambda_ * np.eye(X.shape[1])), np.dot(np.transpose(X),y))
 
 
@@ -281,7 +278,7 @@ class LeastSquares :
             done does not make much sense.
         """
         if X is not None :
-            self.X
+            self.X = X
 
         if self._checkFitDoneAndManualBackend() :
             self._manualPredict()

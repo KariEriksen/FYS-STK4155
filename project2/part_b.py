@@ -15,7 +15,7 @@ from leastSquares   import LeastSquares
 
 def setup(L = 40, N = 1000, train = 0.4) :
     ising   = Ising(L,N)
-    ols     = LeastSquares(backend='manual', method='ols')
+    ols     = LeastSquares(backend='skl', method='ols')
     ridge   = LeastSquares(backend='manual', method='ridge')
     lasso   = LeastSquares(backend='skl',    method='lasso')
 
@@ -86,6 +86,7 @@ def MSE_R2_as_function_of_lambda(L = 40, N = 1000, train=0.4, plotting=False) :
         plt.xlabel(r'shrinkage parameter $\lambda$', fontsize=10)
         plt.ylabel(r'MSE',                           fontsize=10)
         plt.subplots_adjust(left=0.2,bottom=0.2)
+        plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'MSE_ising_lambda.png'), transparent=True, bbox_inches='tight')
         plt.show()
 
         plt.figure()
@@ -96,30 +97,45 @@ def MSE_R2_as_function_of_lambda(L = 40, N = 1000, train=0.4, plotting=False) :
         plt.xlabel(r'shrinkage parameter $\lambda$', fontsize=10)
         plt.ylabel(r'$1-R^2$ score',                 fontsize=10)
         plt.subplots_adjust(left=0.2,bottom=0.2)
+        plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'R2_ising_lambda.png'), transparent=True, bbox_inches='tight')
         plt.show()
 
 
-def MSE_R2_as_function_of_training_set_size(L=40, N=2000, M=10, plotting=False) :
-    train = np.linspace(0.02, 0.5, M)
-    MSE = []
-    R2  = []
+def MSE_R2_as_function_of_training_set_size(L=40, N=1500, M=25, plotting=False) :
+    K            = 100
+    train        = np.linspace(700, 900, M)
+    train       /= N
+    MSE          = np.zeros((M,K))
+    R2           = np.zeros((M,K))
+    MSE_variance = np.zeros(M)
+    R2_variance  = np.zeros(M)
+    
+    beta_plotting = False
 
-    if plotting :
+    if beta_plotting :
         cmap_args=dict(vmin=-1.0, vmax=1.0, cmap='seismic')
         fig, ax = plt.subplots(nrows=int(np.sqrt(M)), ncols=int(np.sqrt(M)))
         i = 0
         j = 0
 
     for k in range(M) :
-        t = train[k]
-        _, ols, _, _, X_train, X_test, y_train, y_test = setup(L, N, t)
-        beta = ols.fit(X_train, y_train)
-        ols.predict(X_test)
-        ols.y = y_test
-        MSE.append(ols.MSE())
-        R2 .append(ols.R2())
+        for it in range(K) :
+            np.random.seed(1955*k + 29*it)
+            np.random.seed()
+            t = train[k]
+            _, ols, _, _, X_train, X_test, y_train, y_test = setup(L, N, t)
+            beta = ols.fit(X_train, y_train)
+            ols.predict(X_test)
+            ols.y = y_test
+            MSE[k,it] = ols.MSE()
+            R2 [k,it] = ols.R2()
 
-        if plotting :
+        MSE_variance = np.var(MSE[k,:])
+        R2_variance  = np.var(R2 [k,:])
+        MSE[k,0] = np.mean(MSE[k,:])
+        R2 [k,0] = np.mean(R2 [k,:])
+
+        if beta_plotting :
             plt.rc('text', usetex=True)
             ax[j][i].imshow(beta.reshape((L,L)), **cmap_args)
             ax[j][i].set_title(r'$%3.3f$' %(t*N), fontsize=7)
@@ -132,31 +148,47 @@ def MSE_R2_as_function_of_training_set_size(L=40, N=2000, M=10, plotting=False) 
             else :
                 i += 1
 
-    if plotting : 
+    if beta_plotting : 
         fig = plt.gcf()
         fig.set_size_inches(12,12)
         plt.show()
 
-
-    MSE = np.array(MSE)
-    R2  = np.array(R2)
-
     if plotting :
         plt.rc('text', usetex=True)
-        plt.semilogy(train*N, MSE,    marker='o', markersize=2, label=r'MSE')
-        plt.semilogy(train*N, 1 - R2, marker='o', markersize=2, label=r'$1-R^2$')
+
+        plt.errorbar(train*N, MSE[:,0], 
+                        yerr        = np.sqrt(MSE_variance), 
+                        fmt         = '-o',
+                        markersize  = 2,
+                        linewidth   = 1,
+                        elinewidth  = 0.5,
+                        capsize     = 2,
+                        capthick    = 0.5,
+                        label       = r"MSE")
+        plt.errorbar(train*N, R2[:,0], 
+                        yerr        = np.sqrt(R2_variance), 
+                        fmt         = '-o',
+                        markersize  = 2,
+                        linewidth   = 1,
+                        elinewidth  = 0.5,
+                        capsize     = 2,
+                        capthick    = 0.5,
+                        label       = r"R2")
+        plt.gcf().axes[0].set_yscale("log")
         plt.legend(fontsize=10)
         plt.xlabel(r'training data size',    fontsize=10)
         plt.ylabel(r'MSE and $1-R^2$ score', fontsize=10)
         plt.subplots_adjust(left=0.2,bottom=0.2)
+        plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'MSE_R2_training_size_ols.png'), transparent=True, bbox_inches='tight')
         plt.show()
+
 
 if __name__ == '__main__':
     np.random.seed(2018)
     #MSE_R2_as_function_of_lambda(L=40, N=1000, train=0.2, plotting=True)
 
     np.random.seed(2019)
-    MSE_R2_as_function_of_training_set_size(L=40, N=3000, M=25, plotting=True)
+    MSE_R2_as_function_of_training_set_size(L=40, N=1500, M=25, plotting=True)
 
 
 

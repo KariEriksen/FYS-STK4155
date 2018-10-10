@@ -208,6 +208,8 @@ class LeastSquares :
             raise ValueError("No lambda value set for Ridge regression. Use LeastSquares.setLambda()")
         #U,S,Vt = np.linalg.svd(X, full_matrices=False)
         #self.beta = np.dot(np.dot(np.dot(np.dot(np.transpose(Vt), np.linalg.inv(np.dot(np.transpose(S),S)+self.lambda_*np.eye(S.shape[0]))),S),np.transpose(U)),y)
+        print(X.flags)
+        print(y.flags)
         self.beta = np.dot(np.linalg.inv(np.dot(np.transpose(X),X) + self.lambda_ * np.eye(X.shape[1])), np.dot(np.transpose(X),y))
 
 

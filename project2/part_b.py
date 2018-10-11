@@ -188,41 +188,62 @@ def cross_validation(L = 40, N = 1000, k=10, plotting=False) :
     N = N-N%k
     N_fold = N // k
     N = N*(k+1)//k
-    _, ols, ridge, lasso, _, _, _, _, X, y = setup(L=L, N=N, train=0.5)
-    _, _, _, _, _, _, _, _, X_test, y_test = setup(L=L, N=N, train=0.5)
+    _, ols, ridge, lasso, _, _, _, _, X, yy = setup(L=L, N=N, train=0.5)
+    _, _, _, _, _, _, _, _, X_test, yy_test = setup(L=L, N=N, train=0.5)
 
-    noise = True
-    if noise :
-        noise_var = 4.0
-        y       = y      + np.random.normal(0, np.sqrt(noise_var), size=y.shape[0])
-        y_test  = y_test + np.random.normal(0, np.sqrt(noise_var), size=y_test.shape[0])
-    
-    y_predict = np.zeros((N,k))
+    ridge.setLambda(1e-3)
+    lasso.setLambda(1e-3)
 
-    for fold in range(k) :
-        mask = np.array([False]*N)
-        mask[fold*N_fold:(fold+1)*N_fold] = True
-        X_fold = X[mask,:]
-        y_fold = y[mask]
-        X_train = X[np.invert(mask),:]
-        y_train = y[np.invert(mask)]
+    M = 10
+    noise = np.logspace(-5,1,M)
+    performance = np.empty((M,3))
 
-        beta = ols.fit(X_train, y_train)
-        y_predict[:,fold] = np.dot(X_test, beta)
+    for i in range(len(noise)) :
+        noise_var = noise[i]
+        y       = yy      + np.random.normal(0, np.sqrt(noise_var), size=yy.shape[0])
+        y_test  = yy_test + np.random.normal(0, np.sqrt(noise_var), size=yy_test.shape[0])
+        
+        y_predict = np.zeros((N,k))
 
-    y_t = y_test
-    y_test = np.reshape(y_test, (y_test.shape[0],1))
+        for fold in range(k) :
+            mask = np.array([False]*N)
+            mask[fold*N_fold:(fold+1)*N_fold] = True
+            X_fold = X[mask,:]
+            y_fold = y[mask]
+            X_train = X[np.invert(mask),:]
+            y_train = y[np.invert(mask)]
 
-    MSE = np.mean( np.mean((y_test - y_predict)**2, axis=1, keepdims=True) )
-    bias2 = np.mean( (y_test - np.mean(y_predict, axis=1, keepdims=True))**2 )
-    variance = np.mean( np.var(y_predict, axis=1, keepdims=True) )
+            beta = ols.fit(X_train, y_train)
+            y_predict[:,fold] = np.dot(X_test, beta)
 
-    # MSE = bias^2 + var(y_predict) + var(noise)
-    print("MSE:           ", MSE)
-    print("bias^2:        ", bias2)
-    print("var(y_predict):", variance)
-    print("var(noise):    ", noise_var)
-    print("MSE - [bias^2 + var(y_predict)]: %10.5f" %(MSE - (bias2+variance)))
+        y_t = y_test
+        y_test = np.reshape(y_test, (y_test.shape[0],1))
+
+        MSE = np.mean( np.mean((y_test - y_predict)**2, axis=1, keepdims=True) )
+        bias2 = np.mean( (y_test - np.mean(y_predict, axis=1, keepdims=True))**2 )
+        variance = np.mean( np.var(y_predict, axis=1, keepdims=True) )
+
+        # MSE = bias^2 + var(y_predict) + var(noise)
+        print("MSE:           ", MSE)
+        print("bias^2:        ", bias2)
+        print("var(y_predict):", variance)
+        print("var(noise):    ", noise_var)
+        print("MSE - [bias^2 + var(y_predict)]: %10.5f" %(MSE - (bias2+variance)))
+
+        np.set_printoptions(precision=2, suppress=True)
+        print(np.reshape(beta,(L,L)))
+
+        performance[i,0] = MSE
+        performance[i,1] = bias2
+        performance[i,2] = variance
+
+    plt.loglog(noise, performance[:,0], label='MSE')
+    plt.loglog(noise, performance[:,1], label='bias2')
+    plt.loglog(noise, performance[:,2], label='var')
+    plt.show()
+
+
+
 
         
 
@@ -235,7 +256,7 @@ if __name__ == '__main__':
     #MSE_R2_as_function_of_training_set_size(L=40, N=1500, M=50, plotting=True)
 
     np.random.seed(2020)
-    cross_validation(L=40, N=1000, k=10, plotting=True)
+    cross_validation(L=10, N=500, k=10, plotting=True)
 
 
 

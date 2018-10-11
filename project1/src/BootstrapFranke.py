@@ -20,7 +20,7 @@ from franke import franke
 
 np.random.seed(2018)
 
-#@jit(nopython=True, cache=True)
+@jit(nopython=True, cache=True)
 def computeFrankeValues(x_data, y, noise_strength=0.1) :    
 	N = x_data.shape[0]
 	for i in range(N) :

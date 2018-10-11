@@ -15,7 +15,7 @@ from leastSquares   import LeastSquares
 
 def setup(L = 40, N = 1000, train = 0.4) :
     ising   = Ising(L,N)
-    ols     = LeastSquares(backend='skl', method='ols')
+    ols     = LeastSquares(backend='manual', method='ols')
     ridge   = LeastSquares(backend='manual', method='ridge')
     lasso   = LeastSquares(backend='skl',    method='lasso')
 
@@ -190,8 +190,14 @@ def cross_validation(L = 40, N = 1000, k=10, plotting=False) :
     N = N*(k+1)//k
     _, ols, ridge, lasso, _, _, _, _, X, y = setup(L=L, N=N, train=0.5)
     _, _, _, _, _, _, _, _, X_test, y_test = setup(L=L, N=N, train=0.5)
+
+    noise = True
+    if noise :
+        noise_var = 4.0
+        y       = y      + np.random.normal(0, np.sqrt(noise_var), size=y.shape[0])
+        y_test  = y_test + np.random.normal(0, np.sqrt(noise_var), size=y_test.shape[0])
     
-    y_predict = np.empty((N,k))
+    y_predict = np.zeros((N,k))
 
     for fold in range(k) :
         mask = np.array([False]*N)
@@ -204,19 +210,21 @@ def cross_validation(L = 40, N = 1000, k=10, plotting=False) :
         beta = ols.fit(X_train, y_train)
         y_predict[:,fold] = np.dot(X_test, beta)
 
-        y_test = np.reshape(y_test, (y_test.shape[0],1))
+    y_t = y_test
+    y_test = np.reshape(y_test, (y_test.shape[0],1))
 
     MSE = np.mean( np.mean((y_test - y_predict)**2, axis=1, keepdims=True) )
-    bias = np.mean( (y_test - np.mean(y_predict, axis=1, keepdims=True))**2 )
+    bias2 = np.mean( (y_test - np.mean(y_predict, axis=1, keepdims=True))**2 )
     variance = np.mean( np.var(y_predict, axis=1, keepdims=True) )
 
-    print(MSE)
-    print(bias)
-    print(variance)
-    print(np.abs((bias+variance) - MSE))
+    # MSE = bias^2 + var(y_predict) + var(noise)
+    print("MSE:           ", MSE)
+    print("bias^2:        ", bias2)
+    print("var(y_predict):", variance)
+    print("var(noise):    ", noise_var)
+    print("MSE - [bias^2 + var(y_predict)]: %10.5f" %(MSE - (bias2+variance)))
 
         
-
 
 
 if __name__ == '__main__':
@@ -227,7 +235,7 @@ if __name__ == '__main__':
     #MSE_R2_as_function_of_training_set_size(L=40, N=1500, M=50, plotting=True)
 
     np.random.seed(2020)
-    cross_validation(L=15, N=103, k=10, plotting=True)
+    cross_validation(L=40, N=1000, k=10, plotting=True)
 
 
 

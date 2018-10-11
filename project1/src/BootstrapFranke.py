@@ -20,7 +20,7 @@ from franke import franke
 
 np.random.seed(2018)
 
-@jit(nopython=True, cache=True)
+#@jit(nopython=True, cache=True)
 def computeFrankeValues(x_data, y, noise_strength=0.1) :    
 	N = x_data.shape[0]
 	for i in range(N) :
@@ -91,6 +91,12 @@ for degree in Degree:
     
 	y_test = y_test.reshape(len(y_test),1)
 	
+	print(y_test.shape)
+	
+	print(y_pred.shape)
+
+	sgkgsgks
+
 	MSE = np.mean( np.mean((y_test - y_pred)**2, axis=1, keepdims=True) )
 	bias = np.mean( (y_test - np.mean(y_pred, axis=1, keepdims=True))**2 )
 	variance = np.mean( np.var(y_pred, axis=1, keepdims=True) )

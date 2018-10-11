@@ -1,7 +1,7 @@
 import numpy as np
 from numba import jit
 
-@jit(nopython=True)
+#@jit(nopython=True)
 def franke(x, y) :
     """Computes the Franke function
     

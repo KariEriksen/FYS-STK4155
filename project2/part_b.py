@@ -30,11 +30,11 @@ def setup(L = 40, N = 1000, train = 0.4) :
     X_test  = X_total[N_train:N_train+N_test]
     y_test  = y_total[N_train:N_train+N_test]
     
-    return ising, ols, ridge, lasso, X_train, X_test, y_train, y_test    
+    return ising, ols, ridge, lasso, X_train, X_test, y_train, y_test, X_total, y_total   
 
 
 def MSE_R2_as_function_of_lambda(L = 40, N = 1000, train=0.4, plotting=False) :
-    _, ols, ridge, lasso, X_train, X_test, y_train, y_test = setup(L,N,train)
+    _, ols, ridge, lasso, X_train, X_test, y_train, y_test, _, _ = setup(L,N,train)
 
     ols.fit(X_train, y_train)
     ols.predict(X_test)
@@ -102,7 +102,7 @@ def MSE_R2_as_function_of_lambda(L = 40, N = 1000, train=0.4, plotting=False) :
 
 
 def MSE_R2_as_function_of_training_set_size(L=40, N=1500, M=25, plotting=False) :
-    K            = 100
+    K            = 500
     train        = np.linspace(700, 900, M)
     train       /= N
     MSE          = np.zeros((M,K))
@@ -123,7 +123,7 @@ def MSE_R2_as_function_of_training_set_size(L=40, N=1500, M=25, plotting=False) 
             np.random.seed(1955*k + 29*it)
             np.random.seed()
             t = train[k]
-            _, ols, _, _, X_train, X_test, y_train, y_test = setup(L, N, t)
+            _, ols, _, _, X_train, X_test, y_train, y_test, _, _ = setup(L, N, t)
             beta = ols.fit(X_train, y_train)
             ols.predict(X_test)
             ols.y = y_test
@@ -165,7 +165,7 @@ def MSE_R2_as_function_of_training_set_size(L=40, N=1500, M=25, plotting=False) 
                         capsize     = 2,
                         capthick    = 0.5,
                         label       = r"MSE")
-        plt.errorbar(train*N, R2[:,0], 
+        """plt.errorbar(train*N, R2[:,0], 
                         yerr        = np.sqrt(R2_variance), 
                         fmt         = '-o',
                         markersize  = 2,
@@ -174,13 +174,49 @@ def MSE_R2_as_function_of_training_set_size(L=40, N=1500, M=25, plotting=False) 
                         capsize     = 2,
                         capthick    = 0.5,
                         label       = r"R2")
+        """
         plt.gcf().axes[0].set_yscale("log")
         plt.legend(fontsize=10)
         plt.xlabel(r'training data size',    fontsize=10)
-        plt.ylabel(r'MSE and $1-R^2$ score', fontsize=10)
+        plt.ylabel(r'MSE',                   fontsize=10)
         plt.subplots_adjust(left=0.2,bottom=0.2)
-        plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'MSE_R2_training_size_ols.png'), transparent=True, bbox_inches='tight')
+        #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'MSE_R2_training_size_ols.png'), transparent=True, bbox_inches='tight')
         plt.show()
+
+
+def cross_validation(L = 40, N = 1000, k=10, plotting=False) :
+    N = N-N%k
+    N_fold = N // k
+    N = N*(k+1)//k
+    _, ols, ridge, lasso, _, _, _, _, X, y = setup(L=L, N=N, train=0.5)
+    _, _, _, _, _, _, _, _, X_test, y_test = setup(L=L, N=N, train=0.5)
+    
+    y_predict = np.empty((N,k))
+
+    for fold in range(k) :
+        mask = np.array([False]*N)
+        mask[fold*N_fold:(fold+1)*N_fold] = True
+        X_fold = X[mask,:]
+        y_fold = y[mask]
+        X_train = X[np.invert(mask),:]
+        y_train = y[np.invert(mask)]
+
+        beta = ols.fit(X_train, y_train)
+        y_predict[:,fold] = np.dot(X_test, beta)
+
+        y_test = np.reshape(y_test, (y_test.shape[0],1))
+
+    MSE = np.mean( np.mean((y_test - y_predict)**2, axis=1, keepdims=True) )
+    bias = np.mean( (y_test - np.mean(y_predict, axis=1, keepdims=True))**2 )
+    variance = np.mean( np.var(y_predict, axis=1, keepdims=True) )
+
+    print(MSE)
+    print(bias)
+    print(variance)
+    print(np.abs((bias+variance) - MSE))
+
+        
+
 
 
 if __name__ == '__main__':
@@ -188,7 +224,11 @@ if __name__ == '__main__':
     #MSE_R2_as_function_of_lambda(L=40, N=1000, train=0.2, plotting=True)
 
     np.random.seed(2019)
-    MSE_R2_as_function_of_training_set_size(L=40, N=1500, M=25, plotting=True)
+    #MSE_R2_as_function_of_training_set_size(L=40, N=1500, M=50, plotting=True)
+
+    np.random.seed(2020)
+    cross_validation(L=15, N=103, k=10, plotting=True)
+
 
 
 

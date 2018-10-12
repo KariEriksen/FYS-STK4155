@@ -53,6 +53,9 @@ class LeastSquares :
         self._betaVariance  = None
 
 
+    def getMethod(self) :
+        return self.method
+
     def setLambda(self, lambda_) :
         self.lambda_ = lambda_
         self.lambdaSet = True

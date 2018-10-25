@@ -5,7 +5,8 @@ import sklearn.metrics as skm
 import sklearn.model_selection as skms
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-
+import numba
+import sys
 def vizualise():
 	# set colourbar map
 	cmap_args=dict(cmap='plasma_r')
@@ -26,7 +27,22 @@ def vizualise():
 	plt.show()
 
 def logistic(s):
-	return np.exp(s)/(1+np.exp(s))
+	return np.exp(s)/(1.0+np.exp(s))
+
+def plot_logisticFunction():
+	s = np.linspace(-10,10,100)
+	plt.plot(s,logistic(s))
+	plt.show()
+
+
+def cross_entropy(beta,X,y):
+	eps   = 1e-16 #Horribly iffy
+	Cbeta = 0
+	for i in range(len(y)):
+		tmp = logistic(np.dot(X[i],beta))
+		val = y[i]*np.log(tmp+eps) + (1-y[i])*np.log(1-tmp+eps)
+		Cbeta -= val
+	return Cbeta
 
 np.random.seed(1)
 L = 40 #Nr of spins 40x40
@@ -77,6 +93,9 @@ X_train_disordered = data[disordered_train]
 y_train_ordered    = labels[ordered_train]
 y_train_disordered = labels[disordered_train]
 
+print(y_train_ordered.shape)
+print(y_train_disordered.shape)
+
 #The critical phases are left out the training
 X_critical = data[critical]
 y_critical = data[critical]
@@ -90,7 +109,8 @@ y_test_disordered = labels[disordered_test]
 
 #Initialize beta-parameters
 beta = np.random.randn(L*L)
-val  = np.dot(X_train_disordered[100],beta)
-print(logistic(val))
+
+print(cross_entropy(beta,X_test_ordered,y_test_ordered))
+
 
 

@@ -36,13 +36,14 @@ def plot_logisticFunction():
 
 
 def cross_entropy(beta,X,y):
-	eps   = 1e-16 #Horribly iffy
 	Cbeta = 0
 	for i in range(len(y)):
-		tmp = logistic(np.dot(X[i],beta))
-		val = y[i]*np.log(tmp+eps) + (1-y[i])*np.log(1-tmp+eps)
+		tmp    = np.dot(X[i],beta)
+		val    = y[i]*tmp - np.log(1+np.exp(tmp))
 		Cbeta -= val
 	return Cbeta
+
+
 
 np.random.seed(1)
 L = 40 #Nr of spins 40x40

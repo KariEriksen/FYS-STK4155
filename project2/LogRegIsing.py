@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numba
 import sys
+import time
+
 def vizualise():
 	# set colourbar map
 	cmap_args=dict(cmap='plasma_r')
@@ -30,18 +32,25 @@ def logistic(s):
 	return np.exp(s)/(1.0+np.exp(s))
 
 def plot_logisticFunction():
+	
 	s = np.linspace(-10,10,100)
 	plt.plot(s,logistic(s))
 	plt.show()
 
 
-def cross_entropy(beta,X,y):
+def crossEntropy(beta,X,y):
+	
 	Cbeta = 0
+	
 	for i in range(len(y)):
 		tmp    = np.dot(X[i],beta)
 		val    = y[i]*tmp - np.log(1+np.exp(tmp))
 		Cbeta -= val
+	
 	return Cbeta
+
+def gradientCrossEntropy(X,p,y):
+	return -(1.0/len(y))*np.dot(X.T,y-p) 
 
 
 
@@ -61,11 +70,6 @@ with open(dat_filename, "rb") as f:
 
 # Set spin-down to -1
 data[data == 0] = -1
-
-
-
-print(data.shape)
-print(labels.shape)
 
 """
 #Uses more memory but more compact
@@ -94,9 +98,6 @@ X_train_disordered = data[disordered_train]
 y_train_ordered    = labels[ordered_train]
 y_train_disordered = labels[disordered_train]
 
-print(y_train_ordered.shape)
-print(y_train_disordered.shape)
-
 #The critical phases are left out the training
 X_critical = data[critical]
 y_critical = data[critical]
@@ -110,8 +111,22 @@ y_test_disordered = labels[disordered_test]
 
 #Initialize beta-parameters
 beta = np.random.randn(L*L)
+eta  = 0.005
+norm = 100
+Lambda = 0
 
-print(cross_entropy(beta,X_test_ordered,y_test_ordered))
+for i in range(0,50):
 
+	p_ordered    = logistic(np.dot(X_train_ordered,beta))
+	p_disordered = logistic(np.dot(X_train_disordered,beta))
 
+	gradC  = gradientCrossEntropy(X_train_disordered,p_disordered,y_train_disordered)
+	gradC += gradientCrossEntropy(X_train_ordered,p_ordered,y_train_ordered)
+	gradC += 2*Lambda*beta #L2 regularization
 
+	beta   = beta - eta*gradC
+	
+	norm      = np.linalg.norm(gradC)
+	norm_beta = np.linalg.norm(beta)
+	
+	print(norm, i)

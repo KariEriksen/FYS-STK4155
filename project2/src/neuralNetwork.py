@@ -1,6 +1,7 @@
 import sys
 import os
 import numpy as np
+import warnings
 
 
 # Add the project2/src/ directory to the python path so we can import the code 
@@ -27,7 +28,6 @@ class NeuralNetwork :
 
         self.weights        = None
         self.biases         = None
-        self.activations    = None
 
 
     def set(    self,
@@ -67,10 +67,11 @@ class NeuralNetwork :
 
         if activations is None :
             if self.activations is None :
-                raise Warning(  "No activation function specified, using "  +
+                warnings.warn(  "No activation function specified, using "  +
                                 "sigmoid activation for this (and all "     +
                                 "subsequent layers added).")
                 self.activations = 'sigmoid'
+                activations = self.activations
             else :
                 activations = self.activations
 
@@ -86,8 +87,8 @@ class NeuralNetwork :
             else :
                 self.inputs = inputs 
 
-            print(  "Adding input layer with " + neurons + " neurons "  +
-                    "using " + activations + " activations.")
+            print(  "Adding input layer with " + str(neurons) + " neurons "  +
+                    "using " + str(activations) + " activations.")
             W = np.random.uniform(-1.0, 1.0, size=(inputs, neurons))
             b = np.zeros(shape=(neurons,1))
             f = Activation(function = activations, alpha = alpha)
@@ -108,14 +109,14 @@ class NeuralNetwork :
                     outputs = self.outputs
             else :
                 if self.outputs != outputs :
-                    raise Warning(  "The number of outputs was earlier set to "     +
-                                    self.outputs + ", but the value specified to "  +
-                                    " .addLayer / .addOutputLayer of " + outputs    +
+                    warnings.warn(  "The number of outputs was earlier set to "         +
+                                    str(self.outputs) + ", but the value specified to " +
+                                    " .addLayer / .addOutputLayer of " + str(outputs)   +
                                     " overrides this value.")
                     self.outputs = outputs
 
-            print(  "Adding output layer with " + outputs + " outputs.")
-            previousLayerNeurons = self.W[-1].shape[1]
+            print(  "Adding output layer with " + str(outputs) + " outputs.")
+            previousLayerNeurons = self.weights[-1].shape[1]
             W = np.random.uniform(-1.0, 1.0, size=(previousLayerNeurons, outputs))
             b = np.zeros(shape=(outputs,1))
             f = np.vectorize(lambda x : x)
@@ -125,9 +126,9 @@ class NeuralNetwork :
             self.activations.append(f)
 
         else :
-            print(  "Adding layer with " + neurons + " neurons using "  +
+            print(  "Adding layer with " + str(neurons) + " neurons using "  +
                     activations + " activations.")
-            previousLayerNeurons = self.W[-1].shape[1]
+            previousLayerNeurons = self.weights[-1].shape[1]
             W = np.random.uniform(-1.0, 1.0, size=(previousLayerNeurons, neurons))
             b = np.zeros(shape=(neurons,1))
             f = Activation(function = activations, alpha = alpha)
@@ -147,13 +148,13 @@ class NeuralNetwork :
         return f(np.dot(W,x) + b)
 
 
-    def __call___(self, x) :
+    def __call__(self, x) :
         return self.network(x)
 
 
     def network(self, x) :
-        for i in range(len(self.W)) :
-            x = layer(x, i)
+        for i in range(len(self.weights)) :
+            x = self.layer(x, i)
         return x
 
 

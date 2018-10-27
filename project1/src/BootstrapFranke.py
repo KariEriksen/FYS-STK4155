@@ -90,12 +90,6 @@ for degree in Degree:
 		y_pred[:, i] = np.dot(X_test_deg,beta)
     
 	y_test = y_test.reshape(len(y_test),1)
-	
-	print(y_test.shape)
-	
-	print(y_pred.shape)
-
-	sgkgsgks
 
 	MSE = np.mean( np.mean((y_test - y_pred)**2, axis=1, keepdims=True) )
 	bias = np.mean( (y_test - np.mean(y_pred, axis=1, keepdims=True))**2 )

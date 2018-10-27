@@ -195,14 +195,17 @@ def cross_validation(L = 40, N = 1000, k=10, plotting=False) :
     lasso.setLambda(1e-3)
 
     for fitter in [ols, ridge, lasso] :
+        print(fitter.getMethod() + " ===========")
+        
         M = 10
-        noise = np.logspace(-5,-1,M)
+        noise = np.logspace(-5,1,M)
         performance = np.empty((M,3))
 
         for i in range(len(noise)) :
             noise_var = noise[i]
+            test_noise = np.random.normal(0, np.sqrt(noise_var), size=yy_test.shape[0])
             y       = yy      + np.random.normal(0, np.sqrt(noise_var), size=yy.shape[0])
-            y_test  = yy_test + np.random.normal(0, np.sqrt(noise_var), size=yy_test.shape[0])
+            y_test  = yy_test + test_noise#np.random.normal(0, np.sqrt(noise_var), size=yy_test.shape[0])
             
             y_predict = np.zeros((N,k))
 
@@ -218,19 +221,25 @@ def cross_validation(L = 40, N = 1000, k=10, plotting=False) :
                 y_predict[:,fold] = np.dot(X_test, beta)
 
             y_t = y_test
-            y_test = np.reshape(y_test, (y_test.shape[0],1))
+            y_test  = np.reshape(y_test,  (y_test.shape[0],1))
+            yyy_test = np.reshape(yy_test, (yy_test.shape[0],1))
 
             MSE = np.mean( np.mean((y_test - y_predict)**2, axis=1, keepdims=True) )
-            bias2 = np.mean( (y_test - np.mean(y_predict, axis=1, keepdims=True))**2 )
+            bias2 = np.mean( (yyy_test - np.mean(y_predict, axis=1, keepdims=True))**2 )
+            bias2noise = np.mean( (y_test - np.mean(y_predict, axis=1, keepdims=True))**2 )
             variance = np.mean( np.var(y_predict, axis=1, keepdims=True) )
 
             # MSE = bias^2 + var(y_predict) + var(noise)
-            print("MSE:           ", MSE)
-            print("bias^2:        ", bias2)
-            print("var(y_predict):", variance)
-            print("var(noise):    ", noise_var)
-            print("MSE - [bias^2 + var(y_predict)]: %10.5f" %(MSE - (bias2+variance)))
-
+            print("MSE:                 ", MSE)
+            print("bias^2:              ", bias2)
+            print("bias^2(noise):       ", bias2noise)
+            print("var(y_predict):      ", variance)
+            print("var(noise):          ", noise_var)
+            print("computed var(noise): ", np.var(test_noise))
+            print("E(test_noise): ", np.mean(test_noise))
+            print("MSE - [bias^2(noise) + var(y_predict)]: %10.15f"              %(MSE - (bias2noise+variance)))
+            print("MSE - [bias^2        + var(y_predict) + var(noise)]: %10.15f" %(MSE - (bias2+variance+np.var(test_noise))))
+            print(" ")
             #np.set_printoptions(precision=2, suppress=True)
             #print(np.reshape(beta,(L,L)))
 
@@ -264,7 +273,7 @@ if __name__ == '__main__':
     #MSE_R2_as_function_of_training_set_size(L=40, N=1500, M=50, plotting=True)
 
     np.random.seed(2020)
-    cross_validation(L=40, N=1000, k=10, plotting=True)
+    cross_validation(L=40, N=400, k=10, plotting=True)
 
 
 

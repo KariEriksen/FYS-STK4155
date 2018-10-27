@@ -145,7 +145,7 @@ class NeuralNetwork :
         b = self.biases[i]
         f = self.activations[i]
 
-        return f(np.dot(W,x) + b)
+        return f(np.dot(W.T,x) + b)
 
 
     def __call__(self, x) :

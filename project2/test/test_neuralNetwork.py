@@ -135,9 +135,12 @@ def test_neuralNetwork_addLayer() :
     # up so that the network can be evaluated
     nn  = copy.deepcopy(nn_copy1)
     x   = np.random.uniform(-1.0, 1.0, size=(inputs,1))
-    nn(x)
-    nn.network(x)
-
+    assert nn(x).shape          == (outputs,1)
+    assert nn.network(x).shape  == (outputs,1)
+    
+    nn = copy.deepcopy(nn_copy3)
+    assert nn(x).shape          == (new_outputs,1)
+    assert nn.network(x).shape  == (new_outputs,1)
 
 if __name__ == '__main__':
     test_neuralNetwork_addLayer()

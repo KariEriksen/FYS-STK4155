@@ -83,26 +83,23 @@ def test_activation_functions() :
     from scipy.special import expit as sigmoid
 
     N = 100
+
     act = Activation(function = 'sigmoid')
-    for i in range(N) :
-        x = np.random.uniform(-10.0, 10.0)
-        assert act(x) == pytest.approx(sigmoid(np.array([x])))
+    x = np.random.uniform(-10.0, 10.0, size=(N,1))
+    assert act(x) == pytest.approx(sigmoid(x))
 
     act.set(function = 'tanh')
-    for i in range(N) :
-        x = np.random.uniform(-10.0, 10.0)
-        assert act(x) == pytest.approx(tanh(np.array([x])))
+    x = np.random.uniform(-10.0, 10.0, size=(N,1))
+    assert act(x) == pytest.approx(tanh(x))
 
     act.set(function = 'relu')
-    for i in range(N) :
-        x = np.random.uniform(-10.0, 10.0)
-        assert act(x) == pytest.approx(relu(np.array([x])))
+    x = np.random.uniform(-10.0, 10.0, size=(N,1))
+    assert act(x) == pytest.approx(relu(x))
 
     alpha = 2.5082958
     act.set(function = 'leakyrelu', alpha = alpha)
-    for i in range(N) :
-        x = np.random.uniform(-10.0, 10.0)
-        assert act(x) == pytest.approx( (x>=0.0)*relu(np.array([x])) + (x<0.0)*alpha*x)
+    x = np.random.uniform(-10.0, 10.0, size=(N,1))
+    assert act(x) == pytest.approx( (x>=0.0)*x + (x<0.0)*alpha*x )
     
     
 

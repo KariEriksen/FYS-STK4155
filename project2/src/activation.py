@@ -1,6 +1,5 @@
 import numpy as np
-import sklearn 
-import matplotlib.pyplot as plt
+import sys
 
 
 class Activation :
@@ -39,7 +38,8 @@ class Activation :
         return np.tanh(x)
 
     def _relu(self, x) :
-        return max(0.0, x)
+        np.clip(x, a_min = 0.0, a_max = sys.float_info.max, out = x)
+        return x
 
     def _leakyrelu(self, x) :
         return (x >= 0.0) * x + (x < 0.0) * (self.alpha * x)

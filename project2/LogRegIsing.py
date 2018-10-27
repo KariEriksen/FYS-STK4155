@@ -50,7 +50,7 @@ def crossEntropy(beta,X,y):
 	return Cbeta
 
 def gradientCrossEntropy(X,p,y):
-	return -(1.0/len(y))*np.dot(X.T,y-p) 
+	return -np.dot(X.T,y-p)/float(X.shape[0])
 
 
 
@@ -68,65 +68,49 @@ with open(label_filename, "rb") as f:
 with open(dat_filename, "rb") as f:
 	data = np.unpackbits(pickle.load(f)).reshape(-1, 1600).astype("int")
 
-# Set spin-down to -1
 data[data == 0] = -1
 
-"""
+# Set up slices of the dataset
+ordered    = slice(0, 10000)
+critical   = slice(70000, 100000)
+disordered = slice(100000,110000)
+
 #Uses more memory but more compact
 X_train, X_test, y_train, y_test = skms.train_test_split(
 	np.concatenate((data[ordered], data[disordered])),
 	np.concatenate((labels[ordered], labels[disordered])),
-	test_size=0.95
+	test_size=0.05
 )
+
+del data, labels
+
+X_train = np.c_[np.ones(X_train.shape[0]), X_train]
+X_test = np.c_[np.ones(X_test.shape[0]), X_test]
 
 print(X_train.shape)
 print(X_test.shape)
 print(y_train.shape)
 print(y_test.shape)
-"""
 
-# Set up slices of the dataset
-ordered_train = slice(0, 65000)
-ordered_test  = slice(65000,70000)
-critical = slice(70000, 100000)
-disordered_train = slice(100000, 152000)
-disordered_test = slice(152000,160000)
 
-#Split data set in training and testing set
-X_train_ordered    = data[ordered_train]
-X_train_disordered = data[disordered_train]
-y_train_ordered    = labels[ordered_train]
-y_train_disordered = labels[disordered_train]
-
-#The critical phases are left out the training
-X_critical = data[critical]
-y_critical = data[critical]
-
-X_test_ordered    = data[ordered_test]
-X_test_disordered = data[disordered_test]
-y_test_ordered    = labels[ordered_test]
-y_test_disordered = labels[disordered_test]
-
-#vizualise()
 
 #Initialize beta-parameters
-beta = np.random.randn(L*L)
-eta  = 0.005
-norm = 100
+beta   = np.random.uniform(-0.5,0.5,L*L+1)
+eta    = 0.005
+norm   = 100
 Lambda = 0
 
-for i in range(0,50):
+for i in range(0,100):
 
-	p_ordered    = logistic(np.dot(X_train_ordered,beta))
-	p_disordered = logistic(np.dot(X_train_disordered,beta))
-
-	gradC  = gradientCrossEntropy(X_train_disordered,p_disordered,y_train_disordered)
-	gradC += gradientCrossEntropy(X_train_ordered,p_ordered,y_train_ordered)
-	gradC += 2*Lambda*beta #L2 regularization
-
+	p_hat  = logistic(np.dot(X_train,beta))
+	gradC  = gradientCrossEntropy(X_train,p_hat,y_train)
+	gradC += 2*Lambda*beta
 	beta   = beta - eta*gradC
-	
-	norm      = np.linalg.norm(gradC)
-	norm_beta = np.linalg.norm(beta)
+	norm   = np.linalg.norm(gradC)
 	
 	print(norm, i)
+
+
+p_predict = logistic(np.dot(X_train,beta))
+train_accuracy = np.sum( (p_predict > 0.5)  == y_train )/float(X_train.shape[0])
+print("Training accuracy: %g" % train_accuracy)

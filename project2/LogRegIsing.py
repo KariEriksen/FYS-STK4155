@@ -91,9 +91,9 @@ with open(dat_filename, "rb") as f:
 data[data == 0] = -1
 
 # Set up slices of the dataset
-ordered    = slice(0, 30000)
+ordered    = slice(0, 10000)
 critical   = slice(70000, 100000)
-disordered = slice(100000,120000)
+disordered = slice(100000,105000)
 
 #Uses more memory but more compact
 X_train, X_test, y_train, y_test = skms.train_test_split(
@@ -122,8 +122,8 @@ train_accuracy=np.zeros(lmbdas.shape,np.float64)
 test_accuracy=np.zeros(lmbdas.shape,np.float64)
 crit_accuracy=np.zeros(lmbdas.shape,np.float64)
 
+#Train the model
 for i,Lambda in enumerate(lmbdas):
-    
     
     beta, norm = gradienDescent(X_train,y_train,Lambda,max_iters=150)
     
@@ -152,4 +152,5 @@ plt.ylabel('$\\mathrm{accuracy}$')
 
 plt.grid()
 plt.legend()
+plt.savefig("figures/logReg_acc_vs_regstrength.png")
 plt.show()

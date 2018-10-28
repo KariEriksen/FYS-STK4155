@@ -91,9 +91,9 @@ with open(dat_filename, "rb") as f:
 data[data == 0] = -1
 
 # Set up slices of the dataset
-ordered    = slice(0, 70000)
+ordered    = slice(0, 30000)
 critical   = slice(70000, 100000)
-disordered = slice(100000,160000)
+disordered = slice(100000,120000)
 
 #Uses more memory but more compact
 X_train, X_test, y_train, y_test = skms.train_test_split(
@@ -102,11 +102,12 @@ X_train, X_test, y_train, y_test = skms.train_test_split(
     test_size=0.5
 )
 
-X_critical = data[70000:100000,:]
-y_critical = labels[70000:100000]
+X_critical = data[critical]
+y_critical = labels[critical]
 
 del data, labels
 
+#Add intercept column
 X_train = np.c_[np.ones(X_train.shape[0]), X_train]
 X_test = np.c_[np.ones(X_test.shape[0]), X_test]
 X_critical = np.c_[np.ones(X_critical.shape[0]), X_critical]
@@ -116,11 +117,12 @@ print(y_train.shape)
 print(y_test.shape)
 
 
-
-
 lmbdas=np.logspace(-5,5,11)
+train_accuracy=np.zeros(lmbdas.shape,np.float64)
+test_accuracy=np.zeros(lmbdas.shape,np.float64)
+crit_accuracy=np.zeros(lmbdas.shape,np.float64)
 
-for Lambda in lmbdas:
+for i,Lambda in enumerate(lmbdas):
     
     
     beta, norm = gradienDescent(X_train,y_train,Lambda,max_iters=150)
@@ -129,12 +131,25 @@ for Lambda in lmbdas:
     p_test    = logistic(np.dot(X_test,beta))
     p_critical= logistic(np.dot(X_critical,beta))
     
-    train_accuracy = np.sum( (p_predict > 0.5)  == y_train )/float(X_train.shape[0])
-    test_accuracy  = np.sum( (p_test > 0.5)  == y_test )/float(X_test.shape[0])
-    crit_accuracy  = np.sum( (p_critical > 0.5)  == y_critical )/float(X_critical.shape[0])
+    train_accuracy[i] = np.sum( (p_predict > 0.5)  == y_train )/float(X_train.shape[0])
+    test_accuracy[i]  = np.sum( (p_test > 0.5)  == y_test )/float(X_test.shape[0])
+    crit_accuracy[i]  = np.sum( (p_critical > 0.5)  == y_critical )/float(X_critical.shape[0])
     
     print("Lambda: %g" % Lambda)
     print("norm(gradC): %g" % norm)
-    print("Training accuracy: %.6f" % train_accuracy)
-    print("Test accuracy: %.6f" % test_accuracy)
-    print("Critical accuracy: %g" % crit_accuracy)
+    print("Training accuracy: %.6f" % train_accuracy[i])
+    print("Test accuracy: %.6f" % test_accuracy[i])
+    print("Critical accuracy: %g" % crit_accuracy[i])
+
+
+# plot accuracy against regularisation strength
+plt.semilogx(lmbdas,train_accuracy,'*-b',label='Train')
+plt.semilogx(lmbdas,test_accuracy,'*-r',label='Test')
+plt.semilogx(lmbdas,crit_accuracy,'*-g',label='Critical')
+
+plt.xlabel('$\\lambda$')
+plt.ylabel('$\\mathrm{accuracy}$')
+
+plt.grid()
+plt.legend()
+plt.show()

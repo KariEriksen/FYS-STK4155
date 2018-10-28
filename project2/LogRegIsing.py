@@ -52,23 +52,22 @@ def crossEntropy(beta,X,y):
 def gradientCrossEntropy(X,p,y):
     return -np.dot(X.T,y-p)/float(X.shape[0])
 
-def gradienDescent(X_train,y_train,Lambda,eta=0.005,max_iters=50):
+def gradienDescent(X_train,y_train,Lambda,eta=0.005,max_iters=50,tolerance=1e-1):
     
     #Initialize beta-parameters
     beta   = np.random.uniform(-0.5,0.5,L*L+1)
     beta   = beta/np.linalg.norm(beta)
     norm = 100
     
-    for i in range(0,max_iters):
+    while(norm > tolerance):
     
         p_hat  = logistic(np.dot(X_train,beta))
         gradC  = gradientCrossEntropy(X_train,p_hat,y_train)
-        gradC += 2*Lambda*beta/X_train.shape[0]
+        gradC += Lambda*beta/X_train.shape[0]
         beta   = beta - eta*gradC
         norm   = np.linalg.norm(gradC)
         #print(norm, np.linalg.norm(beta), i)
-        if(norm < 1e-5):
-            break
+ 
     
     return beta, norm
 

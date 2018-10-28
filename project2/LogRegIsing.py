@@ -52,6 +52,26 @@ def crossEntropy(beta,X,y):
 def gradientCrossEntropy(X,p,y):
     return -np.dot(X.T,y-p)/float(X.shape[0])
 
+def gradienDescent(X_train,y_train,Lambda,eta=0.005,max_iters=50):
+    
+    #Initialize beta-parameters
+    beta   = np.random.uniform(-0.5,0.5,L*L+1)
+    beta   = beta/np.linalg.norm(beta)
+    norm = 100
+    
+    for i in range(0,max_iters):
+    
+        p_hat  = logistic(np.dot(X_train,beta))
+        gradC  = gradientCrossEntropy(X_train,p_hat,y_train)
+        gradC += 2*Lambda*beta/X_train.shape[0]
+        beta   = beta - eta*gradC
+        norm   = np.linalg.norm(gradC)
+        #print(norm, np.linalg.norm(beta), i)
+        if(norm < 1e-5):
+            break
+    
+    return beta, norm
+
 
 
 np.random.seed(1)
@@ -97,33 +117,24 @@ print(y_test.shape)
 
 
 
-#Initialize beta-parameters
-beta   = np.random.uniform(-0.5,0.5,L*L+1)
-beta   = beta/np.linalg.norm(beta)
-eta    = 0.005
-norm   = 100
-Lambda = 1e5
 
-for i in range(0,800):
+lmbdas=np.logspace(-5,5,11)
 
-    p_hat  = logistic(np.dot(X_train,beta))
-    gradC  = gradientCrossEntropy(X_train,p_hat,y_train)
-    gradC += 2*Lambda*beta/X_train.shape[0]
-    beta   = beta - eta*gradC
-    norm   = np.linalg.norm(gradC)
-    print(norm, np.linalg.norm(beta), i)
-    if(norm < 1e-5):
-        break
-
-
-p_predict = logistic(np.dot(X_train,beta))
-p_test    = logistic(np.dot(X_test,beta))
-p_critical= logistic(np.dot(X_critical,beta))
-
-train_accuracy = np.sum( (p_predict > 0.5)  == y_train )/float(X_train.shape[0])
-test_accuracy  = np.sum( (p_test > 0.5)  == y_test )/float(X_test.shape[0])
-crit_accuracy  = np.sum( (p_critical > 0.5)  == y_critical )/float(X_critical.shape[0])
-
-print("Training accuracy: %.6f" % train_accuracy)
-print("Test accuracy: %.6f" % test_accuracy)
-print("Critical accuracy: %g" % crit_accuracy)
+for Lambda in lmbdas:
+    
+    
+    beta, norm = gradienDescent(X_train,y_train,Lambda,max_iters=150)
+    
+    p_predict = logistic(np.dot(X_train,beta))
+    p_test    = logistic(np.dot(X_test,beta))
+    p_critical= logistic(np.dot(X_critical,beta))
+    
+    train_accuracy = np.sum( (p_predict > 0.5)  == y_train )/float(X_train.shape[0])
+    test_accuracy  = np.sum( (p_test > 0.5)  == y_test )/float(X_test.shape[0])
+    crit_accuracy  = np.sum( (p_critical > 0.5)  == y_critical )/float(X_critical.shape[0])
+    
+    print("Lambda: %g" % Lambda)
+    print("norm(gradC): %g" % norm)
+    print("Training accuracy: %.6f" % train_accuracy)
+    print("Test accuracy: %.6f" % test_accuracy)
+    print("Critical accuracy: %g" % crit_accuracy)

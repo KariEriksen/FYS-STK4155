@@ -29,6 +29,7 @@ class NeuralNetwork :
         self.weights        = None
         self.biases         = None
 
+        self.first_feedforward = True
 
     def set(    self,
                 inputs      = None,
@@ -93,7 +94,7 @@ class NeuralNetwork :
             print(  "Adding input layer with " + str(neurons) + " neurons "  +
                     "using " + str(activations) + " activations.")
             W = np.random.uniform(-1.0, 1.0, size=(inputs, neurons))
-            b = np.zeros(shape=(neurons,1))
+            b = np.random.uniform(-0.1, 0.1, size=(neurons,1))
             f = Activation(function = activations, alpha = alpha)
 
             self.weights = [W]
@@ -121,8 +122,7 @@ class NeuralNetwork :
             print(  "Adding output layer with " + str(outputs) + " outputs.")
             previousLayerNeurons = self.weights[-1].shape[1]
             W = np.random.uniform(-1.0, 1.0, size=(previousLayerNeurons, outputs))
-            b = np.zeros(shape=(outputs,1))
-            #f = np.vectorize(lambda x : x)
+            b = np.random.uniform(-0.1, 0.1, size=(outputs,1))
             f = Activation(function = activations, alpha = alpha)
             
             self.weights.append(W)
@@ -134,7 +134,7 @@ class NeuralNetwork :
                     str(activations) + " activations.")
             previousLayerNeurons = self.weights[-1].shape[1]
             W = np.random.uniform(-1.0, 1.0, size=(previousLayerNeurons, neurons))
-            b = np.zeros(shape=(neurons,1))
+            b = np.random.uniform(-0.1, 0.1, size=(neurons,1))
             f = Activation(function = activations, alpha = alpha)
 
             self.weights.append(W)
@@ -151,7 +151,10 @@ class NeuralNetwork :
         b = self.biases[i]
         f = self.act[i]
 
-        return f(np.dot(W.T,x) + b)
+        self.z[i] = np.dot(W.T,x) + b
+        self.a[i] = f(self.z[i])
+
+        return self.a[i]
 
 
     def __call__(self, x) :
@@ -159,7 +162,10 @@ class NeuralNetwork :
 
 
     def network(self, x) :
-        x = x
+        if self.first_feedforward :
+            self.z = [None]*len(self.weights)
+            self.a = [None]*len(self.weights)
+
         for i in range(len(self.weights)) :
             x = self.layer(x, i)
         return x

@@ -181,18 +181,11 @@ def test_neuralNetwork_network() :
     X_test = np.array([[1.5], [2.5], [3.5], [4.5]])
 
     output_skl = mlp.predict(X_test)
-    output_nn  = np.squeeze(nn.network(X_test.T))
-    print(output_skl.shape)
-    print(output_nn.shape)
+    output_nn  = np.squeeze(nn(X_test.T))
+
     print("%20.15f %20.15f %20.15f %20.15f" % (*output_skl,))
     print("%20.15f %20.15f %20.15f %20.15f" % (*output_nn,))
     assert output_nn == pytest.approx(output_skl)
-
-if __name__ == '__main__':
-    test_neuralNetwork_network()
-
-
-
 
 
 

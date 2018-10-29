@@ -92,8 +92,8 @@ def test_neuralNetwork_addLayer() :
     nn.addLayer()
     assert nn.weights[-1].shape == (inputs, neurons)
     assert nn.biases[-1] .shape == (neurons, 1)
-    assert type(nn.activations[-1]) is Activation
-    assert nn.activations[-1].function == nn.activations[-1]._sigmoid
+    assert type(nn.act[-1]) is Activation
+    assert nn.act[-1].function == nn.act[-1]._sigmoid
 
     new_neurons     = 10
     new_activations = 'relu' 
@@ -101,8 +101,8 @@ def test_neuralNetwork_addLayer() :
                 activations = new_activations)
     assert nn.weights[-1].shape == (neurons, new_neurons)
     assert nn.biases[-1] .shape == (new_neurons, 1)
-    assert type(nn.activations[-1]) is Activation
-    assert nn.activations[-1].function == nn.activations[-1]._relu
+    assert type(nn.act[-1]) is Activation
+    assert nn.act[-1].function == nn.act[-1]._relu
 
     nn_copy1 = copy.deepcopy(nn)
     nn_copy2 = copy.deepcopy(nn)
@@ -142,8 +142,55 @@ def test_neuralNetwork_addLayer() :
     assert nn(x).shape          == (new_outputs,1)
     assert nn.network(x).shape  == (new_outputs,1)
 
+
+def test_neuralNetwork_network() :
+    # Lets set up a sci-kit learn neural network and copy over the weights 
+    # and biases to our network, verify that the two give the exact same 
+    # result.
+
+    from sklearn.neural_network import MLPRegressor
+
+    X = [[0.0], [1.0], [2.0], [3.0], [4.0], [5.0]]
+    y = [0, 2, 4, 6, 8, 10]
+    mlp = MLPRegressor( solver              = 'lbfgs', 
+                        alpha               = 0.0,
+                        hidden_layer_sizes  = (3, 3), 
+                        random_state        = 1,
+                        activation          = 'relu' )
+    mlp.fit(X,y)
+    W_skl = mlp.coefs_
+    b_skl = mlp.intercepts_
+
+    nn = NeuralNetwork( inputs      = 1,
+                        outputs     = 1,
+                        layers      = 3,
+                        neurons     = 3,
+                        activations = 'relu' )
+    nn.addLayer()
+    nn.addLayer()
+    nn.addOutputLayer(activations = 'identity')
+
+    W_nn = nn.weights
+    b_nn = nn.biases
+
+    for i in range(len(W_nn)) :
+        W_nn[i] = W_skl[i]
+    for i in range(len(b_nn)) :
+        b_nn[i] = np.expand_dims(b_skl[i], axis=1)
+
+    X_test = np.array([[1.5], [2.5], [3.5], [4.5]])
+
+    output_skl = mlp.predict(X_test)
+    output_nn  = np.squeeze(nn.network(X_test.T))
+    print(output_skl.shape)
+    print(output_nn.shape)
+    print("%20.15f %20.15f %20.15f %20.15f" % (*output_skl,))
+    print("%20.15f %20.15f %20.15f %20.15f" % (*output_nn,))
+    assert output_nn == pytest.approx(output_skl)
+
 if __name__ == '__main__':
-    test_neuralNetwork_addLayer()
+    test_neuralNetwork_network()
+
 
 
 

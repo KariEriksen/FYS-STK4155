@@ -44,9 +44,12 @@ class NeuralNetwork :
         self.activations    = activations   if (activations is not None) else self.activations
 
     def addOutputLayer( self,
-                        outputs     = None) :
-        self.addLayer(  outputs = outputs,
-                        output  = True)
+                        outputs     = None,
+                        activations = None) :
+
+        self.addLayer(  outputs     = outputs,
+                        output      = True,
+                        activations = activations)
 
     def addLayer(   self,
                     inputs      = None,
@@ -93,9 +96,9 @@ class NeuralNetwork :
             b = np.zeros(shape=(neurons,1))
             f = Activation(function = activations, alpha = alpha)
 
-            self.weights        = [W]
-            self.biases         = [b]
-            self.activations    = [f]
+            self.weights = [W]
+            self.biases  = [b]
+            self.act     = [f]
             
         elif output == True :
             if outputs is None :
@@ -119,31 +122,34 @@ class NeuralNetwork :
             previousLayerNeurons = self.weights[-1].shape[1]
             W = np.random.uniform(-1.0, 1.0, size=(previousLayerNeurons, outputs))
             b = np.zeros(shape=(outputs,1))
-            f = np.vectorize(lambda x : x)
+            #f = np.vectorize(lambda x : x)
+            f = Activation(function = activations, alpha = alpha)
             
-            self.weights    .append(W)
-            self.biases     .append(b)
-            self.activations.append(f)
+            self.weights.append(W)
+            self.biases .append(b)
+            self.act    .append(f)
 
         else :
             print(  "Adding layer with " + str(neurons) + " neurons using "  +
-                    activations + " activations.")
+                    str(activations) + " activations.")
             previousLayerNeurons = self.weights[-1].shape[1]
             W = np.random.uniform(-1.0, 1.0, size=(previousLayerNeurons, neurons))
             b = np.zeros(shape=(neurons,1))
             f = Activation(function = activations, alpha = alpha)
 
-            self.weights    .append(W)
-            self.biases     .append(b)
-            self.activations.append(f)
+            self.weights.append(W)
+            self.biases .append(b)
+            self.act    .append(f)
 
 
     def layer(self, x, layer_number) :
         i = layer_number
 
+        print("x.shape=", x.shape)
+
         W = self.weights[i]
         b = self.biases[i]
-        f = self.activations[i]
+        f = self.act[i]
 
         return f(np.dot(W.T,x) + b)
 
@@ -153,6 +159,7 @@ class NeuralNetwork :
 
 
     def network(self, x) :
+        x = x
         for i in range(len(self.weights)) :
             x = self.layer(x, i)
         return x

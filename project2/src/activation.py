@@ -46,7 +46,8 @@ class Activation :
             raise ValueError("Unrecognized activation function <" + str(string) + ">.")
 
     def _sigmoid(self, x) :
-        return 1.0 / (np.exp(-x) + 1.0)
+        print(x)
+        return 1.0 / (1.0 + np.exp(-x))
 
     def _sigmoid_derivative(self, x) :
         return x * (1.0 - x)

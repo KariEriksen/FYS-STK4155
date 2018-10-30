@@ -160,10 +160,10 @@ class NeuralNetwork :
         b = self.biases[i]
         f = self.act[i]
 
-        self.z[i] = np.dot(W.T,x) + b
-        self.a[i] = f(self.z[i])
+        self.z[i+1] = np.dot(W.T, x) + b
+        self.a[i+1] = f(self.z[i+1])
 
-        return self.a[i]
+        return self.a[i+1]
 
 
     def __call__(self, x) :
@@ -172,11 +172,18 @@ class NeuralNetwork :
 
     def network(self, x) :
         if self.first_feedforward :
-            self.z = [None]*len(self.weights)
-            self.a = [None]*len(self.weights)
+            self.z = [None]*(len(self.weights)+1)
+            self.a = [None]*(len(self.weights)+1)
             self.first_feedforward = False
 
-        for i in range(len(self.weights)) :
+        # First layer
+        self.a[0] = x
+        self.z[0] = np.zeros(shape=x.shape)
+        self.z[1] = np.dot(self.weights[0].T, x) + self.biases[0]
+        self.a[1] = self.act[0](self.z[1])
+        x = self.a[1]
+
+        for i in range(1, len(self.weights)) :
             x = self.layer(x, i)
         return x
 
@@ -190,11 +197,7 @@ class NeuralNetwork :
 
 
         self.delta[-1] = (  self.cost.derivative(y, target) 
-                          * self.act[-1].derivative(self.a[-1]) )
-        print("delta: ", self.delta[-1])
-        print("cost.der.shape: ", self.cost.derivative(y,target).shape)
-        print("self.act[-1].der(a[-1]): ", self.act[-1].derivative(self.a[-1]))
-        print("a[-1]: ", self.a[-1])
+                          * self.act[-1].derivative(self.z[-1]) )
 
 
 

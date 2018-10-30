@@ -20,7 +20,7 @@ class CostFunction :
             raise ValueError("Cost function <" + str(string) + "> not recognized.")
 
     def _mse(self, y, target) :
-        return 0.5 * np.sum((y - target)**2)
+        return ((y - target)**2).mean() * 0.5
 
     def _mse_derivative(self, y, target) :
         return y - target

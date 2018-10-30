@@ -230,7 +230,8 @@ def test_neuralNetwork_backpropagation() :
     nn.addLayer()
     nn.addOutputLayer(activations = 'identity')
     nn.weights = W_skl
-    nn.biases  = b_skl
+    for i, b in enumerate(b_skl) :
+        nn.biases[i]  = np.expand_dims(b, axis=1)
  
     # From the sklearn source, we need to set up some lists to use the _backprop
     # function in MLPRegressor, see:
@@ -260,8 +261,16 @@ def test_neuralNetwork_backpropagation() :
     intercept_grads = [np.empty(n_fan_out_) for n_fan_out_ in
                        layer_units[1:]]
     # ========================================================================
+    activations = mlp._forward_pass(activations)
     loss, coef_grads, intercept_grads = mlp._backprop(
             X, y, activations, deltas, coef_grads, intercept_grads)
+    print("coefs_:")
+    for c in mlp.coefs_ :
+        print(c)
+    print("intercepts_:")
+    for i in mlp.intercepts_ :
+        print(i)
+    print(".-.--.-.-.-.-.-.-.-.-.-.")
     print("loss:", loss)
 
     print("coef_grads:")
@@ -277,7 +286,20 @@ def test_neuralNetwork_backpropagation() :
     nn.backpropagation(yhat, y)
     print(nn.delta[-1])
     print("====================")
-
+    for a in activations :
+        print(a)
+    print(" ")
+    for a in nn.a :
+        print(a.T)
+    print("--------------------")
+    for w in nn.weights :
+        print(w.shape)
+    print("")
+    for w in mlp.coefs_ :
+        print(w.shape)
+    print("......................")
+    print(nn.biases[0].shape)
+    print(mlp.out_activation_)
 
 if __name__ == '__main__':
     test_neuralNetwork_backpropagation()

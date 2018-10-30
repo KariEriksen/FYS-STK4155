@@ -17,3 +17,4 @@ project1/franke2d.m
 *__pycache__
 .DS_Store
 *.toc
+/project1/figures/bias_variance_tradeoff.png

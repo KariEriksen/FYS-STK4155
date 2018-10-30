@@ -206,7 +206,9 @@ def test_neuralNetwork_backpropagation() :
                         random_state        = 1,
                         activation          = 'logistic')
     # Force sklearn to set up all the matrices by fitting a data set.
-    mlp.fit(X,y)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        mlp.fit(X,y)
     
     # Throw away all the fitted values, randomize W and b matrices.
     
@@ -264,6 +266,11 @@ def test_neuralNetwork_backpropagation() :
     activations = mlp._forward_pass(activations)
     loss, coef_grads, intercept_grads = mlp._backprop(
             X, y, activations, deltas, coef_grads, intercept_grads)
+    
+    yhat = nn(X)
+    nn.backpropagation(yhat, y)
+    """
+
     print("coefs_:")
     for c in mlp.coefs_ :
         print(c)
@@ -300,6 +307,34 @@ def test_neuralNetwork_backpropagation() :
     print("......................")
     print(nn.biases[0].shape)
     print(mlp.out_activation_)
+    """
+    print("nn.deltas: ")
+    for d in nn.delta :
+        print(d)
+    print("")
+    print("mlp.intercept_grads: ")
+    for d in intercept_grads :
+        print(d)
+
+    print("====================")
+    print("activations::::")
+    for a in activations :
+        print(a)
+    print(" ")
+    for a in nn.a :
+        print(a.T)
+    print("--------------------")
+
+    for i, d_bias in enumerate(nn.d_biases) :
+        assert np.squeeze(d_bias) == pytest.approx(np.squeeze(intercept_grads[i]))
+
+    print("====-----=====-----=====----====")
+    print("D_WEIGHT")
+    for i, d_weight in enumerate(nn.d_weights) :
+        #assert np.squeeze(d_weight) == pytest.approx(np.squeeze(coef_grads[i]))
+        print(d_weight)
+        print(coef_grads[i])
+        print("")
 
 if __name__ == '__main__':
     test_neuralNetwork_backpropagation()

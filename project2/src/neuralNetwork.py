@@ -196,10 +196,18 @@ class NeuralNetwork :
             self.first_backprop = False
 
 
-        self.delta[-1] = (  self.cost.derivative(y, target) 
-                          * self.act[-1].derivative(self.z[-1]) )
-
-
+        self.delta[-1]      = (  self.cost.derivative(y, target) 
+                               * self.act[-1].derivative(self.a[-1].T) )
+        self.d_weights[-1]  = np.dot(self.a[-2], self.delta[-1])
+        print(self.delta[-1].shape, self.a[-2].shape)
+        self.d_biases[-1]   = self.delta[-1]
+        
+        # Iterate backwards through the layers
+        for i in range(2, len(self.weights)+1) :
+            self.delta[-i]      = (  np.dot(self.delta[-i+1], self.weights[-i+1].T)
+                                   * self.act[-i].derivative(self.a[-i].T) )
+            self.d_weights[-i]  = np.dot(self.a[-i-1], self.delta[-i])
+            self.d_biases[-i]   = self.delta[-i]
 
 
 

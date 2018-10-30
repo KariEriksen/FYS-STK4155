@@ -18,7 +18,7 @@ def test_activation_init() :
 
     # Default values
     assert act.function == act._sigmoid
-    assert act.alpha    == pytest.approx(0.1)
+    assert act.alpha    == pytest.approx(0.01)
 
     # String to correct function conversion
     act = Activation(function = 'tanh')

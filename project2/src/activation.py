@@ -78,12 +78,15 @@ class Activation :
 
     def _elu(self, x) :
         neg = x<0.0
-        x[neg] = self.alpha * (np.exp(x[neg]) - 1.0)
+        #x[neg] = self.alpha * (np.exp(x[neg]) - 1.0)
+        x[neg] = (np.exp(x[neg]) - 1.0)
         return x
 
     def _elu_derivative(self, x) :
         neg = x<0.0
-        x[x<0.0] = self.alpha * np.exp(x[neg])
+        #x[x<0.0] = self.alpha * np.exp(x[neg])
+        x[neg] = np.exp(x[neg])
+        x[x >= 0.0] = 1.0
 
     def __call__(self, x) :
         return self.function(x)

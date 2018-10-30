@@ -2,13 +2,15 @@ import sys
 import os
 import numpy as np
 import warnings
+import copy
 
 
 # Add the project2/src/ directory to the python path so we can import the code 
 # we need to use directly as 'from <file name> import <function/class>'
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from activation import Activation
+from activation     import Activation
+from costFunction   import CostFunction
 
 
 class NeuralNetwork :
@@ -18,18 +20,23 @@ class NeuralNetwork :
                     outputs     = None,
                     layers      = None,
                     neurons     = None,
-                    activations = None) :
+                    activations = None,
+                    silent      = False) :
 
         self.inputs         = inputs
         self.outputs        = outputs
         self.layers         = layers
         self.neurons        = neurons
         self.activations    = activations
+        self.silent         = silent
 
         self.weights        = None
         self.biases         = None
 
+        self.cost           = CostFunction()
+
         self.first_feedforward = True
+        self.first_backprop    = True
 
     def set(    self,
                 inputs      = None,
@@ -90,9 +97,10 @@ class NeuralNetwork :
                     inputs = self.inputs
             else :
                 self.inputs = inputs 
-
-            print(  "Adding input layer with " + str(neurons) + " neurons "  +
-                    "using " + str(activations) + " activations.")
+            
+            if not self.silent :
+                print(  "Adding input layer with " + str(neurons) + " neurons "  +
+                        "using " + str(activations) + " activations.")
             W = np.random.uniform(-1.0, 1.0, size=(inputs, neurons))
             b = np.random.uniform(-0.1, 0.1, size=(neurons,1))
             f = Activation(function = activations, alpha = alpha)
@@ -119,7 +127,9 @@ class NeuralNetwork :
                                     " overrides this value.")
                     self.outputs = outputs
 
-            print(  "Adding output layer with " + str(outputs) + " outputs.")
+            if not self.silent :
+                print(  "Adding output layer with " + str(outputs) + " outputs, "  +
+                        "with " + str(activations) + " activation.")
             previousLayerNeurons = self.weights[-1].shape[1]
             W = np.random.uniform(-1.0, 1.0, size=(previousLayerNeurons, outputs))
             b = np.random.uniform(-0.1, 0.1, size=(outputs,1))
@@ -130,8 +140,9 @@ class NeuralNetwork :
             self.act    .append(f)
 
         else :
-            print(  "Adding layer with " + str(neurons) + " neurons using "  +
-                    str(activations) + " activations.")
+            if not self.silent :
+                print(  "Adding layer with " + str(neurons) + " neurons using "  +
+                        str(activations) + " activations.")
             previousLayerNeurons = self.weights[-1].shape[1]
             W = np.random.uniform(-1.0, 1.0, size=(previousLayerNeurons, neurons))
             b = np.random.uniform(-0.1, 0.1, size=(neurons,1))
@@ -144,8 +155,6 @@ class NeuralNetwork :
 
     def layer(self, x, layer_number) :
         i = layer_number
-
-        print("x.shape=", x.shape)
 
         W = self.weights[i]
         b = self.biases[i]
@@ -165,10 +174,27 @@ class NeuralNetwork :
         if self.first_feedforward :
             self.z = [None]*len(self.weights)
             self.a = [None]*len(self.weights)
+            self.first_feedforward = False
 
         for i in range(len(self.weights)) :
             x = self.layer(x, i)
         return x
+
+
+    def backpropagation(self, y, target) :
+        if self.first_backprop :
+            self.delta      = [None]*len(self.weights)
+            self.d_weights  = copy.deepcopy(self.weights)
+            self.d_biases   = copy.deepcopy(self.biases)
+            self.first_backprop = False
+
+
+        self.delta[-1] = (  self.cost.derivative(y, target) 
+                          * self.act[-1].derivative(self.a[-1]) )
+        print("delta: ", self.delta[-1])
+        print("cost.der.shape: ", self.cost.derivative(y,target).shape)
+        print("self.act[-1].der(a[-1]): ", self.act[-1].derivative(self.a[-1]))
+        print("a[-1]: ", self.a[-1])
 
 
 

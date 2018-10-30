@@ -143,7 +143,7 @@ def test_neuralNetwork_addLayer() :
     assert nn.network(x).shape  == (new_outputs,1)
 
 
-def test_neuralNetwork_network() :
+def test_neuralNetwork_network( silent = False) :
     # Lets set up a sci-kit learn neural network and copy over the weights 
     # and biases to our network, verify that the two give the exact same 
     # result.
@@ -152,7 +152,7 @@ def test_neuralNetwork_network() :
 
     X = [[0.0], [1.0], [2.0], [3.0], [4.0], [5.0]]
     y = [0, 2, 4, 6, 8, 10]
-    mlp = MLPRegressor( solver              = 'lbfgs', 
+    mlp = MLPRegressor( solver              = 'sgd', 
                         alpha               = 0.0,
                         hidden_layer_sizes  = (3, 3), 
                         random_state        = 1,
@@ -165,7 +165,8 @@ def test_neuralNetwork_network() :
                         outputs     = 1,
                         layers      = 3,
                         neurons     = 3,
-                        activations = 'relu' )
+                        activations = 'relu',
+                        silent      = silent )
     nn.addLayer()
     nn.addLayer()
     nn.addOutputLayer(activations = 'identity')
@@ -178,14 +179,112 @@ def test_neuralNetwork_network() :
     for i in range(len(b_nn)) :
         b_nn[i] = np.expand_dims(b_skl[i], axis=1)
 
-    X_test = np.array([[1.5], [2.5], [3.5], [4.5]])
+    X_test = np.array([[1.2857], [9.2508255], [-5.25255], [3.251095]])
 
     output_skl = mlp.predict(X_test)
     output_nn  = np.squeeze(nn(X_test.T))
 
-    print("%20.15f %20.15f %20.15f %20.15f" % (*output_skl,))
-    print("%20.15f %20.15f %20.15f %20.15f" % (*output_nn,))
+    if not silent :
+        print("%20.15f %20.15f %20.15f %20.15f" % (*output_skl,))
+        print("%20.15f %20.15f %20.15f %20.15f" % (*output_nn,))
     assert output_nn == pytest.approx(output_skl)
+
+    return nn, mlp
+
+
+def test_neuralNetwork_backpropagation() :
+    # We re-use the test_neuralNetwork_network networks and this time check
+    # that the computed backpropagation derivatives are equal.
+
+    from sklearn.neural_network import MLPRegressor
+
+    X = [[0.0], [1.0], [2.0], [3.0], [4.0], [5.0]]
+    y = [0, 2, 4, 6, 8, 10]
+    mlp = MLPRegressor( solver              = 'sgd', 
+                        alpha               = 0.0,
+                        hidden_layer_sizes  = (3, 3), 
+                        random_state        = 1,
+                        activation          = 'logistic')
+    # Force sklearn to set up all the matrices by fitting a data set.
+    mlp.fit(X,y)
+    
+    # Throw away all the fitted values, randomize W and b matrices.
+    
+    np.random.seed(18)
+    for i, coeff in enumerate(mlp.coefs_) :
+        mlp.coefs_[i]      = np.random.normal(size=coeff.shape)
+    for i, bias in enumerate(mlp.intercepts_) :
+        mlp.intercepts_[i] = np.random.normal(size=bias.shape)
+
+
+    W_skl = mlp.coefs_
+    b_skl = mlp.intercepts_
+
+    nn = NeuralNetwork( inputs      = 1,
+                        outputs     = 1,
+                        layers      = 3,
+                        neurons     = 3,
+                        activations = 'sigmoid',
+                        silent      = False )
+    nn.addLayer()
+    nn.addLayer()
+    nn.addOutputLayer(activations = 'identity')
+    nn.weights = W_skl
+    nn.biases  = b_skl
+ 
+    # From the sklearn source, we need to set up some lists to use the _backprop
+    # function in MLPRegressor, see:
+    #
+    #    https://github.com/scikit-learn/scikit-learn/blob/bac89c2/sklearn/neural_network/multilayer_perceptron.py#L355
+    #
+    # ========================================================================
+    # Initialize lists
+    X = np.array([[1.125982598]])#, [2.5], [3.5], [4.5]])
+    y = np.array([ 8.29289285])#,   5.0,   7.0,   5.0])
+    mlp.predict(X)
+    n_samples, n_features = X.shape
+    batch_size = n_samples
+    hidden_layer_sizes = mlp.hidden_layer_sizes
+    # Make sure self.hidden_layer_sizes is a list
+    if not hasattr(hidden_layer_sizes, "__iter__"):
+        hidden_layer_sizes = [hidden_layer_sizes]
+    hidden_layer_sizes = list(hidden_layer_sizes)
+    layer_units = ([n_features] + hidden_layer_sizes + [mlp.n_outputs_])
+    activations = [X]
+    activations.extend(np.empty((batch_size, n_fan_out)) 
+                       for n_fan_out in layer_units[1:])
+    deltas = [np.empty_like(a_layer) for a_layer in activations]
+    coef_grads = [np.empty((n_fan_in_, n_fan_out_)) 
+                  for n_fan_in_, n_fan_out_ in zip(layer_units[:-1],
+                                                   layer_units[1:])]
+    intercept_grads = [np.empty(n_fan_out_) for n_fan_out_ in
+                       layer_units[1:]]
+    # ========================================================================
+    loss, coef_grads, intercept_grads = mlp._backprop(
+            X, y, activations, deltas, coef_grads, intercept_grads)
+    print("loss:", loss)
+
+    print("coef_grads:")
+    for grad in coef_grads :
+        print(grad)
+
+
+    print("intercept_grads: ")
+    for grad in intercept_grads :
+        print(grad)
+
+    yhat = nn(X)
+    nn.backpropagation(yhat, y)
+    print(nn.delta[-1])
+    print("====================")
+
+
+if __name__ == '__main__':
+    test_neuralNetwork_backpropagation()
+
+
+
+
 
 
 

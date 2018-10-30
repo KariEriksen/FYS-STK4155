@@ -242,8 +242,8 @@ def test_neuralNetwork_backpropagation() :
     #
     # ========================================================================
     # Initialize lists
-    X = np.array([[1.125982598]])#, [2.5], [3.5], [4.5]])
-    y = np.array([ 8.29289285])#,   5.0,   7.0,   5.0])
+    X = np.array([[1.125982598]])
+    y = np.array([ 8.29289285])
     mlp.predict(X)
     n_samples, n_features = X.shape
     batch_size = n_samples
@@ -269,77 +269,97 @@ def test_neuralNetwork_backpropagation() :
     
     yhat = nn(X)
     nn.backpropagation(yhat, y)
-    """
-
-    print("coefs_:")
-    for c in mlp.coefs_ :
-        print(c)
-    print("intercepts_:")
-    for i in mlp.intercepts_ :
-        print(i)
-    print(".-.--.-.-.-.-.-.-.-.-.-.")
-    print("loss:", loss)
-
-    print("coef_grads:")
-    for grad in coef_grads :
-        print(grad)
-
-
-    print("intercept_grads: ")
-    for grad in intercept_grads :
-        print(grad)
-
-    yhat = nn(X)
-    nn.backpropagation(yhat, y)
-    print(nn.delta[-1])
-    print("====================")
-    for a in activations :
-        print(a)
-    print(" ")
-    for a in nn.a :
-        print(a.T)
-    print("--------------------")
-    for w in nn.weights :
-        print(w.shape)
-    print("")
-    for w in mlp.coefs_ :
-        print(w.shape)
-    print("......................")
-    print(nn.biases[0].shape)
-    print(mlp.out_activation_)
-    """
-    print("nn.deltas: ")
-    for d in nn.delta :
-        print(d)
-    print("")
-    print("mlp.intercept_grads: ")
-    for d in intercept_grads :
-        print(d)
-
-    print("====================")
-    print("activations::::")
-    for a in activations :
-        print(a)
-    print(" ")
-    for a in nn.a :
-        print(a.T)
-    print("--------------------")
 
     for i, d_bias in enumerate(nn.d_biases) :
         assert np.squeeze(d_bias) == pytest.approx(np.squeeze(intercept_grads[i]))
 
-    print("====-----=====-----=====----====")
-    print("D_WEIGHT")
     for i, d_weight in enumerate(nn.d_weights) :
-        #assert np.squeeze(d_weight) == pytest.approx(np.squeeze(coef_grads[i]))
-        print(d_weight)
-        print(coef_grads[i])
-        print("")
+        assert np.squeeze(d_weight) == pytest.approx(np.squeeze(coef_grads[i]))
+
+
+
+def setup_test_MLPRegressor() :
+    import warnings
+    import numpy as np
+    from sklearn.neural_network import MLPRegressor
+
+    X = np.array([[0.0], [1.0]])
+    y = np.array([0, 2])
+    mlp = MLPRegressor( solver              = 'sgd',      # Stochastic gradient descent.
+                        activation          = 'logistic', # Skl name for sigmoid.
+                        alpha               = 0.0,        # No regularization for simplicity.
+                        hidden_layer_sizes  = (3, 3) )    # Full network is of size.
+
+    # Force sklearn to set up all the matrices by fitting a data set. We dont 
+    # care if it converges or not, so lets ignore raised warnings.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        mlp.fit(X,y)
+
+    # A single, completely random, data point which we will propagate through 
+    # the network.
+    X      = np.array([[1.125982598]])
+    target = np.array([ 8.29289285])
+    mlp.predict(X)
+
+    # Now we need to prepare some arrays to enable calling the _backprop method.
+    # You can just ignore everything enclosed in =====.
+    # ==========================================================================
+    n_samples, n_features   = X.shape
+    batch_size              = n_samples
+    hidden_layer_sizes      = mlp.hidden_layer_sizes
+    if not hasattr(hidden_layer_sizes, "__iter__"):
+        hidden_layer_sizes = [hidden_layer_sizes]
+    hidden_layer_sizes = list(hidden_layer_sizes)
+    layer_units = ([n_features] + hidden_layer_sizes + [mlp.n_outputs_])
+    activations = [X]
+    activations.extend(np.empty((batch_size, n_fan_out)) 
+                       for n_fan_out in layer_units[1:])
+    deltas      = [np.empty_like(a_layer) for a_layer in activations]
+    coef_grads  = [np.empty((n_fan_in_, n_fan_out_)) 
+                   for n_fan_in_, n_fan_out_ in zip(layer_units[:-1],
+                                                    layer_units[1:])]
+    intercept_grads = [np.empty(n_fan_out_) for n_fan_out_ in layer_units[1:]]
+    activations     = mlp._forward_pass(activations) 
+    # ==========================================================================
+
+    # Now we are ready to call the backpropagation method on the MLPRegressor 
+    # class.
+    loss, coef_grads, intercept_grads = mlp._backprop(
+            X, target, activations, deltas, coef_grads, intercept_grads)
+
+    # Set up your own neural network class/function/script/punch card and make 
+    # a net with 1 input, two hidden layers of 3 neurons each, and a single 
+    # output. In this case, the hidden layers should use sigmoid activations, 
+    # while the output layer should use identity activation (f(x)=x, i.e. no 
+    # activation function).
+    nn = NeuralNetwork( inputs          = 1,
+                        hidden_layers   = 2,
+                        neurons         = 3,
+                        outputs         = 1,
+                        out_activations = 'identity',
+                        activations     = 'sigmoid')
+    nn.addLayer()
+    nn.addLayer()
+    nn.addOutputLayer(activations = 'identity')
+    # Copy the weights and biases from the sci-kit learn network to your own.
+    for i, w in enumerate(mlp.coefs_) :
+        nn.weights[i] = w
+    for i, b in enumerate(mlp.intercepts_) :
+        nn.biases[i]  = b
+
+    # Call your own backpropagation function, and you're ready to compare with 
+    # the sci-kit learn code.
+    y = nn.forward_pass(X)
+    nn.backpropagation(y, target)
+
+
+
+
+
 
 if __name__ == '__main__':
-    test_neuralNetwork_backpropagation()
-
-
+    setup_test_MLPRegressor()
 
 
 

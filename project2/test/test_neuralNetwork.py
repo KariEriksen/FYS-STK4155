@@ -354,12 +354,41 @@ def setup_test_MLPRegressor() :
     nn.backpropagation(y, target)
 
 
+def test_neuralNetwork_fit() :
+    np.random.seed(2019)
+    X       = np.random.normal(size=(1,1000))
+    target  = X
 
+    nn = NeuralNetwork( inputs          = 1,
+                        neurons         = 3,
+                        outputs         = 1,
+                        activations     = 'sigmoid',
+                        silent          = True)
+    nn.addLayer()
+    nn.addLayer()
+    nn.addOutputLayer(activations = 'identity')
+    for w in nn.weights :
+        print("w: ", w)
+    for b in nn.biases :
+        print("b: ", b)
+    nn.fit( X, 
+            target,
+            shuffle             = True,
+            batch_size          = 200,
+            validation_fraction = 0.2,
+            verbose             = True,
+            silent              = False,
+            epochs              = 1000)
+    print("===")
+    for w in nn.weights :
+        print("w: ", w)
+    for b in nn.biases :
+        print("b: ", b)
 
 
 
 if __name__ == '__main__':
-    setup_test_MLPRegressor()
+    test_neuralNetwork_fit()
 
 
 

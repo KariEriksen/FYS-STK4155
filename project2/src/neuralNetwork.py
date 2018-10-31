@@ -1,9 +1,11 @@
 import sys
 import os
-import numpy as np
 import warnings
 import copy
-
+import time
+import numpy as np
+import sklearn
+from math import ceil
 
 # Add the project2/src/ directory to the python path so we can import the code 
 # we need to use directly as 'from <file name> import <function/class>'
@@ -169,6 +171,11 @@ class NeuralNetwork :
     def __call__(self, x) :
         return self.network(x)
 
+    def predict(self, x) :
+        return self.network(x)
+
+    def forward_pass(self, x) :
+        return self.network(x)
 
     def network(self, x) :
         if self.first_feedforward :
@@ -195,19 +202,138 @@ class NeuralNetwork :
             self.d_biases   = copy.deepcopy(self.biases)
             self.first_backprop = False
 
-
         self.delta[-1]      = (  self.cost.derivative(y, target) 
                                * self.act[-1].derivative(self.a[-1].T) )
         self.d_weights[-1]  = np.dot(self.a[-2], self.delta[-1])
-        print(self.delta[-1].shape, self.a[-2].shape)
-        self.d_biases[-1]   = self.delta[-1]
+        self.d_biases[-1]   = np.mean(self.delta[-1], axis = 0, keepdims = True).T
         
         # Iterate backwards through the layers
         for i in range(2, len(self.weights)+1) :
             self.delta[-i]      = (  np.dot(self.delta[-i+1], self.weights[-i+1].T)
                                    * self.act[-i].derivative(self.a[-i].T) )
             self.d_weights[-i]  = np.dot(self.a[-i-1], self.delta[-i])
-            self.d_biases[-i]   = self.delta[-i]
+            self.d_biases[-i]   = np.mean(self.delta[-i], axis = 0, keepdims = True).T
+
+
+    def fit(self,
+            x,
+            target,
+            shuffle             = True,
+            learning_rate       = 0.001,
+            epochs              = 200,
+            batch_size          = 200,
+            validation_fraction = 0.1,
+            momentum            = 0.9,
+            verbose             = False,
+            silent              = False) :
+
+        self.n_features, self.n_samples = x.shape
+
+        if not (self.n_features == self.inputs) :
+            raise ValueError(   "The number of features in the input data does not equal " +
+                                "the number of network *inputs*.") 
+        self.n_validation       = int(round(validation_fraction*self.n_samples))
+        self.x_validation       = x     [:,:self.n_validation]
+        self.target_validation  = target[:,:self.n_validation]
+        self.x_train        = x     [:,self.n_validation+1:]
+        self.target_train   = target[:,self.n_validation+1:]
+
+        self.batch_size = min(batch_size, self.n_samples - self.n_validation) 
+        if batch_size > self.batch_size :
+            warning_string = ("The specified batch_size (" + str(batch_size) + ") is larger than "      +
+                              "the available data set size (" + str(self.n_samples-self.n_validation)   +
+                              ") after reserving " + str(self.n_validation) + " samples for "           +
+                              "validation. Using batch_size = " + str(self.n_samples-self.n_validation)) 
+            warnings.warn(warning_string)
+
+        
+        validation_skip      = 5
+        validation_it        = 0
+        self.validation_loss = np.zeros(int(ceil(epochs / validation_skip)))
+        self.training_loss   = np.zeros(epochs)
+
+        if not shuffle :
+            raise NotImplementedError("~")
+        else :
+
+            if not silent :
+                #         ep   t/b   t/e    t    rt   bcost vcost
+                print(" %-8s %-20s %-20s %-15s %-20s %-15s %-15s " % (  "Epoch", 
+                                                                        "Time per batch",
+                                                                        "Time this epoch",
+                                                                        "Elapsed time",
+                                                                        "Remaining time",
+                                                                        "Batch cost",
+                                                                        "Validation cost"))
+            batches_per_epoch = int(ceil(self.x_train.shape[1] / self.batch_size))
+            
+            start_time = time.time()
+
+            for epoch in range(epochs) :    
+                epoch_start_time   = time.time()
+                batch_time_average = 0
+
+                epoch_loss = 0
+
+                for batch in range(batches_per_epoch) :
+                    batch_start_time = time.time()
+                    x_batch, target_batch   = sklearn.utils.shuffle(self.x_train.T, 
+                                                                    self.target_train.T, 
+                                                                    n_samples = self.batch_size)
+                    y_batch = self.forward_pass(x_batch.T)
+                    self.backpropagation(x_batch, target_batch)
+                    batch_loss = self.cost(y_batch, target_batch)
+                    epoch_loss += batch_loss
+
+                    for i, d_w in enumerate(self.d_weights) :
+                        self.weights[i] -= learning_rate * d_w
+                    for i, d_b in enumerate(self.d_biases) :
+                        self.biases[i]  -= learning_rate * d_b
+
+                    batch_time_average += batch_start_time - time.time()
+                
+                batch_time_average /= float(batches_per_epoch)
+                epoch_time          = time.time() - epoch_start_time
+
+                if verbose :
+                    #       ep      t/b   t/e    t    rt     bcost   vcost
+                    print(" %5d    %-20s %-20s %-15.3s %-20s %-15.5f %-15s " % (epoch, 
+                                                                            "",
+                                                                            "",
+                                                                            "",
+                                                                            "",
+                                                                            epoch_loss,
+                                                                            ""))
+
+                # Every validation_skip epochs, test against the validation set.
+                if epoch % validation_skip == 0 :
+                    y_validation = self.forward_pass(self.x_validation)
+                    self.validation_loss[validation_it] = self.cost(y_validation, self.target_validation)
+                    validation_it += 1
+
+                    if not silent :
+                        #       ep      t/b   t/e    t    rt   bcost vcost
+                        print(" %5s    %-20s %-20s %-15.3s %-20s %-15s %-15.5f " % ("", 
+                                                                                "",
+                                                                                "",
+                                                                                "",
+                                                                                "",
+                                                                                "",
+                                                                                self.validation_loss[validation_it-1]))
+
+
+
+def format_ms(ms) :
+    if ms < 100 :
+        return "%.3f" % float(ms)
+
+
+
+
+
+
+
+
 
 
 

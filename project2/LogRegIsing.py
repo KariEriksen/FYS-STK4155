@@ -47,31 +47,28 @@ def crossEntropy(beta,X,y):
         val    = y[i]*tmp - np.log(1+np.exp(tmp))
         Cbeta -= val
     
-    return Cbeta
+    return Cbeta/float(len(y))
 
 def gradientCrossEntropy(X,p,y):
     return -np.dot(X.T,y-p)/float(X.shape[0])
 
-def gradienDescent(X_train,y_train,Lambda,eta=0.005,max_iters=50,tolerance=1e-1):
+def gradienDescent(X_train,y_train,Lambda,eta=0.005,max_iters=150,tolerance=1e-1):
     
     #Initialize beta-parameters
     beta   = np.random.uniform(-0.5,0.5,L*L+1)
     beta   = beta/np.linalg.norm(beta)
-    norm = 100
+    norm   = 100
     
-    while(norm > tolerance):
-    
+    for i in range(max_iters):
         p_hat  = logistic(np.dot(X_train,beta))
         gradC  = gradientCrossEntropy(X_train,p_hat,y_train)
         gradC += Lambda*beta/X_train.shape[0]
         beta   = beta - eta*gradC
         norm   = np.linalg.norm(gradC)
-        #print(norm, np.linalg.norm(beta), i)
- 
-    
+        if(norm < tolerance):
+            print("Gradient descent converged to given precision")
+            break
     return beta, norm
-
-
 
 np.random.seed(1)
 L = 40 #Nr of spins 40x40
@@ -90,9 +87,9 @@ with open(dat_filename, "rb") as f:
 data[data == 0] = -1
 
 # Set up slices of the dataset
-ordered    = slice(0, 10000)
-critical   = slice(70000, 100000)
-disordered = slice(100000,105000)
+ordered    = slice(0     , 20000 )
+critical   = slice(70000 , 100000)
+disordered = slice(100000, 110000)
 
 #Uses more memory but more compact
 X_train, X_test, y_train, y_test = skms.train_test_split(
@@ -116,22 +113,22 @@ print(y_train.shape)
 print(y_test.shape)
 
 
-lmbdas=np.logspace(-5,5,11)
-train_accuracy=np.zeros(lmbdas.shape,np.float64)
-test_accuracy=np.zeros(lmbdas.shape,np.float64)
-crit_accuracy=np.zeros(lmbdas.shape,np.float64)
+lmbdas         = np.logspace(-5,5,11)
+train_accuracy = np.zeros(lmbdas.shape,np.float64)
+test_accuracy  = np.zeros(lmbdas.shape,np.float64)
+crit_accuracy  = np.zeros(lmbdas.shape,np.float64)
 
 #Train the model
 for i,Lambda in enumerate(lmbdas):
     
     beta, norm = gradienDescent(X_train,y_train,Lambda,max_iters=150)
     
-    p_predict = logistic(np.dot(X_train,beta))
-    p_test    = logistic(np.dot(X_test,beta))
-    p_critical= logistic(np.dot(X_critical,beta))
+    p_predict  = logistic(np.dot(X_train,beta))
+    p_test     = logistic(np.dot(X_test,beta))
+    p_critical = logistic(np.dot(X_critical,beta))
     
-    train_accuracy[i] = np.sum( (p_predict > 0.5)  == y_train )/float(X_train.shape[0])
-    test_accuracy[i]  = np.sum( (p_test > 0.5)  == y_test )/float(X_test.shape[0])
+    train_accuracy[i] = np.sum( (p_predict  > 0.5)  == y_train    )/float(X_train   .shape[0])
+    test_accuracy[i]  = np.sum( (p_test     > 0.5)  == y_test     )/float(X_test    .shape[0])
     crit_accuracy[i]  = np.sum( (p_critical > 0.5)  == y_critical )/float(X_critical.shape[0])
     
     print("Lambda: %g" % Lambda)

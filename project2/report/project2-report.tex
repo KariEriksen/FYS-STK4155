@@ -248,9 +248,30 @@ where $k$ is picked at random with equal probability from the interval $[1,n/M]$
 minibathces $n/M$ is commonly referred to as an epoch. Thus it is typical to choose a number of epochs and for each epoch 
 iterate over the number of minibatches.
  
+Taking the gradient only on a subset of the data has two important benefits. First, it introduces randomness 
+which decreases the chance that our opmization scheme gets stuck in a local minima. Second, if the size of the 
+minibatches are small relative to the number of datapoints ($M < n$), the computation of the gradient is much cheaper 
+since we sum over the datapoints in the k-th minibatch and not all $n$ datapoints. 
 
+A natural question is when do we stop the search for a new minimum? One possibility is to compute the full gradient after a 
+given number of epochs and check if the norm of the gradient is smaller than some threshold and stop if true. However, 
+the condition that the gradient is zero is valid also for local minima, so this would only tell us that we are close to a 
+local/global minimum. However, we could also evaluate the cost function at this point, store the result and continue 
+the search. If the test kicks in at a later stage we can compare the values of the cost function and keep the $\theta$ that 
+gave the lowest value. 
 
+Another approach is to let the step length $\gamma_j$ depend on the number of epochs in such a way that it becomes very small 
+after a reasonable time such that we do not move at all. 
 
+As an example, let $e = 0,1,2,3,\cdots$ denote the current epoch and let $t_0, t_1 > 0$ be two fixed numbers. Furthermore, 
+let $t = e \cdot m + i$ where $m$ is the number of minibatches and $i=0,\cdots,m-1$. Then the function 
+\begin{equation}\gamma_j(t; t_0, t_1) = \frac{t_0}{t+t_1} \end{equation}
+goes to zero as the number of epochs gets large. I.e. we start with a step length $\gamma_j (0; t_0, t_1) = t_0/t_1$ which 
+decays in "time" t. 
+
+In this way we can fix the number of epochs, compute $\theta$ and evaluate the cost function at the end. Repeating the 
+computation will give a different result since the scheme is random by design. Then we pick the final $\theta$ that gives 
+the lowest value of the cost function.
 \section{Model systems}
 \lipsum[5]
 \subsection{The one-dimensional Ising model}

@@ -9,8 +9,8 @@ install:
   - pip install -r requirements.txt
 
 env:
-  - PROJECT_DIRECTORY=project1
-#  - PROJECT_DIRECTORY=project2
+#  - PROJECT_DIRECTORY=project1
+  - PROJECT_DIRECTORY=project2
 #  - PROJECT_DIRECTORY=project3
 
 script:

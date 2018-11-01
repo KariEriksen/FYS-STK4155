@@ -277,11 +277,14 @@ def test_neuralNetwork_backpropagation() :
         assert np.squeeze(d_weight) == pytest.approx(np.squeeze(coef_grads[i]))
 
 
-def test_neuralNetwork_backpropagation_multiple() :
+def test_neuralNetwork_backpropagation_multiple_samples() :
+    # Similar to the test_neuralNetwork_backpropagation() test, but with 
+    # multiple inputs, X having dimensions (n_samples, n_features) = (6,1).
+
     from sklearn.neural_network import MLPRegressor
 
-    X = np.array([[0.0], [1.0]])
-    y = np.array([0, 2])
+    X = np.array([[0.0], [1.0], [2.0], [3.0], [5.0], [0.9]])
+    y = np.array([0, 2, 3, 4, 5, 6])
     mlp = MLPRegressor( solver              = 'sgd', 
                         alpha               = 0.0,
                         learning_rate       = 'constant',
@@ -293,7 +296,7 @@ def test_neuralNetwork_backpropagation_multiple() :
     # Force sklearn to set up all the matrices by fitting a data set.
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-    mlp.fit(X,y)
+        mlp.fit(X,y)
 
     W_skl = mlp.coefs_
     b_skl = mlp.intercepts_
@@ -303,7 +306,7 @@ def test_neuralNetwork_backpropagation_multiple() :
                         layers      = 3,
                         neurons     = 3,
                         activations = 'sigmoid',
-                        silent      = False )
+                        silent      = True )
     nn.addLayer()
     nn.addLayer()
     nn.addOutputLayer(activations = 'identity')
@@ -314,12 +317,9 @@ def test_neuralNetwork_backpropagation_multiple() :
         nn.biases[i]  = np.expand_dims(b, axis=1)
  
     # ========================================================================
-    # Initialize lists
     n_samples, n_features = X.shape
-    print(n_samples, n_features)
     batch_size = n_samples
     hidden_layer_sizes = mlp.hidden_layer_sizes
-    # Make sure self.hidden_layer_sizes is a list
     if not hasattr(hidden_layer_sizes, "__iter__"):
         hidden_layer_sizes = [hidden_layer_sizes]
     hidden_layer_sizes = list(hidden_layer_sizes)
@@ -335,7 +335,6 @@ def test_neuralNetwork_backpropagation_multiple() :
                        layer_units[1:]]
     # ========================================================================
     activations = mlp._forward_pass(activations)
-    
     if y.ndim == 1:
             y = y.reshape((-1, 1))
     loss, coef_grads, intercept_grads = mlp._backprop(
@@ -344,42 +343,12 @@ def test_neuralNetwork_backpropagation_multiple() :
     yhat = nn.forward_pass(X.T)
     nn.backpropagation(yhat.T,y)
 
-    for i, a in enumerate(nn.a) :
-        print(i)
-        print("nn.a:  ", a)
-        print("skl.a: ", activations[i].T)
-        print("diff:  ", np.sum(np.abs(a - activations[i].T)))
-        print("")
-    print(activations[-1].T)
+    for i, d_bias in enumerate(nn.d_biases) :
+        assert np.squeeze(d_bias) == pytest.approx(np.squeeze(intercept_grads[i]))
 
-    print("==============================")
-    for i, d_w in enumerate(nn.d_weights) :
-        print(i)
-        print("nn.d_w:  ", d_w)
-        print("skl.d_w: ", coef_grads[i])
-        print("diff:    ", np.sum(np.abs(d_w - coef_grads[i])))
+    for i, d_weight in enumerate(nn.d_weights) :
+        assert np.squeeze(d_weight) == pytest.approx(np.squeeze(coef_grads[i]))
 
-    print("------------------------------")
-    for i, d_b in enumerate(nn.d_biases) :
-        print(i)
-        print("nn.d_b:  ", d_b.T)
-        print("skl.d_b: ", intercept_grads[i])
-        #print("diff:    ", np.sum(np.abs(d_b - intercept_grads[i])))
-    
-    yhatskl = mlp.predict(X)
-    print("mlp.predict: ", yhatskl)
-    print("nn.predict:  ", np.squeeze(yhat))
-    print("diff:        ", np.sum(np.abs(yhatskl-np.squeeze(yhat))))
-    print(loss, nn.cost(yhat,y.T))
-    print(mlp.loss)
-
-    from sklearn.neural_network._base import LOSS_FUNCTIONS
-    print(LOSS_FUNCTIONS[mlp.loss](y, yhatskl))
-    print(LOSS_FUNCTIONS[mlp.loss](y, activations[-1].T))
-
-    print(activations[-1].shape, yhatskl.shape, nn.a[-1].shape, yhat.shape)
-    print(y.shape, yhat.shape)
-    print(np.abs(activations[-1] - yhatskl))
 
 
 def test_neuralNetwork_fit() :
@@ -416,8 +385,7 @@ def test_neuralNetwork_fit() :
 
 
 if __name__ == '__main__':
-    test_neuralNetwork_backpropagation_multiple()
-
+    pass
 
 
 

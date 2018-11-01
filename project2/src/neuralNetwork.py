@@ -183,6 +183,8 @@ class NeuralNetwork :
             self.a = [None]*(len(self.weights)+1)
             self.first_feedforward = False
 
+        self.n_features, self.n_samples = x.shape
+        
         # First layer
         self.a[0] = x
         self.z[0] = np.zeros(shape=x.shape)
@@ -204,14 +206,14 @@ class NeuralNetwork :
 
         self.delta[-1]      = (  self.cost.derivative(y, target) 
                                * self.act[-1].derivative(self.a[-1].T) )
-        self.d_weights[-1]  = np.dot(self.a[-2], self.delta[-1])
+        self.d_weights[-1]  = np.dot(self.a[-2], self.delta[-1]) / self.n_samples
         self.d_biases[-1]   = np.mean(self.delta[-1], axis = 0, keepdims = True).T
         
         # Iterate backwards through the layers
         for i in range(2, len(self.weights)+1) :
             self.delta[-i]      = (  np.dot(self.delta[-i+1], self.weights[-i+1].T)
                                    * self.act[-i].derivative(self.a[-i].T) )
-            self.d_weights[-i]  = np.dot(self.a[-i-1], self.delta[-i])
+            self.d_weights[-i]  = np.dot(self.a[-i-1], self.delta[-i]) / self.n_samples
             self.d_biases[-i]   = np.mean(self.delta[-i], axis = 0, keepdims = True).T
 
 
@@ -281,8 +283,8 @@ class NeuralNetwork :
                                                                     self.target_train.T, 
                                                                     n_samples = self.batch_size)
                     y_batch = self.forward_pass(x_batch.T)
-                    self.backpropagation(x_batch, target_batch)
-                    batch_loss = self.cost(y_batch, target_batch)
+                    self.backpropagation(y_batch.T, target_batch)
+                    batch_loss = self.cost(y_batch.T, target_batch)
                     epoch_loss += batch_loss
 
                     for i, d_w in enumerate(self.d_weights) :

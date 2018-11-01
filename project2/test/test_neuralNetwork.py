@@ -501,8 +501,8 @@ def test_neuralNetwork_backpropagation_multiple_outputs() :
 
 def test_neuralNetwork_fit() :
     np.random.seed(2019)
-    X       = np.random.normal(size=(1,1000))
-    target  = X
+    X      = np.random.normal(size=(1,500))
+    target = 3.9285985 * X
 
     nn = NeuralNetwork( inputs          = 1,
                         neurons         = 3,
@@ -512,28 +512,36 @@ def test_neuralNetwork_fit() :
     nn.addLayer()
     nn.addLayer()
     nn.addOutputLayer(activations = 'identity')
-    for w in nn.weights :
-        print("w: ", w)
-    for b in nn.biases :
-        print("b: ", b)
     nn.fit( X, 
             target,
             shuffle             = True,
-            batch_size          = 200,
+            batch_size          = 100,
             validation_fraction = 0.2,
-            verbose             = True,
-            silent              = False,
+            learning_rate       = 0.05,
+            verbose             = False,
+            silent              = True,
+            epochs              = 100)
+
+    loss_after_100   = nn.loss
+    nn.fit( X, 
+            target,
+            shuffle             = True,
+            batch_size          = 100,
+            validation_fraction = 0.2,
+            learning_rate       = 0.05,
+            verbose             = False,
+            silent              = True,
             epochs              = 1000)
-    print("===")
-    for w in nn.weights :
-        print("w: ", w)
-    for b in nn.biases :
-        print("b: ", b)
+    loss_after_200   = nn.loss
+
+    assert loss_after_200 < loss_after_100
+
+    
 
 
 
 if __name__ == '__main__':
-    test_neuralNetwork_backpropagation_multiple_outputs()
+    test_neuralNetwork_fit()
 
 
 

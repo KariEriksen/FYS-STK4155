@@ -106,6 +106,3 @@ def test_activation_functions() :
 
 
 
-
-
-

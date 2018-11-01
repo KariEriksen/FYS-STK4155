@@ -17,13 +17,13 @@ from costFunction   import CostFunction
 
 class NeuralNetwork :
 
-    def __init__(   self,
-                    inputs      = None,
-                    outputs     = None,
-                    layers      = None,
-                    neurons     = None,
-                    activations = None,
-                    silent      = False) :
+    def __init__(self,
+                 inputs      = None,
+                 outputs     = None,
+                 layers      = None,
+                 neurons     = None,
+                 activations = None,
+                 silent      = False) :
 
         self.inputs         = inputs
         self.outputs        = outputs
@@ -40,12 +40,12 @@ class NeuralNetwork :
         self.first_feedforward = True
         self.first_backprop    = True
 
-    def set(    self,
-                inputs      = None,
-                outputs     = None,
-                layers      = None,
-                neurons     = None,
-                activations = None) :
+    def set(self,
+            inputs      = None,
+            outputs     = None,
+            layers      = None,
+            neurons     = None,
+            activations = None) :
 
         self.inputs         = inputs        if (inputs      is not None) else self.inputs
         self.outputs        = outputs       if (outputs     is not None) else self.outputs
@@ -53,21 +53,45 @@ class NeuralNetwork :
         self.neurons        = neurons       if (neurons     is not None) else self.neurons
         self.activations    = activations   if (activations is not None) else self.activations
 
-    def addOutputLayer( self,
-                        outputs     = None,
-                        activations = None) :
 
-        self.addLayer(  outputs     = outputs,
-                        output      = True,
-                        activations = activations)
+    def initializeWeight(self,
+                         n_in,
+                         n_out,
+                         activations) :
+        
+        # Xavier initializations (http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf).
+        if activations == 'sigmoid' :
+            r = np.sqrt(6.0 / (n_in + n_out))
+            return np.random.uniform(-r, r, size=(n_in, n_out))
+        elif activations == 'tanh' :
+            r = 4.0 * np.sqrt(6.0 / (n_in + n_out))
+            return np.random.uniform(-r, r, size=(n_in, n_out))
 
-    def addLayer(   self,
-                    inputs      = None,
-                    neurons     = None,
-                    activations = None,
-                    alpha       = None,
-                    outputs     = None,
-                    output      = False) :
+
+        # He initializations (https://arxiv.org/pdf/1502.01852.pdf).
+        elif activations == 'relu' or activations == 'leaky_relu' or activations == 'elu' :
+            return np.random.normal(size=(n_in, n_out)) * np.sqrt(2.0 / n_in)
+
+
+        elif activations == 'identity' :
+            return np.random.normal(size=(n_in, n_out))
+
+
+    def addOutputLayer(self,
+                       outputs     = None,
+                       activations = None) :
+
+        self.addLayer(outputs     = outputs,
+                      output      = True,
+                      activations = activations)
+
+    def addLayer(self,
+                 inputs      = None,
+                 neurons     = None,
+                 activations = None,
+                 alpha       = None,
+                 outputs     = None,
+                 output      = False) :
 
         if neurons is None :
             if self.neurons is None :
@@ -103,8 +127,10 @@ class NeuralNetwork :
             if not self.silent :
                 print(  "Adding input layer with " + str(neurons) + " neurons "  +
                         "using " + str(activations) + " activations.")
-            W = np.random.uniform(-1.0, 1.0, size=(inputs, neurons))
-            b = np.random.uniform(-0.1, 0.1, size=(neurons,1))
+            #W = np.random.uniform(-1.0, 1.0, size=(inputs, neurons))
+            #b = np.random.uniform(-0.1, 0.1, size=(neurons,1))
+            W = self.initializeWeight(inputs, neurons, activations)
+            b = np.zeros(shape=(neurons,1))
             f = Activation(function = activations, alpha = alpha)
 
             self.weights = [W]
@@ -133,8 +159,10 @@ class NeuralNetwork :
                 print(  "Adding output layer with " + str(outputs) + " outputs, "  +
                         "with " + str(activations) + " activation.")
             previousLayerNeurons = self.weights[-1].shape[1]
-            W = np.random.uniform(-1.0, 1.0, size=(previousLayerNeurons, outputs))
-            b = np.random.uniform(-0.1, 0.1, size=(outputs,1))
+            #W = np.random.uniform(-1.0, 1.0, size=(previousLayerNeurons, outputs))
+            #b = np.random.uniform(-0.1, 0.1, size=(outputs,1))
+            W = self.initializeWeight(previousLayerNeurons, outputs, activations)
+            b = np.zeros(shape=(outputs,1))
             f = Activation(function = activations, alpha = alpha)
             
             self.weights.append(W)
@@ -146,8 +174,10 @@ class NeuralNetwork :
                 print(  "Adding layer with " + str(neurons) + " neurons using "  +
                         str(activations) + " activations.")
             previousLayerNeurons = self.weights[-1].shape[1]
-            W = np.random.uniform(-1.0, 1.0, size=(previousLayerNeurons, neurons))
-            b = np.random.uniform(-0.1, 0.1, size=(neurons,1))
+            #W = np.random.uniform(-1.0, 1.0, size=(previousLayerNeurons, neurons))
+            #b = np.random.uniform(-0.1, 0.1, size=(neurons,1))
+            W = self.initializeWeight(previousLayerNeurons, neurons, activations)
+            b = np.zeros(shape=(neurons,1))
             f = Activation(function = activations, alpha = alpha)
 
             self.weights.append(W)
@@ -162,8 +192,7 @@ class NeuralNetwork :
         b = self.biases[i]
         f = self.act[i]
 
-        self.z[i+1] = np.dot(W.T, x) + b
-        self.a[i+1] = f(self.z[i+1])
+        self.a[i+1] = f(np.dot(W.T, x) + b)
 
         return self.a[i+1]
 
@@ -179,17 +208,14 @@ class NeuralNetwork :
 
     def network(self, x) :
         if self.first_feedforward :
-            self.z = [None]*(len(self.weights)+1)
             self.a = [None]*(len(self.weights)+1)
             self.first_feedforward = False
 
         self.n_features, self.n_samples = x.shape
-        
+
         # First layer
         self.a[0] = x
-        self.z[0] = np.zeros(shape=x.shape)
-        self.z[1] = np.dot(self.weights[0].T, x) + self.biases[0]
-        self.a[1] = self.act[0](self.z[1])
+        self.a[1] = self.act[0](np.dot(self.weights[0].T, x) + self.biases[0])
         x = self.a[1]
 
         for i in range(1, len(self.weights)) :
@@ -226,6 +252,7 @@ class NeuralNetwork :
             batch_size          = 200,
             validation_fraction = 0.1,
             momentum            = 0.9,
+            validation_skip     = 5,
             verbose             = False,
             silent              = False) :
 
@@ -249,9 +276,9 @@ class NeuralNetwork :
             warnings.warn(warning_string)
 
         
-        validation_skip      = 5
+        #validation_skip      = 5
         validation_it        = 0
-        self.validation_loss = np.zeros(int(ceil(epochs / validation_skip)))
+        self.validation_loss = np.zeros(int(ceil(epochs / validation_skip))+1)
         self.training_loss   = np.zeros(epochs)
 
         if not shuffle :
@@ -260,13 +287,13 @@ class NeuralNetwork :
 
             if not silent :
                 #         ep   t/b   t/e    t    rt   bcost vcost
-                print(" %-8s %-20s %-20s %-15s %-20s %-15s %-15s " % (  "Epoch", 
-                                                                        "Time per batch",
-                                                                        "Time this epoch",
-                                                                        "Elapsed time",
-                                                                        "Remaining time",
-                                                                        "Batch cost",
-                                                                        "Validation cost"))
+                print(" %-8s %-20s %-20s %-15s %-20s %-15s %-15s " % ("Epoch", 
+                                                                      "Time per batch",
+                                                                      "Time this epoch",
+                                                                      "Elapsed time",
+                                                                      "Remaining time",
+                                                                      "Batch cost",
+                                                                      "Validation cost"))
             batches_per_epoch = int(ceil(self.x_train.shape[1] / self.batch_size))
             
             start_time = time.time()
@@ -300,28 +327,29 @@ class NeuralNetwork :
                 if verbose :
                     #       ep      t/b   t/e    t    rt     bcost   vcost
                     print(" %5d    %-20s %-20s %-15.3s %-20s %-15.5f %-15s " % (epoch, 
-                                                                            "",
-                                                                            "",
-                                                                            "",
-                                                                            "",
-                                                                            epoch_loss,
-                                                                            ""))
+                                                                                "",
+                                                                                "",
+                                                                                "",
+                                                                                "",
+                                                                                epoch_loss,
+                                                                                ""))
 
                 # Every validation_skip epochs, test against the validation set.
-                if epoch % validation_skip == 0 :
+                if epoch % validation_skip == 0 or (epoch == epochs-1):
                     y_validation = self.forward_pass(self.x_validation)
                     self.validation_loss[validation_it] = self.cost(y_validation, self.target_validation)
+                    self.loss = self.validation_loss[validation_it]
                     validation_it += 1
 
                     if not silent :
                         #       ep      t/b   t/e    t    rt   bcost vcost
                         print(" %5s    %-20s %-20s %-15.3s %-20s %-15s %-15.5f " % ("", 
-                                                                                "",
-                                                                                "",
-                                                                                "",
-                                                                                "",
-                                                                                "",
-                                                                                self.validation_loss[validation_it-1]))
+                                                                                    "",
+                                                                                    "",
+                                                                                    "",
+                                                                                    "",
+                                                                                    "",
+                                                                                    self.validation_loss[validation_it-1]))
 
 
 

@@ -152,8 +152,21 @@
 \newpage
 
 \section{Introduction}
-\lipsum[1]
-\autocite{trevor2009elements}
+There are many problems that require a probability estimate as output. 
+This could for example predicting whether a 
+person will develop a specific disease given genetic information. Another example, which we will examine closer, is to 
+predict if a given spin-configuration generated from the two-dimension Ising model is ordrered or disordered. Problems of this 
+type are referred to as \textit{classification} problems. 
+
+Classification is fundamentally different from the regression problems we studied previously, 
+in the sense that the predicted outcome only takes values across discrete categories. 
+Thus, we will need different tools than that of linear regression. In this work we first consider 
+\textit{logistic regression} as a method for classification. 
+
+Somethingsomething background deep neural networks 
+
+Apply it to one-dim Ising and classification of two-dim Ising.
+
 \section{Theory}
 In the following we outline the theory of the present work. We 
 consider logistic regression as a model for classification problems. Furthermore, neural networks are discussed 
@@ -165,7 +178,44 @@ models analytically. Thus, we have ro rely on numerical methods for optimization
 gradient descent methods.
 
 \subsection{Logistic regression}
-\lipsum[3]
+Suppose that we are given a dataset $\{ (\mathbf{x}^{(i)}, y_i) \}_{i=1}^n $ where we have $p$ predictors 
+for each data sample $\mathbf{x}^{(i)} = \{ x_1^{(i)}, \cdots, x_p^{(i)} \}$. The responses/outcomes $y_i$ are discrete and can 
+only take values from $k=0,1,\dots,K-1$ (i.e $K$ classes). The goal is to predict the output classes given $n$ samples each containing 
+$p$ predictors. Throughout this section we assume that there are just two possible outcomes, i.e $y_i \in \{0,1\}$.
+
+In logistic regression, in contrast to linear regressions, we model the \textit{probability} that $y_i$ belongs 
+to class $1$, given $\mathbf{x}^{(i)}$. The \textit{logistic model} is 
+\begin{align}
+ \text{Pr} \left(y=1 | \mathbf{x}; \beta \right) &= \frac{1}{1+e^{-\beta \cdot \mathbf{x}}} \\
+ \text{Pr} \left(y=0 | \mathbf{x}; \beta \right) &= 1 - \text{Pr} \left(y=1 | \mathbf{x}; \beta \right).
+\end{align}
+Here $\beta = (\beta_0, \beta_1, \dots, \beta_p)$ are the parameters of the model. Note the appearance of the intercept 
+term $\beta_0$. In order to keep notation compact $\mathbf{x}^{(i)}$ can be augmented to incorporate the intercept by adding 
+a $1$ to each sample, i.e 
+\begin{equation*}
+ \mathbf{x}^{(i)} \rightarrow \{ 1, x_1^{(i)}, \dots, x_p^{(i)} \}.
+\end{equation*}
+The term $\beta \cdot \mathbf{x} = \beta_0 + \sum_{k=1}^p \beta_k x_k $ is known as the \textit{log-odds} and the function 
+\begin{equation}
+\sigma(\beta \cdot \mathbf{x}) = \frac{1}{1+e^{-\beta \cdot \mathbf{x}}} 
+\end{equation}
+is called the \textit{sigmoid} of $\beta \cdot \mathbf{x}$. Also note that the sigmoid satisfies 
+\begin{align}
+ \lim_{t \rightarrow \infty} \sigma(t) &= 1 \\
+ \lim_{t \rightarrow -\infty} \sigma(t) &= 0
+\end{align}
+which justifies its use as a model for probabilities.
+
+The logistic model can now be used for classification by predicting a class using the estimated probabilities according to 
+\begin{equation}
+ \hat{y}_i = \begin{cases}
+            1 \ \ \text{if }  \text{Pr} \left(y=1 | \mathbf{x}^{(i)} \right) \geq 0.5 \\
+            0 \ \ \text{if }  \text{Pr} \left(y=1 | \mathbf{x}^{(i)} \right) < 0.5. \\
+           \end{cases}
+\end{equation}
+
+
+
 \subsection{Neural networks}
 \lipsum[4]
 

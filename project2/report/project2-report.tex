@@ -164,13 +164,92 @@ In contrast to the linear regression model, we can not find the optimal paramete
 models analytically. Thus, we have ro rely on numerical methods for optimization. In particular we will give a brief summary
 gradient descent methods.
 
-
 \subsection{Logistic regression}
 \lipsum[3]
 \subsection{Neural networks}
 \lipsum[4]
+
 \subsection{Gradient Descent}
-\lipsum[2]
+Almost every problem in machine learning and data science starts
+with a dataset $X$, a model $g(\theta)$, which is a function of the parameters $\theta$ and a cost 
+function $C(X, g(\theta))$ that allows us to judge how well the
+model $g(\theta)$ explains the observations $X$. The model is fit by finding the values of $\theta$ that minimize the 
+cost function. Ideally we would be able to solve for $\theta$ analytically, however this is not possible in general and 
+we must use numerical methods to compute the minimum.
+\subsubsection{The method of steepest descent}
+The basic idea of gradient descent is that a function $F(\mathbf{x})$, $ \mathbf{x} \equiv (x_1,\cdots,x_n)$, 
+decreases fastest if one goes from $\bf {x}$ in the direction of the negative gradient $-\nabla F(\mathbf{x})$.
+It can be shown that if 
+\begin{equation}
+\mathbf{x}_{k+1} = \mathbf{x}_k - \gamma_k \nabla F(\mathbf{x}_k), \ \ \gamma_k > 0
+\end{equation}
+for $\gamma_k$ small enough, then $F(\mathbf{x}_{k+1}) \leq F(\mathbf{x}_k)$. This means that for a sufficiently 
+small $\gamma_k$ we are always moving towards smaller function values, i.e a minimum. 
+
+This observation is the basis of the method of steepest descent, which is also referred to as just gradient descent (GD). 
+One starts with an initial guess $\mathbf{x}_0$ for a minimum of $F$ and compute new approximations according to
+\begin{equation}
+\mathbf{x}_{k+1} = \mathbf{x}_k - \gamma_k \nabla F(\mathbf{x}_k), \ \ k \geq 0.
+\end{equation}
+The parameter $\gamma_k$ is often referred to as the step length or the learning rate in the context of ML.
+
+Ideally the sequence $\{ \mathbf{x}_k \}_{k=0}$ converges to a \textit{global} minimum of the function $F$. 
+In general we do not know if we are in a global or local minimum.  
+In the special case when $F$ is a \textit{convex function, all local minima are also global minima}, so in this case gradient 
+descent can converge to the global solution. The advantage of this scheme is that it is conceptually simple and 
+straightforward to implement. 
+
+However the method in this form has some severe limitations:
+
+\begin{itemize}
+ \item In machine learing we are often faced with non-convex high dimensional cost functions with many local minimum. 
+ Since GD is deterministic we will get stuck in a local minimum, if the method converges, unless we have a very good intial 
+ guess. This also implies that the scheme is sensitive to the chosen initial condition.
+ \item Note that gradient is a function of $\mathbf{x} = (x_1,\cdots,x_n)$ which makes it expensive to compute numerically.
+ \item GD is sensitive to the choice of learning rate $\gamma_k$. This is due to the fact that we are only guaranteed 
+that $F(\mathbf{x}_{k+1}) \leq F(\mathbf{x}_k)$ for \textit{sufficiently} small $\gamma_k$. The problem is to determine an 
+optimal learning rate. If the learning rate is chosen to small the method will take a long to converge and if it is to 
+large we can experience erratic behavior.
+\item Many of these shortcomings can be alleviated by introducing randomness. One such method is that of Stochastic Gradient Descent 
+(SGD).
+\end{itemize}
+
+\subsubsection{Stochastic Gradient Descent}
+Stochastic gradient descent (SGD) and variants thereof address some of the shortcomings of the Gradient descent method discussed above. 
+
+The underlying idea of SGD comes from the observation that the cost function, which we want to minimize, can almost always be 
+written as a sum over $n$ datapoints $\{\mathbf{x}_i\}_{i=1}^n$,
+\begin{equation}
+ C(\mathbf{\theta}) = \sum_{i=1}^n c_i(\mathbf{x}_i, \mathbf{\theta}). 
+\end{equation}
+This in turn means that the gradient can be computed as a sum over $i$-gradients 
+\begin{equation}
+\nabla_\theta C(\mathbf{\theta}) = \sum_i^n \nabla_\theta c_i(\mathbf{x}_i, \mathbf{\theta}).  
+\end{equation}
+Now, stochasticity/randomness is introduced by only taking the gradient on a subset of the data called minibatches.  
+If there are $n$ datapoints and the size of each minibatch is $M$, there will be $n/M$ minibatches. We denote these 
+minibatches by $B_k$ where $k=1,\cdots,n/M$. 
+
+As an example, suppose we have $10$ datapoints $( \mathbf{x}_1, \cdots, \mathbf{x}_{10} )$ and we choose to have $M=5$
+minibathces, then each minibatch contains two datapoints. In particular we have 
+$B_1 = (\mathbf{x}_1,\mathbf{x}_2), \cdots, B_5 = (\mathbf{x}_9,\mathbf{x}_{10})$. Note that if you choose $M=1$ you have 
+only a single batch with all datapoints and on the other extreme, you may choose $M=n$ resulting in a minibatch for each 
+datapoint, i.e $B_k = \mathbf{x}_k$.
+
+The idea is now to approximate the gradient by replacing the sum over all datapoints with a sum over the datapoints in one the 
+minibatches picked at random in each gradient descent step
+\begin{align}\nabla_\theta C(\mathbf{\theta}) = &\sum_{i=1}^n \nabla_\theta c_i(\mathbf{x}_i, \mathbf{\theta}) \nonumber \\
+\rightarrow &\sum_{i \in B_k}^n \nabla_\theta c_i(\mathbf{x}_i, \mathbf{\theta}).
+\end{align}
+                                                                                                                                                                                                 
+Thus a gradient descent step now looks like 
+\begin{equation} \theta_{j+1} = \theta_j - \gamma_j \sum_{i \in B_k}^n \nabla_\theta c_i(\mathbf{x}_i, \mathbf{\theta}) \end{equation}
+where $k$ is picked at random with equal probability from the interval $[1,n/M]$. An iteration over the number of 
+minibathces $n/M$ is commonly referred to as an epoch. Thus it is typical to choose a number of epochs and for each epoch 
+iterate over the number of minibatches.
+ 
+
+
 
 \section{Model systems}
 \lipsum[5]

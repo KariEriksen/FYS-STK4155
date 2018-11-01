@@ -255,6 +255,17 @@ Then, $\beta$ is found by \textit{minimizing} the cross-entropy.
 Note here that we can not find a analytical solution for the maximizer. This means that we have to use a
 numerical opimization algorithm, such as gradient descent which we discuss later, to find the optimal parameters.
 
+However, the gradient of the cross entropy can be given in closed-form 
+\begin{equation}
+ \nabla_\beta C(\beta) = - X^{T} \left( \mathbf{y} - \mathbf{p} \right). 
+\end{equation}
+Here we have defined \begin{align}
+\mathbf{y} &\equiv (y_1,\dots,y_n), \\       
+      \mathbf{p} &\equiv \left( p(y_1=1|\mathbf{x}^{(1)}),\dots,p(y_n=1|\mathbf{x}^{(n)}) \right)
+      \end{align}
+and $X \in \mathbb{R}^{n \times (p+1)}$ is the design-matrix containing $\mathbf{x}^{(i)}$ as its i-th row.
+
+
 \subsection{Neural networks}
 \lipsum[4]
 

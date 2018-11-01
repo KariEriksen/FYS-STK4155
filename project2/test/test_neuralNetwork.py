@@ -350,6 +350,154 @@ def test_neuralNetwork_backpropagation_multiple_samples() :
         assert np.squeeze(d_weight) == pytest.approx(np.squeeze(coef_grads[i]))
 
 
+def test_neuralNetwork_backpropagation_multiple_features() :
+    # Similar to the test_neuralNetwork_backpropagation() test, but with 
+    # multiple samples and features, X having dimensions 
+    # (n_samples, n_features) = (3,2).
+
+    from sklearn.neural_network import MLPRegressor
+
+    X = np.array([[0,1], [1,2], [2,3]])
+    y = np.array([0, 2, 3])
+    mlp = MLPRegressor( solver              = 'sgd', 
+                        alpha               = 0.0,
+                        learning_rate       = 'constant',
+                        learning_rate_init  = 1e-20,
+                        max_iter            = 1,
+                        hidden_layer_sizes  = (3, 3), 
+                        random_state        = 1,
+                        activation          = 'logistic')
+    # Force sklearn to set up all the matrices by fitting a data set.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        mlp.fit(X,y)
+
+    W_skl = mlp.coefs_
+    b_skl = mlp.intercepts_
+
+    nn = NeuralNetwork( inputs      = 2,
+                        outputs     = 1,
+                        layers      = 3,
+                        neurons     = 3,
+                        activations = 'sigmoid',
+                        silent      = True )
+    nn.addLayer()
+    nn.addLayer()
+    nn.addOutputLayer(activations = 'identity')
+    
+    for i, w in enumerate(W_skl) :
+        nn.weights[i] = w
+    for i, b in enumerate(b_skl) :
+        nn.biases[i]  = np.expand_dims(b, axis=1)
+ 
+    # ========================================================================
+    n_samples, n_features = X.shape
+    batch_size = n_samples
+    hidden_layer_sizes = mlp.hidden_layer_sizes
+    if not hasattr(hidden_layer_sizes, "__iter__"):
+        hidden_layer_sizes = [hidden_layer_sizes]
+    hidden_layer_sizes = list(hidden_layer_sizes)
+    layer_units = ([n_features] + hidden_layer_sizes + [mlp.n_outputs_])
+    activations = [X]
+    activations.extend(np.empty((batch_size, n_fan_out)) 
+                       for n_fan_out in layer_units[1:])
+    deltas = [np.empty_like(a_layer) for a_layer in activations]
+    coef_grads = [np.empty((n_fan_in_, n_fan_out_)) 
+                  for n_fan_in_, n_fan_out_ in zip(layer_units[:-1],
+                                                   layer_units[1:])]
+    intercept_grads = [np.empty(n_fan_out_) for n_fan_out_ in
+                       layer_units[1:]]
+    # ========================================================================
+    activations = mlp._forward_pass(activations)
+    if y.ndim == 1:
+            y = y.reshape((-1, 1))
+    loss, coef_grads, intercept_grads = mlp._backprop(
+            X, y, activations, deltas, coef_grads, intercept_grads)
+
+    yhat = nn.forward_pass(X.T)
+    nn.backpropagation(yhat.T,y)
+
+    for i, d_bias in enumerate(nn.d_biases) :
+        assert np.squeeze(d_bias) == pytest.approx(np.squeeze(intercept_grads[i]))
+
+    for i, d_weight in enumerate(nn.d_weights) :
+        assert np.squeeze(d_weight) == pytest.approx(np.squeeze(coef_grads[i]))
+
+
+def test_neuralNetwork_backpropagation_multiple_outputs() :
+    # Similar to the test_neuralNetwork_backpropagation() test, but with 
+    # multiple samples and features, X having dimensions 
+    # (n_samples, n_features) = (3,2), as well as the target having dimensions
+    # (n_outputs) = (2)
+
+    from sklearn.neural_network import MLPRegressor
+
+    X = np.array([[0,1], [1,2], [2,3]])
+    y = np.array([[0,1], [2,3], [3,4]])
+    mlp = MLPRegressor( solver              = 'sgd', 
+                        alpha               = 0.0,
+                        learning_rate       = 'constant',
+                        learning_rate_init  = 1e-20,
+                        max_iter            = 1,
+                        hidden_layer_sizes  = (3, 3), 
+                        random_state        = 1,
+                        activation          = 'logistic')
+    # Force sklearn to set up all the matrices by fitting a data set.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        mlp.fit(X,y)
+
+    W_skl = mlp.coefs_
+    b_skl = mlp.intercepts_
+
+    nn = NeuralNetwork( inputs      = 2,
+                        outputs     = 2,
+                        layers      = 3,
+                        neurons     = 3,
+                        activations = 'sigmoid',
+                        silent      = True )
+    nn.addLayer()
+    nn.addLayer()
+    nn.addOutputLayer(activations = 'identity')
+    
+    for i, w in enumerate(W_skl) :
+        nn.weights[i] = w
+    for i, b in enumerate(b_skl) :
+        nn.biases[i]  = np.expand_dims(b, axis=1)
+ 
+    # ========================================================================
+    n_samples, n_features = X.shape
+    batch_size = n_samples
+    hidden_layer_sizes = mlp.hidden_layer_sizes
+    if not hasattr(hidden_layer_sizes, "__iter__"):
+        hidden_layer_sizes = [hidden_layer_sizes]
+    hidden_layer_sizes = list(hidden_layer_sizes)
+    layer_units = ([n_features] + hidden_layer_sizes + [mlp.n_outputs_])
+    activations = [X]
+    activations.extend(np.empty((batch_size, n_fan_out)) 
+                       for n_fan_out in layer_units[1:])
+    deltas = [np.empty_like(a_layer) for a_layer in activations]
+    coef_grads = [np.empty((n_fan_in_, n_fan_out_)) 
+                  for n_fan_in_, n_fan_out_ in zip(layer_units[:-1],
+                                                   layer_units[1:])]
+    intercept_grads = [np.empty(n_fan_out_) for n_fan_out_ in
+                       layer_units[1:]]
+    # ========================================================================
+    activations = mlp._forward_pass(activations)
+    if y.ndim == 1:
+            y = y.reshape((-1, 1))
+    loss, coef_grads, intercept_grads = mlp._backprop(
+            X, y, activations, deltas, coef_grads, intercept_grads)
+
+    yhat = nn.forward_pass(X.T)
+    nn.backpropagation(yhat.T,y)
+
+    for i, d_bias in enumerate(nn.d_biases) :
+        assert np.squeeze(d_bias) == pytest.approx(np.squeeze(intercept_grads[i]))
+
+    for i, d_weight in enumerate(nn.d_weights) :
+        assert np.squeeze(d_weight) == pytest.approx(np.squeeze(coef_grads[i]))
+
 
 def test_neuralNetwork_fit() :
     np.random.seed(2019)
@@ -385,7 +533,7 @@ def test_neuralNetwork_fit() :
 
 
 if __name__ == '__main__':
-    pass
+    test_neuralNetwork_backpropagation_multiple_outputs()
 
 
 

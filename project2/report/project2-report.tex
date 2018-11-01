@@ -184,10 +184,11 @@ only take values from $k=0,1,\dots,K-1$ (i.e $K$ classes). The goal is to predic
 $p$ predictors. Throughout this section we assume that there are just two possible outcomes, i.e $y_i \in \{0,1\}$.
 
 In logistic regression, in contrast to linear regressions, we model the \textit{probability} that $y_i$ belongs 
-to class $1$, given $\mathbf{x}^{(i)}$. The \textit{logistic model} is 
+to class $1$, given $\mathbf{x}^{(i)}$. Let $p(y|x)$ denote the probability of event $y$ given $x$,
+then the \textit{logistic model} is 
 \begin{align}
- \text{Pr} \left(y=1 | \mathbf{x}; \beta \right) &= \frac{1}{1+e^{-\beta \cdot \mathbf{x}}} \\
- \text{Pr} \left(y=0 | \mathbf{x}; \beta \right) &= 1 - \text{Pr} \left(y=1 | \mathbf{x}; \beta \right).
+ p \left(y=1 | \mathbf{x}; \beta \right) &= \frac{1}{1+e^{-\beta \cdot \mathbf{x}}} \\
+ p \left(y=0 | \mathbf{x}; \beta \right) &= 1 - p \left(y=1 | \mathbf{x}; \beta \right).
 \end{align}
 Here $\beta = (\beta_0, \beta_1, \dots, \beta_p)$ are the parameters of the model. Note the appearance of the intercept 
 term $\beta_0$. In order to keep notation compact $\mathbf{x}^{(i)}$ can be augmented to incorporate the intercept by adding 
@@ -209,12 +210,50 @@ which justifies its use as a model for probabilities.
 The logistic model can now be used for classification by predicting a class using the estimated probabilities according to 
 \begin{equation}
  \hat{y}_i = \begin{cases}
-            1 \ \ \text{if }  \text{Pr} \left(y=1 | \mathbf{x}^{(i)} \right) \geq 0.5 \\
-            0 \ \ \text{if }  \text{Pr} \left(y=1 | \mathbf{x}^{(i)} \right) < 0.5. \\
+            1 \ \ \text{if }  p \left(y=1 | \mathbf{x}^{(i)} \right) \geq 0.5 \\
+            0 \ \ \text{if }  p \left(y=1 | \mathbf{x}^{(i)} \right) < 0.5. \\
            \end{cases}
 \end{equation}
+\subsubsection{Training the logistic model}
+How do we train the logistic model? The answer is to use the prinicple of \textit{maximum likelihood}. Under the assumption 
+that every sample $\mathbf{x}^{(i)}$ is indenpendent, the likelihood is given by 
+\begin{align}
+ L(\beta) &= \prod_{i : y_i = 1} p(y_i=1 | \mathbf{x}^{(i)}) \prod_{i : y_i = 0} p(y_i=0 | \mathbf{x}^{(i)}) \nonumber \\
+ &= \prod_{i=1}^n p(y_i=1 | \mathbf{x}^{(i)})^{y_i} ( 1-p(y_i=1 | \mathbf{x}^{(i)}))^{1-y_i}.
+\end{align}
+Then, the parameters $\beta$ are chosen to maximize the likelihood. 
 
+It turns out that it is easier to work with the \textit{log-likelihood}
+\begin{align}
+ l(\beta) &= \log(L(\beta)) \nonumber \\
+ &= \sum_{i=1}^n y_i p(y_i=1 | \mathbf{x}^{(i)}) + (1-y_i)( 1-p(y_i=1 | \mathbf{x}^{(i)}).
+\end{align}
+Maximizing the logarithm of a function is equivalent to maximizing the function itself. 
 
+In order to see this, let $f(x)$ be a
+real valued function and let $x^*$ be a maximum point of $f(x)$, i.e 
+\begin{equation}
+ f'(x^*) = 0, \ \ f''(x^*) < 0.
+\end{equation}
+Furthermore, assume that $f(x) > 0$ and consider $\log(f(x))$. Taking derivatives we have that 
+\begin{align}
+ &\frac{d}{dx} \log (f(x)) = \frac{f'(x)}{f(x)} \\
+ \Rightarrow &\frac{d}{dx} \log(f(x^*)) = 0 \\
+ &\frac{d^2}{dx^2} \log(f(x)) = \frac{f''(x) f(x) - f'(x)^2}{f(x)^2} \\
+ \Rightarrow &\frac{d^2}{dx^2} \log(f(x^*)) < 0, 
+\end{align}
+where the last inequality follows from the fact that we assumed $f'(x^*) = 0, \, f''(x^*) < 0$ and $f(x) > 0$. Hence, $x^*$
+also maximize $\log(f(x))$.
+
+Thus, taking $\beta$ to maximize the log-likelihood is equivalent to maximizing the likelihood itself. Finally, we take our 
+cost function to be the so-called \textit{cross-entropy} which is defined as the negative log-likelihood 
+\begin{equation}
+ C(\beta) \equiv = -l(\beta).
+\end{equation}
+Then, $\beta$ is found by \textit{minimizing} the cross-entropy. 
+
+Note here that we can not find a analytical solution for the maximizer. This means that we have to use a
+numerical opimization algorithm, such as gradient descent which we discuss later, to find the optimal parameters.
 
 \subsection{Neural networks}
 \lipsum[4]

@@ -554,23 +554,20 @@ def test_neuralNetwork_adam() :
     nn.addLayer()
     nn.addOutputLayer(activations = 'identity')
     learning_rate = 0.001
-    nn.fit( X, 
-            target,
-            shuffle             = True,
-            batch_size          = 100,
-            validation_fraction = 0.2,
-            learning_rate       = learning_rate,
-            verbose             = True,
-            silent              = True,
-            epochs              = 1,
-            optimizer           = 'adam')
+
+    yhat = nn.forward_pass(X)
+    nn.backpropagation(yhat.T, target.T)
+    nn.learning_rate = learning_rate
+    nn.initializeAdam()
+    nn.adam()
 
     skl_adam = AdamOptimizer(params = nn.param, learning_rate_init=learning_rate)
     upd = skl_adam._get_updates(nn.grad)
 
-    for a,b in zip(upd,nn.change) :
-        print(a-b)
+    for update_nn, update_skl in zip(nn.change, upd) :
+        assert update_nn == pytest.approx(update_skl)
 
+        
 
 if __name__ == '__main__':
     test_neuralNetwork_adam()

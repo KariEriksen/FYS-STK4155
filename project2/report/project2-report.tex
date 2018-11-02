@@ -254,7 +254,7 @@ also maximize $\log(f(x))$.
 Thus, taking $\beta$ to maximize the log-likelihood is equivalent to maximizing the likelihood itself. Finally, we take our 
 cost function to be the so-called \textit{cross-entropy} which is defined as the negative log-likelihood 
 \begin{equation}
- C(\beta) \equiv = -l(\beta).
+ C(\beta) \equiv  -l(\beta).
 \end{equation}
 Then, $\beta$ is found by \textit{minimizing} the cross-entropy. 
 
@@ -344,7 +344,7 @@ W^k=\pmat{ccccc}{
   w^k_{31} & w^k_{32} & w^k_{33} & \dots & w^k_{3N} \\
   \vdots  &  \vdots   &   \vdots   & \ddots & \vdots \\
   w^k_{N1} & w^k_{N2} & w^k_{N3} & \dots & w^k_{NN}
-}, 
+}, \nonumber
 \end{align}
 or more compactly $(W^k)_{ij}=w^k_{ij}$. The collection of all biases for layer $k$ is $\mathbf{b}^k$. In this notation, we may write the propagation of the signal from layer $k-1$ to layer $k$ as 
 \begin{strip}
@@ -360,9 +360,9 @@ or more compactly $(W^k)_{ij}=w^k_{ij}$. The collection of all biases for layer 
 +\bmat{c}{b^{k}_1  \\ b^{k}_2    \\ \vdots \\ y^{k}_N} \right) \label{eq:nnmatrix}
 \end{align}
 \end{strip}
-or in Einstein notation 
+or in Einstein notation (no sum over $k$ implied)
 \begin{align}
-y^k_i= f\big(w^k_{ij}y^{k-1}_j+b^k_i  \big). \ \ \ \ \ \ \ \ \ (\text{no sum over }k\text{ implied})
+y^k_i= f\big(w^k_{ij}y^{k-1}_j+b^k_i  \big).
 \end{align}
 In all of the preceeding three equations, application of $f$ indicates \emph{element wise} functional evaluation.
 
@@ -372,9 +372,9 @@ A schematic representation of a layer consisting of three artificial neurons in 
 
 %Raff s. 51: "NN (and other non-linear black box techniques) cannot be expected to \emph{extrapolate} accurately."
 
-\begin{figure}
+\begin{figure*}
 \begin{centering}
-\def\layersep{2.5cm}
+\def\layersep{4.5cm}
 \begin{tikzpicture}[shorten >=1pt,->,draw=black!50, node distance=\layersep]
     \tikzstyle{every pin edge}=[<-,shorten <=1pt]
     \tikzstyle{neuron}=[circle,minimum size=17pt,inner sep=0pt]
@@ -423,13 +423,69 @@ A schematic representation of a layer consisting of three artificial neurons in 
 \end{tikzpicture}
 \end{centering}
 \caption{Schematic representation of a single ANN layer. Each neuron of the layer indexed $k$ is connected from behind to all neurons in layer $k-1$. The connection weights can be organized into a matrix, $W^{k-1}$, and the action of layer $k$ can be succinctly stated as $f(W^{k}{\bf p}^{k-1}+{\bf b}^k)$ where element-wise operation is assumed for the activation $f$. \label{fig:layer}}
-\end{figure}
+\end{figure*}
+
+\subsubsection{The full network}
+A collection of $L$ layers connected to eachother forms a full \emph{network}. Note carefully that the network is nothing more than a (somewhat complex) function. If a single input and a single output value is specified, the action of the NN can be written out in closed form as 
+\begin{strip}
+\begin{align}
+&\hat y\! = \!\left.\!\sum_{j=1}^{M}\! w_{1j}^L f_L\!\left(\!\sum_{k=1}^{M}\! w_{jk}^{L-1} f_{L-1}\!\left(\!
+\sum_{i=1}^Mw_{ki}^{L-2} f_{L-2}\left( \dots f_1\!\Big(\!w_{m1}^1 x_1 \! + \!b_m^1\!\Big)
+ \!\dots \!\right)+ b_i^{L-2}\right) \!+ \!b_k^{L-1}\!\right)
+ \!+ \!b_1^L\!\right.. \label{eq:nnfull}
+\end{align}
+\end{strip}
+Here, we have taken each layer to consist of $M$ neurons. The scalar $x_1$ denotes the input value, while $\hat y$ is the NN output. The transfer functions (which are \textit{not} assumed to all be the same) are denoted $f_L, f_{L-1},\dots,f_1$. From looking at \eq{nnfull}, the usefulness of the model is in no way obvious. But it turns out that for an ANN with at least one hidden layer populated with a finite number of neurons is a \emph{universal approximator} \autocite{HORNIK1989359}. This holds under the aforementioned assumptions on $f$. Being a universal approximator means (in this context) that the NN function can be made to be arbitrarily close to any continuous Borel-measurable function (essentially \emph{any} function we are likely to encounter) \autocite{mcdonald}. 
 
 \subsection{Activation functions \label{sect:activations}}
+Without any transfer functions, i.e.\ $f_l(x)=x$ for all layers $l$, the full network would simply be a linear transformation. In order to introduce non-linearities in our model, we employ one (or more) of a large set of possible activations. As mentioned, we require that these functions are continous and at least once (almost everywhere\footnote{A function with a property \textit{almost everywhere} (a.e.) denotes a function which satisfies this property everywhere, \textbf{except} possibly on a set of measure zero (such as e.g.\ a single point).}) differentiable, in order for the backpropagation scheme of section \ref{sect:backprop} to work. 
+
+The following is an incomplete outline of activation functions in common use today. The simplest possible activation, the identity transformation $f_\text{I}(x)=x$, is commonly used for the output layer in regression networks. A simple (Heaviside) step function, $f_\text{H}(x)=H(x)$, with 
+\begin{align}
+f_\text{H}(x)=
+\begin{cases}
+1 & \text{ if } x\ge0 \\
+0 & \text{ if } x<0 
+\end{cases},
+\end{align}
+is sometimes used in the output layer of classification networks, but seldom in hidden layers because of the vanishing gradient making it impossible to train with backpropagation. The sigmoid function, 
+\begin{align}
+f_\text{S}(x)=\frac{1}{1+\mathrm{e}^{-x}},
+\end{align}
+is commonly used as hidden layer activations along with its sibling the hyperbolic tangent
+\begin{align}
+f_\text{t}(x)=\tanh(x)=\frac{\mathrm{e}^{x}-\mathrm{e}^{-x}}{\mathrm{e}^{x}+\mathrm{e}^{-x}}.
+\end{align}
+The tangent activation is a simple rescaling of the sigmoid, with $f_\text{t}(x)=2f_\text{s}(2x)-1$.
+
+Simpler than the sigmoid, the family of activations known as \textit{rectifiers} consist of piecewise linear functions which are popular nowadays. The basic variant, the rectified linear unit (ReLU) is defined as 
+\begin{align}
+f_\text{ReLU}(x)=\max(0,x),
+\end{align}
+and is popular mostly because of its application to training \textit{deep} (many, large layers) neural networks\autocite{glorot2011deep}. Many variants of the ReLU exist, among the most well known are the leaky ReLU,
+\begin{align}
+f_\text{leaky ReLU}(x;\alpha)=
+\begin{cases}
+x & \text{ if }x\ge0 \\
+\alpha x & \text{ if } x<0,
+\end{cases}
+\end{align}
+the noisy ReLU
+\begin{align}
+f_\text{NReLU}(x) = \max(0,x+\mathcal{N}(0,\sigma)),
+\end{align}
+the exponential linear unit
+\begin{align}
+f_\text{ELU}(x;\alpha) = 
+\begin{cases}
+x & \text{ if } x\ge 0 \\
+\alpha(\mathrm{e}^x-1) & \text{ if } x< 0.
+\end{cases}
+\end{align}
 
 
 
-\subsection{Backpropagation}
+\subsection{Backpropagation \label{sect:backprop}}
 
 
 \subsection{Exploding / vanishing gradients}

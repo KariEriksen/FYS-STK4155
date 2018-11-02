@@ -23,6 +23,7 @@ class NeuralNetwork :
                  layers      = None,
                  neurons     = None,
                  activations = None,
+                 cost        = 'mse',
                  silent      = False) :
 
         self.inputs         = inputs
@@ -35,7 +36,7 @@ class NeuralNetwork :
         self.weights        = None
         self.biases         = None
 
-        self.cost           = CostFunction()
+        self.cost           = CostFunction(cost)
 
         self.first_feedforward = True
         self.first_backprop    = True
@@ -274,6 +275,10 @@ class NeuralNetwork :
                                 "the number of network *inputs*.") 
         self.n_validation       = int(round(validation_fraction*self.n_samples))
         self.x_validation       = x     [:,:self.n_validation]
+        print(target.shape)
+        if target.ndim == 1:
+            target = target.reshape((-1, 1))
+        print(target.shape)
         self.target_validation  = target[:,:self.n_validation]
         self.x_train        = x     [:,self.n_validation+1:]
         self.target_train   = target[:,self.n_validation+1:]

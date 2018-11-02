@@ -497,45 +497,6 @@ def test_neuralNetwork_backpropagation_multiple_outputs() :
 
     for i, d_weight in enumerate(nn.d_weights) :
         assert np.squeeze(d_weight) == pytest.approx(np.squeeze(coef_grads[i]))
-
-
-def test_neuralNetwork_fit() :
-    np.random.seed(2019)
-    X      = np.random.normal(size=(1,500))
-    target = 3.9285985 * X
-
-    nn = NeuralNetwork( inputs          = 1,
-                        neurons         = 3,
-                        outputs         = 1,
-                        activations     = 'sigmoid',
-                        silent          = True)
-    nn.addLayer()
-    nn.addLayer()
-    nn.addOutputLayer(activations = 'identity')
-    nn.fit( X, 
-            target,
-            shuffle             = True,
-            batch_size          = 100,
-            validation_fraction = 0.2,
-            learning_rate       = 0.05,
-            verbose             = False,
-            silent              = True,
-            epochs              = 100)
-
-    loss_after_100   = nn.loss
-    nn.fit( X, 
-            target,
-            shuffle             = True,
-            batch_size          = 100,
-            validation_fraction = 0.2,
-            learning_rate       = 0.05,
-            verbose             = False,
-            silent              = True,
-            epochs              = 1000)
-    loss_after_200   = nn.loss
-
-    assert loss_after_200 < loss_after_100
-
     
 
 def test_neuralNetwork_adam() :
@@ -605,8 +566,125 @@ def test_neuralNetwork_sgd() :
 
 
 
+def test_neuralNetwork_fit_sgd() :
+    np.random.seed(2019)
+    X      = np.random.normal(size=(1,500))
+    target = 3.9285985 * X
+
+    nn = NeuralNetwork( inputs          = 1,
+                        neurons         = 3,
+                        outputs         = 1,
+                        activations     = 'sigmoid',
+                        silent          = True)
+    nn.addLayer()
+    nn.addLayer()
+    nn.addOutputLayer(activations = 'identity')
+    nn.fit( X, 
+            target,
+            shuffle             = True,
+            batch_size          = 100,
+            validation_fraction = 0.2,
+            learning_rate       = 0.05,
+            verbose             = False,
+            silent              = True,
+            epochs              = 100)
+
+    loss_after_100   = nn.loss
+    nn.fit( X, 
+            target,
+            shuffle             = True,
+            batch_size          = 100,
+            validation_fraction = 0.2,
+            learning_rate       = 0.05,
+            verbose             = False,
+            silent              = True,
+            epochs              = 100)
+    loss_after_200   = nn.loss
+
+    assert loss_after_200 < loss_after_100
+
+
+def test_neuralNetwork_fit_adam() :
+    np.random.seed(2019)
+    X      = np.random.normal(size=(1,500))
+    target = 3.9285985 * X
+
+    nn = NeuralNetwork( inputs          = 1,
+                        neurons         = 3,
+                        outputs         = 1,
+                        activations     = 'tanh',
+                        silent          = True)
+    nn.addLayer()
+    nn.addLayer()
+    nn.addOutputLayer(activations = 'identity')
+    nn.fit( X, 
+            target,
+            shuffle             = True,
+            batch_size          = 100,
+            validation_fraction = 0.2,
+            learning_rate       = 0.05,
+            verbose             = True,
+            silent              = False,
+            epochs              = 100,
+            optimizer           = 'adam')
+    loss = nn.loss 
+    nn.fit( X, 
+            target,
+            shuffle             = True,
+            batch_size          = 100,
+            validation_fraction = 0.2,
+            learning_rate       = 0.05,
+            verbose             = True,
+            silent              = False,
+            epochs              = 100,
+            optimizer           = 'adam')
+
+    assert loss > nn.loss
+
+
+"""
+def test_neuralNetwork_fit_adam_multi() :
+    np.random.seed(2019)
+    X      = np.random.normal(size=(2,500))
+    target = 3.9285985 * X - 1.59825 * X[1,:]
+    print(target.shape)
+
+    nn = NeuralNetwork( inputs          = X.shape[0],
+                        neurons         = 3,
+                        outputs         = 1,
+                        activations     = 'tanh',
+                        silent          = True)
+    nn.addLayer()
+    nn.addLayer()
+    nn.addOutputLayer(activations = 'identity')
+    nn.fit( X, 
+            target,
+            shuffle             = True,
+            batch_size          = 100,
+            validation_fraction = 0.2,
+            learning_rate       = 0.05,
+            verbose             = True,
+            silent              = False,
+            epochs              = 100,
+            optimizer           = 'sgd')
+    loss = nn.loss 
+    nn.fit( X, 
+            target,
+            shuffle             = True,
+            batch_size          = 100,
+            validation_fraction = 0.2,
+            learning_rate       = 0.05,
+            verbose             = True,
+            silent              = False,
+            epochs              = 100,
+            optimizer           = 'sgd')
+
+    assert loss > nn.loss
+"""
+
+
 if __name__ == '__main__':
-    test_neuralNetwork_sgd()
+    test_neuralNetwork_fit_adam_multi()
 
 
 

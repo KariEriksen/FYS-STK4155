@@ -538,10 +538,42 @@ def test_neuralNetwork_fit() :
 
     
 
+def test_neuralNetwork_adam() :
+    from sklearn.neural_network._stochastic_optimizers import AdamOptimizer
+
+    np.random.seed(2019)
+    X      = np.random.normal(size=(1,500))
+    target = 3.9285985 * X
+
+    nn = NeuralNetwork( inputs          = 1,
+                        neurons         = 3,
+                        outputs         = 1,
+                        activations     = 'sigmoid',
+                        silent          = True)
+    nn.addLayer()
+    nn.addLayer()
+    nn.addOutputLayer(activations = 'identity')
+    learning_rate = 0.001
+    nn.fit( X, 
+            target,
+            shuffle             = True,
+            batch_size          = 100,
+            validation_fraction = 0.2,
+            learning_rate       = learning_rate,
+            verbose             = True,
+            silent              = True,
+            epochs              = 1,
+            optimizer           = 'adam')
+
+    skl_adam = AdamOptimizer(params = nn.param, learning_rate_init=learning_rate)
+    upd = skl_adam._get_updates(nn.grad)
+
+    for a,b in zip(upd,nn.change) :
+        print(a-b)
 
 
 if __name__ == '__main__':
-    test_neuralNetwork_fit()
+    test_neuralNetwork_adam()
 
 
 

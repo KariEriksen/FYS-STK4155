@@ -254,7 +254,18 @@ class NeuralNetwork :
             momentum            = 0.9,
             validation_skip     = 5,
             verbose             = False,
-            silent              = False) :
+            silent              = False,
+            optimizer           = 'sgd') :
+
+        self.learning_rate = learning_rate
+
+        if optimizer == 'adam' :
+            self.initializeAdam()
+            self.optimizer = self.adam
+        elif optimizer == 'sgd' :
+            self.optimizer = self.sgd
+        else :
+            raise ValueError(   "The optimizer " + str(optimizer) + " is not supported.")
 
         self.n_features, self.n_samples = x.shape
 
@@ -276,7 +287,6 @@ class NeuralNetwork :
             warnings.warn(warning_string)
 
         
-        #validation_skip      = 5
         validation_it        = 0
         self.validation_loss = np.zeros(int(ceil(epochs / validation_skip))+1)
         self.training_loss   = np.zeros(epochs)
@@ -314,10 +324,7 @@ class NeuralNetwork :
                     batch_loss = self.cost(y_batch.T, target_batch)
                     epoch_loss += batch_loss
 
-                    for i, d_w in enumerate(self.d_weights) :
-                        self.weights[i] -= learning_rate * d_w
-                    for i, d_b in enumerate(self.d_biases) :
-                        self.biases[i]  -= learning_rate * d_b
+                    self.optimizer()
 
                     batch_time_average += batch_start_time - time.time()
                 
@@ -351,19 +358,74 @@ class NeuralNetwork :
                                                                                     "",
                                                                                     self.validation_loss[validation_it-1]))
 
+    def sgd(self) :
+        for i, d_w in enumerate(self.d_weights) :
+            self.weights[i] -= self.learning_rate * d_w
+        for i, d_b in enumerate(self.d_biases) :
+            self.biases[i]  -= self.learning_rate * d_b
+
+    def initializeAdam(self) :
+        self.t = 0
+        self.learning_rate_init = self.learning_rate
+
+        self.param = self.weights + self.biases
+        
+        # Biased first moment estimates
+        self.m = [np.zeros_like(p) for p in self.param]
+    
+        # Biased second raw moment estimates
+        self.v = [np.zeros_like(p) for p in self.param]
+
+        # Bias-corrected first moment estimates
+        self.mh = [np.zeros_like(p) for p in self.param]
+
+        # Bias-corrected second raw moment estimates
+        self.vh = [np.zeros_like(p) for p in self.param]
 
 
-def format_ms(ms) :
-    if ms < 100 :
-        return "%.3f" % float(ms)
+    def adam(self) :
+        beta1   = 0.9
+        beta2   = 0.999
+        epsilon = 1e-8
+        self.t += 1
+        t       = self.t
 
+        # Gradients
+        self.grad = self.d_weights + self.d_biases
 
+        #      
+        # m  ← β  m + (1 − β )  ∇C
+        #       1           1
+        self.m = [beta1 * m + (1 - beta1) * g 
+                  for m,g in zip(self.m, self.grad)]
 
+        #                        2
+        # v  ← β  v + (1 − β ) ∇C
+        #       2           2
+        self.v = [beta2 * v + (1 - beta2) * g**2
+                  for v,g in zip(self.v, self.grad)]
 
+        #             ________
+        #            /     t
+        #           / 1 - β 
+        #          √       2
+        # α  ←  α  -----------
+        #                  t
+        #             1 - β
+        #                  1
+        self.learning_rate = self.learning_rate_init * np.sqrt(1 - beta2**t) / (1 - beta1**t)
 
+        #                
+        #                         α m
+        # params ←  params -  ------------
+        #                       ___
+        #                      √ v  + ϵ
+        change = [- self.learning_rate * m / (np.sqrt(v) + epsilon) 
+                  for m,v in zip(self.m, self.v)]
+        self.change = change
 
-
-
+        self.weights = [w + dw for w, dw in zip(self.weights, change[:len(self.weights)])]
+        self.biases  = [b + db for b, db in zip(self.biases,  change[len(self.weights):])]
 
 
 

@@ -364,6 +364,7 @@ class NeuralNetwork :
         for i, d_b in enumerate(self.d_biases) :
             self.biases[i]  -= self.learning_rate * d_b
 
+
     def initializeAdam(self) :
         self.t = 0
         self.learning_rate_init = self.learning_rate

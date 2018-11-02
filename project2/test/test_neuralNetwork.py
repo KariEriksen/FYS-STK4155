@@ -567,10 +567,46 @@ def test_neuralNetwork_adam() :
     for update_nn, update_skl in zip(nn.change, upd) :
         assert update_nn == pytest.approx(update_skl)
 
-        
+
+def test_neuralNetwork_sgd() :
+    from sklearn.neural_network._stochastic_optimizers import SGDOptimizer
+
+    np.random.seed(2019)
+    X      = np.random.normal(size=(1,500))
+    target = 3.9285985 * X
+
+    nn = NeuralNetwork( inputs          = 1,
+                        neurons         = 3,
+                        outputs         = 1,
+                        activations     = 'sigmoid',
+                        silent          = True)
+    nn.addLayer()
+    nn.addLayer()
+    nn.addOutputLayer(activations = 'identity')
+    learning_rate = 0.001
+
+    yhat = nn.forward_pass(X)
+    nn.backpropagation(yhat.T, target.T)
+    nn.learning_rate = learning_rate
+    initial_params = copy.deepcopy(nn.weights+nn.biases)
+    nn.sgd()
+    grad   = nn.d_weights + nn.d_biases
+    params = nn.weights   + nn.biases
+    change = [p-i_p for p,i_p in zip(params,initial_params)]
+
+    skl_sgd = SGDOptimizer( params              = initial_params, 
+                            learning_rate_init  = learning_rate, 
+                            nesterov            = False,
+                            momentum            = 1.0)
+    upd = skl_sgd._get_updates(grad)
+
+    for update_nn, update_skl in zip(change, upd) :
+        assert update_nn == pytest.approx(update_skl)
+
+
 
 if __name__ == '__main__':
-    test_neuralNetwork_adam()
+    test_neuralNetwork_sgd()
 
 
 

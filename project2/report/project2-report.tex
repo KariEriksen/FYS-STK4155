@@ -477,7 +477,7 @@ the noisy ReLU
 \begin{align}
 f_\text{NReLU}(x) = \max(0,x+\mathcal{N}(0,\sigma)),
 \end{align}
-the exponential linear unit
+and the exponential linear unit
 \begin{align}
 f_\text{ELU}(x;\alpha) = 
 \begin{cases}
@@ -491,23 +491,19 @@ Knowing that ANNs can be universal approximators is not helpful unless we can fi
 \begin{shadeframe}
 Assume input $x$ and corresponding \emph{correct} output $y$ is known.
 \begin{itemize}
-  \item[(1)] Compute output $\text{NN}(x)=\hat y$ of the artificial neural network, and evaluate the \emph{cost} function, e.g.\ $C(\hat y)\equiv \Vert y-\hat y\Vert_2$. 
+  \item[(1)] Compute output $\text{NN}(x)=\hat y$ of the artificial neural network, and evaluate the \emph{cost} function, $C(\hat y,y)$. 
   \item[(2)] Compute the gradient of $C(\hat y)$ w.r.t.\ all the parameters of the network, $w_{ij}^k$ and $b^k_j$.  
   \item[(3)] Adjust the parameters according to the gradients, yielding a better estimate $\hat y$ of the true output value $y$. 
   \item[(4)] Repeat (1)\textemdash(4).
 \end{itemize}
 \end{shadeframe}
-The training scheme is known as \emph{supervised learning}, because the NN is continually presented with $x$, $y$ pairs, i.e.\ an input and an expected output. The cost (or objective or loss) function determines how happy the network is with it's own performance. A common choice for the cost function is the $\ell^2$ norm, essentially the root squared difference,
-\begin{align}
-C(\hat{\mathbf{y}}) = \Vert \mathbf{y}-\hat{\mathbf{y}}\Vert_2= \sqrt{\sum_{i=1}^{N_\text{O}}(y_i-\hat y_i)^2}. \label{eq:cost}
-\end{align}
-In general, the output of the neural network is a vector of values, $\mathbf{y}$, and the cost function is taken across all outputs. In \eq{cost}, the network produces $N_\text{O}$ outputs for each input (which itself may be a vector). 
+The training scheme is known as \emph{supervised learning}, because the NN is continually presented with $x$, $y$ pairs, i.e.\ an input and an expected output. The cost (or objective or loss) function determines how happy the network is with it's own performance. In general, the output of the neural network is a vector of values, $\mathbf{y}$, and the cost function is taken across all outputs. In \eq{cost}, the network produces $N_\text{O}$ outputs for each input (which itself may be a vector). 
 
 Step (3) is easy to understand, but complex in practice. In order to update the network weights and biases, a measure of the expected change in the total output is needed. Otherwise, any change would just be done at random\footnote{This is a possible approach, yielding a class of \emph{genetic} optimization algorithms. We will not discuss such schemes in the present work.}. This means we need to compute the set of derivatives 
 \begin{align}
 g_{ij}^k \equiv \frac{\partial C(\hat{\mathbf{y}})}{\partial w_{ij}^k}, \ \ \ \text{ and } \ \ \ h_i^k\equiv \frac{\partial C(\hat{\mathbf{y}})}{\partial b^k_i}.
 \end{align}
-The most common algorithm for computing these derivatives is the {\bf backpropagation} algorithm \autocite{backprop}. The method works by first pushing an input through the ANN, and computing the derivatives of the cost function w.r.t.\ the last layer weights and biases. The network is then traversed backwards, and the gradient w.r.t.\ all neuron parameters is found by repeated application of the chain rule.
+The most common algorithm for computing these derivatives is the {\bf backpropagation} algorithm \autocite{backprop}. The method works by first pushing an input through the ANN, and computing the derivatives of the cost function w.r.t.\ the last layer weights and biases. The network is then traversed backwards, and the gradient w.r.t.\ all neuron parameters is found by repeated application of the chain rule. 
 
 \subsection{Backpropagation \label{sect:backprop}}
 Before we can apply the backpropagation algorithm, we need to perform a forward pass of the network given some input vector $\mathbf{x}\in\mathds{R}^{n_\text{f}}$, where $n_\text{f}$ denotes the number of features in the input data. We consider\textemdash for the moment\textemdash the case of a single input only ($n_\text{inputs}=1$). During the forward pass we calculate the activations $a^l$ of layer $l$, i.e.\ 
@@ -545,16 +541,47 @@ and
 
 We define the quantity in \eq{deltaL} (apart from $a_k^{L-1}$ as $\delta_j^L$, meaning $\partial C/\partial w_{jk}^L=\delta^L_ja_k^{L-1}$. Applying the chain rule to $\delta^L_j$ yields the derivative of the cost function w.r.t.\ the output layer biases as
 \begin{align}
-\delta^L_j&=\frac{\partial C(W^L)}{\partial z_j^L} = \frac{\partial C(W^L)}{a_j^L}\frac{\partial a_j^L}{\partial z_j^L}  \nonumber \\
-&=
+\delta^L_j&= \frac{\partial C(W^L)}{a_j^L}\frac{\partial f^L}{\partial z_j^L} = \frac{\partial C(W^L)}{a_j^L}\frac{\partial a_j^L}{\partial z_j^L} \nonumber \\
+%
+&= \frac{\partial C(W^L)}{\partial z_j^L} = \frac{\partial C(W^L)}{\partial b_j^L} \frac{\partial b_j^L}{\partial z_j^L} \label{eq:deltad} \\
+&= \frac{\partial C(W^L)}{\partial b_j^L},
 \end{align}
+where we used that 
+\begin{align}
+\frac{\partial b_j^L}{\partial z_j^L} &= \left[\frac{\partial z_j^L}{\partial b_j^L}\right]^{-1} \nonumber \\
+%
+&= \left[\frac{\partial}{\partial b_j^L} \sum_{i=1}^{N_{L-1}} w_{ij}^L a_i^{L-1}+b_j^L \right]^{-1} \nonumber \\
+%
+&= 1.
+\end{align}
+We have thus found the derivatives of the cost function w.r.t.\ both the weights and biases in the output layer, $W^L$ and $\mathbf{b}^L$. 
+
+The equation 
+\begin{align}
+\delta_j^l &= \frac{\partial C}{\partial z_j^l}
+\end{align}
+holds for any layer, not just the output as in \eq{deltad}. Relating this to derivatives w.r.t.\ the layer $l+1$ $z_j$s, we find
+\begin{align}
+\delta_j^l &= \frac{\partial C}{\partial z_j^l} = \sum_k\frac{\partial C}{\partial z_k^{l+1}} \frac{\partial z_k^{l+1}}{z_j^l} \nonumber \\
+&= \sum_k \delta_k^{l+1}\frac{\partial z_k^{l+1}}{z_j^l} \nonumber \\
+%
+&= \sum_k \delta_k^{l+1}w_{kj}^{l+1}\frac{\partial f^l}{\partial z_j^l}, \label{eq:backpropeq}
+\end{align}
+with 
+\begin{align}
+\frac{\partial z_k^{l+1}}{\partial z_j^l} &= \frac{\partial}{\partial z_j^l}\left[\sum_{i=1}^{N_l}w_{ik}^{l+1}a_k^l + b_k^{l+1}\right] \nonumber \\
+%
+&= \frac{\partial}{\partial z_j^l}\left[\sum_{i=1}^{N_l}w_{ik}^{l+1}f^l(z_k^l) + b_k^{l+1}\right] \nonumber \\
+&= w_{jk}^{l+1}f^l(z_j^l).
+\end{align}
+The rest of the backpropagation scheme is essentially iterating \eq{backpropeq}, and computing\textemdash for each layer\textemdash the gradients $\partial C/\partial w_{ij}^l=\delta_i^la_j^{l-1}$ and $\partial C/\partial b_i^l=\delta_i^l$. Once the gradients are known, updating the weights and biases to improve the performance of the network (making the cost function smaller) can be done by e.g.\ gradient descent schemes, c.f.\ section \ref{sect:gradientdescent}.
 
 \subsection{Exploding / vanishing gradients and weight initialization}
 He initialization \autocite{he2015delving}. Xavier initialization \autocite{glorot2010understanding}.
 
 
 
-\subsection{Gradient Descent}
+\subsection{Gradient Descent \label{sect:gradientdescent}}
 Almost every problem in machine learning and data science starts
 with a dataset $X$, a model $g(\theta)$, which is a function of the parameters $\theta$ and a cost 
 function $C(X, g(\theta))$ that allows us to judge how well the
@@ -599,7 +626,7 @@ large we can experience erratic behavior.
 (SGD).
 \end{itemize}
 
-\subsubsection{Stochastic Gradient Descent}
+\subsubsection{Stochastic Gradient Descent \label{sect:stochasticgradient}}
 Stochastic gradient descent (SGD) and variants thereof address some of the shortcomings of the Gradient descent method discussed above. 
 
 The underlying idea of SGD comes from the observation that the cost function, which we want to minimize, can almost always be 

@@ -307,7 +307,7 @@ class NeuralNetwork :
                                                                       "Remaining time",
                                                                       "Batch cost",
                                                                       "Validation cost"))
-            batches_per_epoch = int(ceil(self.x_train.shape[1] / self.batch_size))
+            self.batches_per_epoch = int(ceil(self.x_train.shape[1] / self.batch_size))
             
             start_time = time.time()
 
@@ -317,7 +317,7 @@ class NeuralNetwork :
 
                 epoch_loss = 0
 
-                for batch in range(batches_per_epoch) :
+                for batch in range(self.batches_per_epoch) :
                     batch_start_time = time.time()
                     x_batch, target_batch   = sklearn.utils.shuffle(self.x_train.T, 
                                                                     self.target_train.T, 
@@ -331,7 +331,8 @@ class NeuralNetwork :
 
                     batch_time_average += batch_start_time - time.time()
                 
-                batch_time_average /= float(batches_per_epoch)
+                self.training_loss[epoch] = epoch_loss
+                batch_time_average /= float(self.batches_per_epoch)
                 epoch_time          = time.time() - epoch_start_time
 
                 if verbose or (epoch % 5 == 0) :
@@ -353,7 +354,7 @@ class NeuralNetwork :
 
                     if not silent :
                         #       ep      t/b   t/e    t    rt   bcost vcost
-                        print(" %5s    %-20s %-20s %-15.3s %-20s %-15s %-15.5f " % ("", 
+                        print(" %5s    %-20s %-20s %-15.3s %-20s %-15s %-15.5g " % ("", 
                                                                                     "",
                                                                                     "",
                                                                                     "",

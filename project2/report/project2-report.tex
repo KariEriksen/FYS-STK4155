@@ -578,7 +578,44 @@ with
 The rest of the backpropagation scheme is essentially iterating \eq{backpropeq}, and computing\textemdash for each layer\textemdash the gradients $\partial C/\partial w_{ij}^l=\delta_i^la_j^{l-1}$ and $\partial C/\partial b_i^l=\delta_i^l$. Once the gradients are known, updating the weights and biases to improve the performance of the network (making the cost function smaller) can be done by e.g.\ gradient descent schemes, c.f.\ section \ref{sect:gradientdescent}.
 
 \subsection{Exploding / vanishing gradients and weight initialization}
-He initialization \autocite{he2015delving}. Xavier initialization \autocite{glorot2010understanding}.
+Typical transfer functions are constant or close to constant on most of $\mathds{R}$, and only changes appreciably in a tiny region around the origin. This means that a fully \textit{saturated} neuron with input $z_j\gg1$, or a \textit{dead} neuron with input $z_j\ll-1$ will most likely exhibit very small gradients and change very little durign training. This means the neurons are essentially wasted, they only add a constant input to the neurons in the subsequent layer; a job already performed by the bias $b_{j+1}$. In order to avoid this effect, it is important to initialize the weight matrices in the network in a smart way. 
+
+In the useful region around the origin, we may assume that the transfer functions are roughly linear. In order for the signal to propagate through the network usefully, we essentially want the mean value of the $z_j$s to vanish, and the variance to be on the order of $1$. Let us now consider an input vector $X$ of $n$ components. If we take the weights to be random\textemdash as is the case in the first forward pass\textemdash then $W$ is a random vector of weights $W_i$. With the previous assumption about linearity of the transfer function, we get the activation 
+\begin{align}
+A=W_1X_1+W_2X_2+\dots+W_nX_n,
+\end{align}
+which has variance 
+\begin{align}
+\text{Var}(A) &= \text{Var}(W_1X_2+\dots+W_nX_n) \nonumber \\
+%
+&= n\text{Var}(W_i)\text{Var}(X_i),
+\end{align}
+where we assumed that the inputs and the weights are all independent, identically distributed, with vanishing mean. If we want the activation to have variance on the order of $1$, then we must require that the variance of the weights is 
+\begin{align}
+\text{Var}(W_i) = \frac{1}{n}.
+\end{align}
+Performing the same analysis with the backpropagated signal yields the same result,
+\begin{align}
+\text{Var}(W_i) = \frac{1}{n'},
+\end{align}
+with $n'$ being the amount of weights in the \textit{next} network layer. 
+
+With this in mind,  Glorot \& Bengio suggested initializing weights with average variance:\autocite{glorot2010understanding}
+\begin{align}
+\text{Var}(W_i^l) = \frac{1}{n_l+n_{l+1}}.
+\end{align}
+In the case of sigmoid or hyperbolic tangent transfer functions, we may realize this variance by initializing $w=\mathcal{U}(-r,r)$ with
+\begin{align}
+r_\text{sigmoid}=\sqrt{\frac{6}{n_\text{in}+n_\text{out}}}, \nonumber \\
+r_\text{tanh}=4\sqrt{\frac{6}{n_\text{in}+n_\text{out}}}, \nonumber
+\end{align}
+where $\mathcal{U}(a,b)$ denotes a uniform distribution between $a$ and $b$ and $n_\text{in}$ ($n_\text{out}$) is the number of neurons in the current (next) layer.
+
+With rectifying linear units, the weight initialization scheme changes slightly. As the ReLU transfer function vanishes across half of $\mathds{R}$, He et al.\autocite{he2015delving} suggest doubling the variance of the weights in order to keep the propagating signal's variance constant, i.e.\
+\begin{align}
+\text{Var}(W)=\frac{2}{n_\text{in}}.
+\end{align}
+We may realize this by initializing weights $w=\mathcal{N}(0,1)\sqrt{2/n_\text{in}}$, where $\mathcal{N}(\mu,\sigma)$ denotes the normal distribution with mean $\mu$ and standard deviation $\sigma$.
 
 
 
@@ -719,8 +756,6 @@ The Adam scheme uses a moving, exponentially decaying, average of the first and 
 \begin{align}
 \text{Var}_\text{u}(f)&= \text{E}\left[\Big( f \Big)^2\right] \not= \text{E}\left[\Big( f - \langle f\rangle \Big)^2\right] = \text{Var}(f). 
 \end{align}}) variance of the gradient. At the first iteration, we assign $m_0=v_0=0$, which means the estimates are inherently biased towards zero. In the Adam scheme, this is counteracted by computing bias-corrected estimates $\hat m_j$ and $\hat v_j$. The Adam optimization is outlined in algorithm \ref{alg:adam}.
-
-
 
 
 

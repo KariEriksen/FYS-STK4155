@@ -253,7 +253,7 @@ class NeuralNetwork :
             batch_size          = 200,
             validation_fraction = 0.1,
             momentum            = 0.9,
-            validation_skip     = 5,
+            validation_skip     = 10,
             verbose             = False,
             silent              = False,
             optimizer           = 'sgd') :
@@ -275,10 +275,8 @@ class NeuralNetwork :
                                 "the number of network *inputs*.") 
         self.n_validation       = int(round(validation_fraction*self.n_samples))
         self.x_validation       = x     [:,:self.n_validation]
-        print(target.shape)
         if target.ndim == 1:
-            target = target.reshape((-1, 1))
-        print(target.shape)
+            target = target.reshape((1, -1))
         self.target_validation  = target[:,:self.n_validation]
         self.x_train        = x     [:,self.n_validation+1:]
         self.target_train   = target[:,self.n_validation+1:]
@@ -336,9 +334,9 @@ class NeuralNetwork :
                 batch_time_average /= float(batches_per_epoch)
                 epoch_time          = time.time() - epoch_start_time
 
-                if verbose :
+                if verbose or (epoch % 5 == 0) :
                     #       ep      t/b   t/e    t    rt     bcost   vcost
-                    print(" %5d    %-20s %-20s %-15.3s %-20s %-15.5f %-15s " % (epoch, 
+                    print(" %5d    %-20s %-20s %-15.3s %-20s %-15.5g %-15s " % (epoch, 
                                                                                 "",
                                                                                 "",
                                                                                 "",

@@ -14,7 +14,7 @@ from neuralNetwork  import NeuralNetwork
 
 
 
-def train_net_predict_energy(L=10, N=1000) :
+def train_net_predict_energy(L=20, N=1000) :
     ising  = Ising(L,N)
     X, y   = ising.generateDesignMatrix1D()
     n_samples, n_features = X.shape
@@ -22,21 +22,30 @@ def train_net_predict_energy(L=10, N=1000) :
     nn = NeuralNetwork( inputs          = n_features,
                         neurons         = n_features,
                         outputs         = 1,
-                        activations     = 'relu',
+                        activations     = 'sigmoid',
                         cost            = 'mse',
-                        silent          = True)
+                        silent          = False)
     nn.addLayer(neurons=n_features)
     nn.addOutputLayer(activations = 'identity')
     nn.fit( X.T, 
             y,
             shuffle             = True,
-            batch_size          = 100,
+            batch_size          = 400,
             validation_fraction = 0.2,
             learning_rate       = 0.001,
-            verbose             = True,
+            verbose             = False,
             silent              = False,
             epochs              = 1000,
+            validation_skip     = 100,
             optimizer           = 'adam')
+    yHat = nn.predict(X.T)
+    ind  = np.argsort(y)
+    yHat = yHat.T
+
+    plt.plot(y[ind], 'ko')
+    plt.plot(yHat[ind], 'r.')
+    plt.show()
+
 
 
 

@@ -3,6 +3,7 @@ import scipy
 import warnings
 import os 
 import sys 
+import collections
 import matplotlib.pyplot as plt
 
 # Add the project1/src/ directory to the python path so we can import the code 
@@ -61,24 +62,37 @@ class Ising :
 
         L = self.systemSize
         N = self.numberOfStates
-        n = N//L
+        possible_E = len(np.arange(-L, L+1, 4))
+        n = N // possible_E
         self.states = np.zeros(shape=(N, L))
-        
-        for i in range(L) :
-            s    = np.ones(shape=(n,L))
-            #s    = np.multiply(s, np.expand_dims(np.random.choice([-1,1], size=n),axis=1))
-            for j in range(n) :
-                s[j,np.random.choice(L, replace=False, size=(1,i))] *= -1
-            
-            self.states[i*n:(i+1)*n] = s
-
-        if N % L != 0 :
-            n = N % L
-            self.states[N-n:] = np.random.choice([-1.0, 1.0], size=(n, L))
         
         self.J  = np.zeros((self.systemSize, self.systemSize),)
         np.fill_diagonal(self.J[:,1:], -1.0)
         self.J[-1,0] = -1.0
+
+        s = np.ones(shape=(n,L))
+        s[:,::2] *= -1
+        ss = s[0,:]
+        s = np.multiply(s, np.expand_dims(np.random.choice([-1,1], size=n),axis=1))
+        self.states[:n] = s
+
+        for i in range(1,possible_E-1) :
+            s         = np.ones(shape=(n,L))
+            s[:,::2] *= -1
+            s         = np.multiply(s, np.expand_dims(np.random.choice([-1,1], size=n),axis=1))
+            for j in range(n) :
+                s[j,np.random.choice(np.arange(0,L,2), replace=False, size=(1,i))] *= -1
+            self.states[i*n:(i+1)*n] = s
+
+        s = np.ones(shape=(n,L))
+        s = np.multiply(s, np.expand_dims(np.random.choice([-1,1], size=n),axis=1))
+        self.states[(possible_E-1)*n:(possible_E-1)*n+s.shape[0]] = s
+
+        if N % possible_E != 0 :
+            n = N % possible_E
+            self.states[N-n:] = np.random.choice([-1.0, 1.0], size=(n, L))
+        np.random.shuffle(self.states)
+        
         self.computeEnergy1D()
         return self.states, self.E
 

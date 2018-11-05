@@ -15,7 +15,7 @@ from neuralNetwork  import NeuralNetwork
 
 
 
-def train_net_predict_energy(L = 20, N = 1000) :
+def train_net_predict_energy(L = 20, N = 2000) :
     ising = Ising(L, N)
     X, y  = ising.generateTrainingData1D()
     n_samples, n_features = X.shape

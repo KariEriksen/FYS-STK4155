@@ -21,6 +21,7 @@
 \usepackage{mathtools}                       % Underbrackets, overbrackets.
 \usepackage[dvipsnames]{xcolor}              % Colors.
 \usepackage{capt-of}                         % Caption things which are not floats.
+\usepackage{algorithm2e}                     % Algorithm non-float which we can caption by \captionof{algocf}{<caption>}.
 \usepackage{fontawesome}                     % Github icon, etc. \faGithub
 \usepackage{sidecap}                         % Floats with captions on the side.
 \usepackage{tabularx}                        % Tables and stuff.
@@ -684,6 +685,44 @@ decays in "time" t.
 In this way we can fix the number of epochs, compute $\theta$ and evaluate the cost function at the end. Repeating the 
 computation will give a different result since the scheme is random by design. Then we pick the final $\theta$ that gives 
 the lowest value of the cost function.
+
+\subsubsection{Gradient descent improvements: Adam}
+While the stochastic gradient descent alleviates some of the problems intrinsic in the basic steepest descent method, it still has some problems. The \textit{stochasticity} allows it to possibly make jumps over small barriers, essentially transitioning into other basins of more optimal local minima. However, the SGD method struggles with navigating surfaces in parameter space in which the gradient is much steeper in one direction than the other(s). In this case, the iterations $\theta_i=(\alpha_i,\beta_i)$ will rapidly oscillate between over/under-shooting $\alpha_i$ values (with the steep gradient), while slowly making progress towards the minimum in $\beta_i$ (the shallow gradient).
+
+We can help the SGD overcome this problem by introducing a \textit{momentum} term \autocite{qian1999monentum}. Instead of recomputing the gradient at each iteration, we keep a part of the change at the previous time step, essentially giving the optimization a momentum\textemdash accelerating the minimization in \textit{parameter space directions} in which the gradient is not steep, but consistently has a small value aimed steadily in one direction. It also hampers the rapid oscillating solutions in \textit{parameter space directions} in which we are close to the optimium, and the steep gradient makes the SGD over/under-shoot the solution at every other iteration. 
+
+Each minibatch, the parameter update changes to
+\begin{align}
+\theta_{j+1} =\theta_j - \left[\eta \nabla_\theta c_i(\mathbf{x}_i,\theta_{j-1}) \right] - \gamma_j\nabla_\theta c_i(\mathbf{x}_i,\theta_j), \nonumber
+\end{align}
+with the momentum term $\eta$ usually set to a value close to $1.0$, e.g.\ $\eta=0.9$. The momentum term may be extended with a \textit{Nesterov accelerated gradient} scheme, which basically adds adaptive momentum term.
+
+While introducing momentum into the SGD method improves the scheme, we are still disregarding a lot of previous\textemdash possibly relevant\textemdash information when we re-compute the gradient at each iteration and throw away all the history of previous gradients computed. In general, we should be able to use past moments of the calculated in previous iteration steps as a guide for the current gradient step in order to improve performance. This is exactly the motivation behind the Adam (Adaptive moment estimation) optimizer\autocite{kingma2014adam}.
+
+\begin{algocf*}
+\begin{shadeframe}
+\begin{itemize}
+  \item[] At step $j=0$, initialize $m_0=v_0=0$.
+  \item[(1)] Iterate the step counter $j\leftarrow j+1$.
+  \item[(2)] Calculate the gradient $g_j\leftarrow \nabla_\theta c(\mathbf{x}_i,\theta_j)$.
+  \item[(3)] Update biased first moment estimate, \phantom{d}  $m_j\leftarrow \beta_1m_{j-1}+(1-\beta_1)g_j$.
+  \item[(4)] Update biased second moment estimate, $v_j\leftarrow \beta_2v_{j-1}\phantom{d}+(1-\beta_2)g_j^2$.
+  \item[(5)] Compute the bias-corrected first moment esimate, \phantom{d} $\hat m_j\leftarrow \frac{m_j}{1-\beta_1^j}$.
+  \item[(6)] Compute the bias-corrected second moment esimate, $\hat v_j  \leftarrow \frac{v_j}{1-\beta_2^j}$.
+  \item[(7)] Update parameter vector, $\theta_j\leftarrow \theta_{j-1} - \alpha \frac{\hat m_j}{\sqrt{\hat v_j} + \varepsilon}$.
+\end{itemize}
+\end{shadeframe}
+\captionof{algocf}{The \textit{Adam} optimizer for stochastic optimization. The constants $\beta_1$, $\beta_2$, and $\varepsilon$ take appropriate default values $\beta_1=0.9$, $\beta_2=0.999$, and $\varepsilon=10^{-8}$. The initial step size $\alpha$ may be taken to be $0.001$. The gradient squared, $g_j^2$, denotes the elementwise square. \label{alg:adam}}
+\end{algocf*}
+
+The Adam scheme uses a moving, exponentially decaying, average of the first and second moments of the gradient to compute individual adaptive learing rates for each parameter independently. The moving average of the gradient $m_j$ is an estimate of the mean of the gradient, while the moving average of the gradient squared $v_j$ is an estimate of the (uncentered\footnote{The uncentered variance estimate of $\{f_i\}_{i=1}^N$, $\text{Var}_\text{u}(f)$ is the variance computed assuming $\langle f_i\rangle =0$, meaning the average is \textit{not} subtracted for each sample like usual,
+\begin{align}
+\text{Var}_\text{u}(f)&= \text{E}\left[\Big( f \Big)^2\right] \not= \text{E}\left[\Big( f - \langle f\rangle \Big)^2\right] = \text{Var}(f). 
+\end{align}}) variance of the gradient. At the first iteration, we assign $m_0=v_0=0$, which means the estimates are inherently biased towards zero. In the Adam scheme, this is counteracted by computing bias-corrected estimates $\hat m_j$ and $\hat v_j$. The Adam optimization is outlined in algorithm \ref{alg:adam}.
+
+
+
+
 
 \section{Model systems}
 In this work we apply the machine learning algorithms discussed to the one- and two-dimensional Ising model. 

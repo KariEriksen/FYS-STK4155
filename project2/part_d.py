@@ -14,20 +14,22 @@ from neuralNetwork  import NeuralNetwork
 
 
 
-def train_net_predict_energy(L = 10, N = 5000) :
+def train_net_predict_energy(L = 20, N = 5000) :
     ising  = Ising(L,N)
-    X, y   = ising.generateDesignMatrix1D()
-    y     /= np.abs(np.max(np.abs(y)))
+    ising.generateStates1D()
+    ising.computeEnergy1D()
+    X = ising.states
+    y = ising.E / np.max(np.abs(ising.E))
     n_samples, n_features = X.shape
 
-    nn = NeuralNetwork( inputs          = n_features,
-                        neurons         = n_features,
+    nn = NeuralNetwork( inputs          = L,
+                        neurons         = L*L,
                         outputs         = 1,
                         activations     = 'sigmoid',
                         cost            = 'mse',
                         silent          = False)
-    nn.addLayer(neurons=n_features)
-    nn.addLayer(neurons=n_features)
+    nn.addLayer(neurons = L*L)
+    nn.addLayer(neurons = L*L)
     nn.addOutputLayer(activations = 'identity')
 
     validation_skip = 1
@@ -64,7 +66,7 @@ def train_net_predict_energy(L = 10, N = 5000) :
     plt.legend(fontsize=10)
     plt.xlabel(r'Validation sample', fontsize=10)
     plt.ylabel(r'$E / L$',           fontsize=10)
-    #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'nn_1d_energy_predict.png'), transparent=True, bbox_inches='tight')
+    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'nn_1d_energy_predict' + str(L) + '.png'), transparent=True, bbox_inches='tight')
 
     # Plot the training / validation loss during training.
     training_loss     = nn.training_loss
@@ -83,7 +85,7 @@ def train_net_predict_energy(L = 10, N = 5000) :
     plt.legend(fontsize=10)
     plt.xlabel(r'Epoch',            fontsize=10)
     plt.ylabel(r'Cost $C(\theta)$', fontsize=10)
-    #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'nn_1d_loss.png'), transparent=True, bbox_inches='tight')
+    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'nn_1d_loss' + str(L) + '.png'), transparent=True, bbox_inches='tight')
     plt.show()
 
 

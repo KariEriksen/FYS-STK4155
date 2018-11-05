@@ -15,9 +15,10 @@ from neuralNetwork  import NeuralNetwork
 
 
 
-def train_net_predict_energy(L = 20, N = 2000) :
+def train_net_predict_energy(L = 40, N = 5000) :
     ising = Ising(L, N)
     X, y  = ising.generateTrainingData1D()
+    y    /= L
     n_samples, n_features = X.shape
 
     nn = NeuralNetwork( inputs          = L,
@@ -30,12 +31,12 @@ def train_net_predict_energy(L = 20, N = 2000) :
     nn.addLayer(neurons = L*L)
     nn.addOutputLayer(activations = 'identity')
 
-    validation_skip = 50
-    epochs = 10
+    validation_skip = 10
+    epochs = 1000
     nn.fit( X.T, 
             y,
             shuffle             = True,
-            batch_size          = 200,
+            batch_size          = 500,
             validation_fraction = 0.2,
             learning_rate       = 0.001,
             verbose             = False,

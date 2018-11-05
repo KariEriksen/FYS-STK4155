@@ -5,6 +5,7 @@ import copy
 import time
 import numpy as np
 import sklearn
+import pickle
 from math import ceil
 
 # Add the project2/src/ directory to the python path so we can import the code 
@@ -40,6 +41,7 @@ class NeuralNetwork :
 
         self.first_feedforward = True
         self.first_backprop    = True
+        self.adam_initialized  = False
 
     def set(self,
             inputs      = None,
@@ -252,13 +254,15 @@ class NeuralNetwork :
             epochs              = 200,
             batch_size          = 200,
             validation_fraction = 0.1,
-            momentum            = 0.9,
             validation_skip     = 10,
             verbose             = False,
             silent              = False,
             optimizer           = 'sgd') :
 
         self.learning_rate = learning_rate
+        self.best_loss  = None
+        self.bestEpoch  = None
+        self.best_param = None
 
         if optimizer == 'adam' :
             self.initializeAdam()
@@ -350,17 +354,35 @@ class NeuralNetwork :
                     y_validation = self.forward_pass(self.x_validation)
                     self.validation_loss[validation_it] = self.cost(y_validation, self.target_validation)
                     self.loss = self.validation_loss[validation_it]
+
+                    save = False
+                    if (self.best_loss is None) or \
+                       (self.best_loss > self.validation_loss[validation_it]) :
+
+                        self.best_loss  = self.validation_loss[validation_it]
+                        self.best_param = [params for params in self.weights+self.biases]
+                        self.bestEpoch  = epoch
+                        pickle.dump(self, open('nn.p', 'wb'))
+                        save = True
+
                     validation_it += 1
+
 
                     if not silent :
                         #       ep      t/b   t/e    t    rt   bcost vcost
-                        print(" %5s    %-20s %-20s %-15.3s %-20s %-15s %-15.5g " % ("", 
+                        print(" %5s    %-20s %-20s %-15.3s %-20s %-15s %-15.5g %5s" % ("", 
                                                                                     "",
                                                                                     "",
                                                                                     "",
                                                                                     "",
                                                                                     "",
-                                                                                    self.validation_loss[validation_it-1]))
+                                                                                    self.validation_loss[validation_it-1],
+                                                                                    "ckpt" if save else ""))
+        
+        # Finished fitting, set the weights / biases to the best found throughout 
+        # training, i.e. the ones which resulted in the lowest validation cost.
+        self.weights = [w for w in self.best_param[:len(self.weights)]]
+        self.biases  = [b for b in self.best_param[len(self.weights):]]
 
     def sgd(self) :
         for i, d_w in enumerate(self.d_weights) :
@@ -370,28 +392,31 @@ class NeuralNetwork :
 
 
     def initializeAdam(self) :
-        self.t = 0
-        self.learning_rate_init = self.learning_rate
+        if not self.adam_initialized :
+            self.t = 0
+            self.learning_rate_init = self.learning_rate
 
-        self.param = self.weights + self.biases
+            self.param = self.weights + self.biases
+            
+            # Biased first moment estimates
+            self.m = [np.zeros_like(p) for p in self.param]
         
-        # Biased first moment estimates
-        self.m = [np.zeros_like(p) for p in self.param]
-    
-        # Biased second raw moment estimates
-        self.v = [np.zeros_like(p) for p in self.param]
+            # Biased second raw moment estimates
+            self.v = [np.zeros_like(p) for p in self.param]
 
-        # Bias-corrected first moment estimates
-        self.mh = [np.zeros_like(p) for p in self.param]
+            # Bias-corrected first moment estimates
+            self.mh = [np.zeros_like(p) for p in self.param]
 
-        # Bias-corrected second raw moment estimates
-        self.vh = [np.zeros_like(p) for p in self.param]
+            # Bias-corrected second raw moment estimates
+            self.vh = [np.zeros_like(p) for p in self.param]
+
+            self.adam_initialized = True
 
 
     def adam(self) :
         beta1   = 0.9
         beta2   = 0.999
-        epsilon = 1e-8
+        epsilon = 1e-7
         self.t += 1
         t       = self.t
 

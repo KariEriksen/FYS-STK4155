@@ -2,6 +2,7 @@ import os
 import sys
 import numpy as np
 import functools
+import pickle
 import matplotlib.pyplot as plt
 
 # Add the src/ directory to the python path so we can import the code 
@@ -14,12 +15,9 @@ from neuralNetwork  import NeuralNetwork
 
 
 
-def train_net_predict_energy(L = 20, N = 5000) :
-    ising  = Ising(L,N)
-    ising.generateStates1D()
-    ising.computeEnergy1D()
-    X = ising.states
-    y = ising.E / np.max(np.abs(ising.E))
+def train_net_predict_energy(L = 20, N = 1000) :
+    ising = Ising(L, N)
+    X, y  = ising.generateTrainingData1D()
     n_samples, n_features = X.shape
 
     nn = NeuralNetwork( inputs          = L,
@@ -32,12 +30,12 @@ def train_net_predict_energy(L = 20, N = 5000) :
     nn.addLayer(neurons = L*L)
     nn.addOutputLayer(activations = 'identity')
 
-    validation_skip = 1
-    epochs = 1000
+    validation_skip = 50
+    epochs = 10
     nn.fit( X.T, 
             y,
             shuffle             = True,
-            batch_size          = 1000,
+            batch_size          = 200,
             validation_fraction = 0.2,
             learning_rate       = 0.001,
             verbose             = False,
@@ -89,6 +87,13 @@ def train_net_predict_energy(L = 20, N = 5000) :
     plt.show()
 
 
+def load_trained_network() :
+    fileName = 'nn.p'
+    nn = pickle.load(open(fileName, 'rb'))
+    for w in nn.weights :
+        print(w)
+
 
 if __name__ == '__main__':
     train_net_predict_energy()
+    #load_trained_network()

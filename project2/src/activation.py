@@ -91,7 +91,4 @@ class Activation :
     def __call__(self, x) :
         return self.function(x)
 
-    def derivative(self, x) :
-        return self.derivative(x)
-
 

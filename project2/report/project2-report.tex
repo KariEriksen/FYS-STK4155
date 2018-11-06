@@ -776,11 +776,11 @@ where the last term represents the periodic boundary conditions on $i$ and $j$. 
 
 An example of a 2D Ising lattice is shown in \fig{ising_lattice}.
 
-The energetically most favorable state of the Ising lattice is one in which all spins are aligned either up or down. The energy of both \textit{all up} and \textit{all down} is the same\textemdash in the 1D case $E_\text{ground}=-NJ_0$\textemdash meaning there are two ground states. Assuming some we put the spin model in thermal contact with a large heat bath at temperature $T$, but keep the number of spins and their occupied volume constant, we may write down the canonical partition function of the Ising model by considering every possible state of the lattice ($\mathcal{S}$) weighted by their respective Boltzmann factors,
+The energetically most favorable state of the Ising lattice is one in which all spins are aligned either up or down. The energy of both \textit{all up} and \textit{all down} is the same\textemdash in the 1D case $E_\text{ground}=-NJ_0$\textemdash meaning there are two ground states. Assuming we put the spin model in thermal contact with a large heat bath at temperature $T$, but keep the number of spins and their occupied volume constant, we may write down the canonical partition function of the Ising model by considering every possible state of the lattice ($\mathcal{S}$) weighted by their respective Boltzmann factors,
 \begin{align}
 Z=\sum_{\mathbf{s}_k\in\mathcal{S}}\mathrm{e}^{-H(\mathbf{s}_k)/k_\text{B}T}.
 \end{align}
-Since flipping every spin in the lattice simultaneously does not affect the energy, there exists a \textit{flipped} versions of every single state in $\mathcal{S}$ with the energy and the same Boltzmann factor. When calculating canonical expectation values, the sum is taken over every possible state, so finding the expected magnetization of the Ising lattice will always yield zero since
+Since flipping every spin in the lattice simultaneously does not affect the energy, there exists a \textit{flipped} version of every single state in $\mathcal{S}$ with the same energy and the same Boltzmann factor. When calculating canonical expectation values, the sum is taken over every possible state, so finding the expected magnetization of the Ising lattice will always yield zero since
 \begin{align}
 \langle \mathcal{M}\rangle &= \frac{1}{Z}\sum_{\mathbf{s}_k\in\mathcal{S}}\mathcal{M}(\mathbf{s}_k)\mathrm{e}^{-H(\mathbf{s}_k)/k_\text{B}T} \nonumber \\
 %
@@ -804,12 +804,17 @@ An example of this symmetry breaking is visualized in \fig{metropolis}. Using th
   \captionof{figure}{Results of application of the Metropolis algorithm to the Ising model with a randomized starting lattice. White pixels denote spin up, while black pixels denote spin down. The lattice used is $N\times N$ spins large, where $N=1000$. $t_i$ denote "time", i.e.\ the number of Monte Carlo cycles performed, but $t_i$ and $t_{i+1}$ are not necessarily equidistant for every $i$. $\mathcal{M}$ denotes the sum of all the spins ($1$ or $-1$) such that $\mathcal{M} / N^2$ is the relative magnetization of a single spin in the lattice. The temperature used was $1.2$ in units of $k_\text{B}T/J_0$, where $k_\text{B}$ is the Boltzmann constant. \label{fig:metropolis}}
 \end{SCfigure*}
 
-
+At the Curie temperature $T_c$, the 2D Ising model shows a second order \textit{phase transition}. Being a second order transition, the second derivatives of the free energy diverge. These include the spesific heat and the magnetic susceptibility,
+\begin{align}
+c_V &= \left(\frac{\partial E}{\partial T}\right)_{V,N} = -T\left(\frac{\partial^2 F}{\partial T^2}\right)_{V,N} \nonumber \\
+\chi &= \left(\frac{\partial \mathcal{M}}{\partial B}\right)_{T,V}=\left(\frac{\partial^2 F}{\partial B^2}\right)_{T,V} \nonumber 
+\end{align} 
+The free energy $F$ here denotes the Helmholtz free energy.
 
 \section{Results and discussion}
-\lipsum[8]
-\subsection{Learning the one-dimensional Ising Hamiltonian}
-\lipsum[9]
+\subsection{Regression analysis on the one-dimensional Ising Hamiltonian}
+
+
 \subsection{Classifying phases of the two-dimensional Ising model}
 \lipsum[10]
 \section{Conclusion}

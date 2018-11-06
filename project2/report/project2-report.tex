@@ -812,20 +812,20 @@ c_V &= \left(\frac{\partial E}{\partial T}\right)_{V,N} = -T\left(\frac{\partial
 The free energy $F$ here denotes the Helmholtz free energy.
 
 \section{Results and discussion}
-\subsection{Regression analysis on the one-dimensional Ising Hamiltonian}
+\subsection{Regression analysis on the one-dimensional Ising Hamiltonian \label{sect:1d_results}}
 Since we have already validated the implementations of the linear regression methods in project 1, we go straight to the applications on the Ising model.
 
 In the following we will take the 1D Ising model interaction matrix $J$ to be equal to
 \begin{align}
 J=J_0\pmat{cccccccc}{
   0 & 1 & 0 & 0 & \dots & 0 & 0 & 1 \\
-  1 & 0 & 1 & 0 & \dots & 0 & 0 & 0 \\
-  0 & 1 & 0 & 1 & \dots & 0 & 0 & 0 \\
   0 & 0 & 1 & 0 & \dots & 0 & 0 & 0 \\
+  0 & 0 & 0 & 1 & \dots & 0 & 0 & 0 \\
+  0 & 0 & 0 & 0 & \dots & 0 & 0 & 0 \\
   \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots & \vdots \\
   0 & 0 & 0 & 0 & \dots & 0 & 1 & 0 \\
-  0 & 0 & 0 & 0 & \dots & 1 & 0 & 1 \\
-  1 & 0 & 0 & 0 & \dots & 0 & 1 & 0 \\
+  0 & 0 & 0 & 0 & \dots & 0 & 0 & 1 \\
+  0 & 0 & 0 & 0 & \dots & 0 & 0 & 0 \\
 }
 \end{align}
 with $J_0=1$ being the coupling constant. We will start out by applying the regression schemes developed in project 1 to the 1D spin lattice and estimate the coupling constant $J_0$. We generate $N_s=1000$ sample lattice configurations (with the lattice size $L=40$) $\mathbf{s}_k$ and compute their energies as $H(\mathbf{s}_k)=\mathbf{s}_k^TJ\mathbf{s}_k$. For each configuration, we construct the design matrix by taking every possible combination of two spins multiplied. The rows of the design matrix take the following form
@@ -834,12 +834,23 @@ with $J_0=1$ being the coupling constant. We will start out by applying the regr
 \text{Row}_i(X) = \Big(s_1s_1, \,s_1s_2, \dots, s_1s_N,\, s_2s_1,\, s_2 s_2,\, s_2s_3, \dots, s_{N}s_{N-1},\, s_Ns_N \Big).
 \end{align}
 \end{strip}
-The samples are split into a training set and a validation (test) set. We use a $50/50$ split, so the training set has size $N_t=500$ and the validation set has size $N_v=500$. The target data we fit against is the energy, $E_k$. Since the input is in the form of pairs of spins, we can directly interpret the found optimal $\beta$ parameters to be the full interaction matrix $J$. Inspired by the paper by Mehta et al.\autocite{mehta2018highbias}, we calculate the coefficient of determination, $R^2$ score, for the three different regression schemes, with varying degrees of regularization $\lambda$. This is shown in \fig{R2_lambda}. 
+The samples are split into a training set and a validation (test) set. We use a $50/50$ split, so the training set has size $N_t=500$ and the validation set has size $N_v=500$. The target data we fit against is the energy, $E_k$. Since the input is in the form of pairs of spins, we can directly interpret the found optimal $\beta$ parameters to be the full interaction matrix $J$. Inspired by the paper by Mehta et al.\autocite{mehta2018highbias}, we calculate the coefficient of determination, $R^2$ score, for the three different regression schemes, with varying degrees of regularization $\lambda$. This is shown in \fig{R2_lambda}. The reader is referred to the project 1 report for the definitions of the OLS/Ridge/Lasso schemes, $\lambda$, and the $R^2$ score.
 \begin{SCfigure*}
   \centering
   \includegraphics[width=0.52\textwidth]{R2_ising_lambda.png}
   \caption{Coefficient of determination, $R^2$ score, for the ordinary least squares, the Ridge, and the Lasso regression schemes applied to the 1D Ising model energy. Inspired by a similar figure in \cite{mehta2018highbias}. As expected, the OLS scheme outperforms the other methods on the \textit{training} set, but the Lasso regularization scheme is the only scheme which performs adequately on the validation set (for regularization parameter $\lambda$ in the range of approximately $10^{-1}$\textemdash$10^{-4}$).  \label{fig:R2_lambda}}
 \end{SCfigure*}
+
+Shown in the figure are the $R^2$ score as calculated from the training and the validation set for all three schemes. As expected, the OLS scheme is the best possible fit to the \textit{training} data. However, for a better gauge of overall model performance is the fit on untrained validation data. Here we see that the Lasso regression scheme with small regularization parameters dominates the other two methods. For $\lambda\sim10^{-1}$\textemdash$10^{-4}$ the Lasso scheme exhibits an $R^2\simeq 1$, while the OLS and Ridge methods fail to break $R^2\sim0.7$ across the entire broad range of $\lambda$ values tried. The ridge regression scheme performs worse than the OLS\textemdash on both the training \textit{and} validation sets\textemdash for $\lambda\gtrsim 10^2$. For smaller regularization parameters, the two are essentially indistinguishable. 
+
+\begin{figure*}
+  \centering
+  \vspace{-1.5cm}
+  \includegraphics[width=0.8\textwidth]{1D_ising_beta_imshow.png}
+  \caption{Visualizations of the $J$ matrix estimates gotten from the linear regression schemes discussed in section \ref{sect:1d_results}. The left column shows the OLS solution, the middle shows the Ridge regression solution, while the right hand side shows the interaction matrix as calculated by the Lasso regression scheme. Since the OLS method is independet of the regularization parameter $\lambda$, all the OLS matrices are equal. We note that in the OLS and Ridge cases, the a symmetric $J$ matrix is found, with values $0.5J_0$ on the $i=j+1$ and $i=j-1$ diagonals, while the input matrix only contains the upper $i=j+1$ diagonals. The latter is found by the Lasso scheme. Inspired by a similar figure in \cite{mehta2018highbias}. Please note carefully that the value of $\lambda$ used in the Ridge regression is three orders of magnitude larger than that of Lasso in each row of this figure.  \label{fig:imshow}}
+\end{figure*}
+
+As the optimized $\beta$ parameters can be interpreted as the estimated interaction matrix $J$, it is natural to visualize the form of the $\beta$ matrices for each method. This is shown in \fig{imshow}, where we perform fits for varying values of regularization $\lambda$. It is interesting to note that in the cases of OLS and Ridge regression, the solutions found exhibit a new symmetry that the input $J$ matrix does not. In the generated input data, only the upper $i=j+1$ diagonal of $J$ is populated with the values $J_0=1$. However, the computed energy is the same if we take $J$ to have both the $i=j+1$ and $i=j-1$ diagonals populated by half of $J_0$. This is what is found by the two mentioned schemes. The Lasso method, on the other hand, finds the single diagonal version of $J$ as it prefers performing variable selection\textemdash essentially zeroing out any unnecessary $\beta$s not absolutely needed\textemdash to find the optimal parameters.
 
 
 \subsection{Classifying phases of the two-dimensional Ising model}

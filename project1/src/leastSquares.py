@@ -212,13 +212,13 @@ class LeastSquares :
         beta : numpy.array
             The optimized beta parameters from the performed fit
         """
-        try :
-            self.beta = np.dot(np.linalg.inv(np.dot(np.transpose(X),X)), np.dot(np.transpose(X),y))
-        except np.linalg.linalg.LinAlgError as e :
-            U,S,Vt = np.linalg.svd(X, full_matrices=True)
-            S_inverse = np.zeros(shape=X.shape)
-            S_inverse[:S.shape[0], :S.shape[0]] = np.diag(1.0 / S)
-            self.beta = np.dot(Vt.T, np.dot(S_inverse.T, np.dot(U.T, y)))
+        #try :
+        #    self.beta = np.dot(np.linalg.inv(np.dot(np.transpose(X),X)), np.dot(np.transpose(X),y))
+        #except np.linalg.linalg.LinAlgError as e :
+        U,S,Vt = np.linalg.svd(X, full_matrices=True)
+        S_inverse = np.zeros(shape=X.shape)
+        S_inverse[:S.shape[0], :S.shape[0]] = np.diag(1.0 / S)
+        self.beta = np.dot(Vt.T, np.dot(S_inverse.T, np.dot(U.T, y)))
 
     def _manualFitRidge(self, X, y) :
         if self.lambdaSet == False :

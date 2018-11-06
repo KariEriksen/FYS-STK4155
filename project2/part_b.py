@@ -3,6 +3,8 @@ import sys
 import numpy as np
 import functools
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 
 # Add the src/ directory to the python path so we can import the code 
 # we need to use directly as 'from <file name> import <function/class>'
@@ -36,8 +38,6 @@ def setup(L = 40, N = 1000, train = 0.4) :
 def MSE_R2_as_function_of_lambda(L = 40, N = 1000, train=0.4, plotting=False) :
     _, ols, ridge, lasso, X_train, X_test, y_train, y_test, _, _ = setup(L,N,train)
 
-    print(y_train)
-    sgkshg
     ols.fit(X_train, y_train)
     ols.predict(X_test)
     ols.y = y_test
@@ -49,6 +49,19 @@ def MSE_R2_as_function_of_lambda(L = 40, N = 1000, train=0.4, plotting=False) :
     ols.predict(X_train)    
     R2_ols_train = [ols.R2()  for i in range(2)]
 
+    beta_plotting = True
+
+    M = 7
+    if beta_plotting :
+        cmap_args=dict(vmin=-1.0, vmax=1.0, cmap='seismic')
+        fig, ax = plt.subplots(nrows=M, ncols=3)
+
+    for j in range(M) :
+        ax[j][0].imshow(ols.beta.reshape((L,L)), **cmap_args)
+        ax[j][0].get_yaxis().set_ticks([])
+        ax[j][0].get_xaxis().set_ticks([])
+        if j==0 :
+            ax[j][0].set_title('ols')
 
     MSE_ridge = []
     MSE_lasso = []
@@ -63,8 +76,10 @@ def MSE_R2_as_function_of_lambda(L = 40, N = 1000, train=0.4, plotting=False) :
         elif method == 'lasso' :
             fitter = lasso
 
-        lambdas = np.logspace(-5, 5, 100)
-        for lambda_ in lambdas :
+        lambdas = np.logspace(-5, 1, M)
+        for j,lambda_ in enumerate(lambdas) :
+            if method == 'ridge' :
+                lambda_ *= 1000
             fitter.setLambda(lambda_)
             fitter.fit(X_train, y_train)
             fitter.predict(X_train)
@@ -80,9 +95,40 @@ def MSE_R2_as_function_of_lambda(L = 40, N = 1000, train=0.4, plotting=False) :
             if method == 'ridge' :
                 MSE_ridge.append(fitter.MSE())
                 R2_ridge .append(fitter.R2())
+                i = 1
             elif method == 'lasso' :
                 MSE_lasso.append(fitter.MSE())
                 R2_lasso .append(fitter.R2())
+                i = 2
+
+            if beta_plotting :
+                plt.rc('text', usetex=True)
+                if method == 'lasso':
+                    im = ax[j][i].imshow(fitter.beta.reshape((L,L)), **cmap_args)
+                else :
+                    ax[j][i].imshow(fitter.beta.reshape((L,L)), **cmap_args)
+                #ax[j][i].set_title(r'$%3.3f$' %(t*N), fontsize=7)
+                ax[j][i].get_yaxis().set_ticks([])
+                ax[j][i].get_xaxis().set_ticks([])
+                ax[j][i].set_xlabel(r'$\lambda=%f$'%lambda_)
+                if j==0 :
+                    ax[j][i].set_title(method)
+
+    if beta_plotting : 
+        fig = plt.gcf()
+        fig.set_size_inches(7,7*np.sqrt(2), forward=True)
+        """
+        divider = make_axes_locatable(axarr[2])
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        cbar=fig.colorbar(im, cax=cax)
+
+        cbar.ax.set_yticklabels(np.arange(-1.0, 1.0+0.25, 0.25),fontsize=14)
+        cbar.set_label('$J_{i,j}$',labelpad=-40, y=1.12,fontsize=16,rotation=0)
+
+        fig.subplots_adjust(right=2.0)
+        """
+        plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', '1D_ising_beta_imshow.png'), transparent=True, bbox_inches='tight')
+        plt.show()
 
     MSE_ols   = np.array(MSE_ols)
     MSE_ridge = np.array(MSE_ridge)
@@ -105,7 +151,7 @@ def MSE_R2_as_function_of_lambda(L = 40, N = 1000, train=0.4, plotting=False) :
         plt.xlabel(r'shrinkage parameter $\lambda$', fontsize=10)
         plt.ylabel(r'MSE',                           fontsize=10)
         #plt.subplots_adjust(left=0.2,bottom=0.2)
-        plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'MSE_ising_lambda.png'), transparent=True, bbox_inches='tight')
+        #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'MSE_ising_lambda.png'), transparent=True, bbox_inches='tight')
         plt.show()
 
         plt.figure()
@@ -122,12 +168,12 @@ def MSE_R2_as_function_of_lambda(L = 40, N = 1000, train=0.4, plotting=False) :
         plt.xlabel(r'shrinkage parameter $\lambda$', fontsize=10)
         plt.ylabel(r'$R^2$ score',                   fontsize=10)
         #plt.subplots_adjust(left=0.2,bottom=0.2)
-        plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'R2_ising_lambda.png'), transparent=True, bbox_inches='tight')
+        #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'R2_ising_lambda.png'), transparent=True, bbox_inches='tight')
         plt.show()
 
 
 def MSE_R2_as_function_of_training_set_size(L=40, N=1500, M=25, plotting=False) :
-    K            = 500
+    K            = 5
     train        = np.linspace(700, 900, M)
     train       /= N
     MSE          = np.zeros((M,K))
@@ -135,7 +181,7 @@ def MSE_R2_as_function_of_training_set_size(L=40, N=1500, M=25, plotting=False) 
     MSE_variance = np.zeros(M)
     R2_variance  = np.zeros(M)
     
-    beta_plotting = False
+    beta_plotting = True
 
     if beta_plotting :
         cmap_args=dict(vmin=-1.0, vmax=1.0, cmap='seismic')
@@ -145,8 +191,8 @@ def MSE_R2_as_function_of_training_set_size(L=40, N=1500, M=25, plotting=False) 
 
     for k in range(M) :
         for it in range(K) :
-            np.random.seed(1955*k + 29*it)
-            np.random.seed()
+            np.random.seed(1975*k + 29*it)
+            #np.random.seed()
             t = train[k]
             _, ols, _, _, X_train, X_test, y_train, y_test, _, _ = setup(L, N, t)
             beta = ols.fit(X_train, y_train)
@@ -292,10 +338,10 @@ def cross_validation(L = 40, N = 1000, k=10, plotting=False) :
 
 if __name__ == '__main__':
     np.random.seed(2018)
-    MSE_R2_as_function_of_lambda(L=40, N=1000, train=0.5, plotting=True)
+    MSE_R2_as_function_of_lambda(L=40, N=1000, train=0.4, plotting=True)
 
     np.random.seed(2019)
-    #MSE_R2_as_function_of_training_set_size(L=40, N=1500, M=50, plotting=True)
+    #MSE_R2_as_function_of_training_set_size(L=40, N=1500, M=9, plotting=True)
 
     np.random.seed(2020)
     #cross_validation(L=40, N=400, k=10, plotting=True)

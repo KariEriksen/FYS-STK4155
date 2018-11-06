@@ -262,7 +262,7 @@ def cross_validation(L = 40, N = 1000, k=10, plotting=False) :
     _, ols, ridge, lasso, _, _, _, _, X, yy = setup(L=L, N=N, train=0.5)
     _, _, _, _, _, _, _, _, X_test, yy_test = setup(L=L, N=N, train=0.5)
 
-    ridge.setLambda(1e-3)
+    ridge.setLambda(10)
     lasso.setLambda(1e-3)
 
     for fitter in [ols, ridge, lasso] :

@@ -94,7 +94,43 @@ def load_trained_network() :
     for w in nn.weights :
         print(w)
 
+def visualize_unbalanced() :
+    L = 1000
+    possible_E = len(np.arange(-L,L+1,4))
+    N = 2*possible_E
+    print(N)
+    plt.rc('text', usetex=True)
+    ising = Ising(L, N)
+    ising.generateTrainingData1D()
+    #s = ising.states
+    E = ising.E
+    #M = np.sum(s,1)
+    ind = np.argsort(E)
+    #s = s[ind,:]
+    E = E[ind]/L
+    plt.plot(E,np.linspace(0,1,len(E)),'r-', label=r'Even sampling')
+
+
+    ising = Ising(L,N)
+    ising.generateStates1D()
+    ising.computeEnergy1D()
+    s_u = ising.states
+    E_u = ising.E
+    M_u = np.sum(s_u,1)
+    E_u = np.sort(E_u)/L
+    #s_u = s[ind_u,:]
+    #E_u = E[ind_u]
+    plt.plot(E_u, np.linspace(0,1,len(E)),'b-', label=r'Naive sampling')
+    plt.axis([-1,1,0,1])
+    plt.xlabel(r'Normalized energy, $E/L$',               fontsize=10)
+    plt.ylabel(r'Cumulative distribution, $P(E_i\ge E)$', fontsize=10)
+    plt.legend(fontsize=10)
+    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'visualize_sampling.png'), transparent=True, bbox_inches='tight')
+    plt.show()
+
+
 
 if __name__ == '__main__':
-    train_net_predict_energy()
+    #train_net_predict_energy()
     #load_trained_network()
+    visualize_unbalanced()

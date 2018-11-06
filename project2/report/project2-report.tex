@@ -761,12 +761,51 @@ Linear regression and neural networks are used to estimate the coupling constant
 
 The two-dimensional Ising model is known to exhibit a first order phase transition at the critical \textit{Curie temperature}. In particular, the states of the model at sub-critical temperatures present as ordered, with large regions of spins aligned. At super-critical temperatures, the spins are disordered and essentially randomly uncorrelated. Thus it is interesting to investigate whether logistic regression or neural networks can be trained to to classify the phases. 
 
-\subsection{The one-dimensional Ising model}
+\subsection{The Ising model}
+The Ising model can be thought of as a microscopic model of a ferromagnetic metal. The solid state metal exists in some energy-preferable lattice state\textemdash for simplicity, we assume a square lattice\textemdash and the magnetic dipole moments of the electrons due to their intrinsic spins are taken to occupy fixed positions on this lattice. In more complicated models (such as the Potts model\autocite{potts_1952}) the spins are allowed to take many different values, but in the basic Ising model the spins are restricted to being aligned either up or down ($+1$ or $-1$). The quantum mechanical exchange interaction energy between spins gives rise to the (no external magnetic field) simple model Hamiltonian for the system 
+\begin{align}
+H(\mathbf{s}) = -\sum_{i,j} J_{ij} s_is_j,
+\end{align}
+where $J_{ij}$ is the interaction energy matrix governing the size of the interaction between spins $i$ and $j$, while the state of the system (alignment of all spins) is denoted by $\mathbf{s}=\{s_i\}_{i=1}^N$. If $J_{ij}$ is positive, the energetically most efficient state of the system is realized if spins $s_i$ and $s_j$ are aligned in the same direction. Taking the total magnetization $\mathcal{M}$ to be the sum of all the spins (in the sense that spins aligned up are represented by $+1$, and downward facing spins are represented by $-1$), this $J_{ij}$ would facilitate spontaenous magnetization and thus model a ferromagnet. If $J_{ij}\le0$, the model system is a paramagnet (ideal paramagnet in the case of equality), giving rise to a $\mathcal{M}=0$ state unless an external field is applied.
+
+The simplest case of \textit{nearest neighbor} interactions only is realized if $J$ takes the form
+\begin{align}
+J_{ij} = J_0\Big[\delta_{i,j+1} + \delta_{i,j-1} + \delta_{1,i}\delta_{j,N} + \delta_{N,i}\delta{j,0}\Big], \nonumber 
+\end{align}
+where the last term represents the periodic boundary conditions on $i$ and $j$. The $\delta$s here denote Kronecker deltas. We note that the constant $J_0$ must carry dimensions of energy per squared magnetic dipole moment. From now on we will assume $J>0$ in the rest of the project. 
+
+An example of a 2D Ising lattice is shown in \fig{ising_lattice}.
+
+The energetically most favorable state of the Ising lattice is one in which all spins are aligned either up or down. The energy of both \textit{all up} and \textit{all down} is the same\textemdash in the 1D case $E_\text{ground}=-NJ_0$\textemdash meaning there are two ground states. Assuming some we put the spin model in thermal contact with a large heat bath at temperature $T$, but keep the number of spins and their occupied volume constant, we may write down the canonical partition function of the Ising model by considering every possible state of the lattice ($\mathcal{S}$) weighted by their respective Boltzmann factors,
+\begin{align}
+Z=\sum_{\mathbf{s}_k\in\mathcal{S}}\mathrm{e}^{-H(\mathbf{s}_k)/k_\text{B}T}.
+\end{align}
+Since flipping every spin in the lattice simultaneously does not affect the energy, there exists a \textit{flipped} versions of every single state in $\mathcal{S}$ with the energy and the same Boltzmann factor. When calculating canonical expectation values, the sum is taken over every possible state, so finding the expected magnetization of the Ising lattice will always yield zero since
+\begin{align}
+\langle \mathcal{M}\rangle &= \frac{1}{Z}\sum_{\mathbf{s}_k\in\mathcal{S}}\mathcal{M}(\mathbf{s}_k)\mathrm{e}^{-H(\mathbf{s}_k)/k_\text{B}T} \nonumber \\
+%
+&= \frac{1}{Z}\sum_{\mathbf{s}_k,\mathbf{s}_k'\in\mathcal{S}}\Big[\mathcal{M}_k-\mathcal{M}_{k'}\Big]\mathrm{e}^{-\beta E_k} = 0, \nonumber 
+\end{align}
+with $\mathcal{M}(\mathbf{s})=\mathcal{M}(\mathbf{s}')$ and $\mathbf{s}'$ representing the lattice state $\mathbf{s}$ with every single spin flipped. We here used $\beta=1/k_\text{B}T$ and defined $H(\mathbf{s})\equiv E_k$. Note that this is independent of the temperature.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\textwidth]{ising_lattice.pdf}
+  \caption{Example of a 2D square lattice of spins representing a (subset of a) full magnet. Counting the number of spins pointing up and the number pointing down yields $38$ total $\uparrow$s and $26$ $\downarrow$s, meaning we would in this case have a net magnetization in the $\uparrow$ direction. \label{fig:ising_lattice}}
+\end{figure}
+
+However, the two ground states both have $\mathcal{M}\not=0$. This constitutes a spontaneous symmetry breaking: When cooling the model from $T>T_\text{c}$ (the critical or \textit{Curie} temperature) to a temperature $T<T_c$, the magnetization will transition from a $\mathcal{M}=0$ state (super-critical, disordered) to an ordered $\mathcal{M}=\pm N$ ground state. At (or around) $T=T_c$ the energetic spin up/down symmetry is spontaneously broken, and the Ising lattice falls into one of the two possible ground states. This symmetry may be \textit{explicitly} broken by applying an external magnetic field $\mathbf{B}$, which adds a term $\propto \sum_{i=1}^N \mathbf{B}\cdot s_i$ to the Hamiltonian, breaking the $\mathbf{s}$\ce{<=>}$\mathbf{s}'$ symmetry.
+
+An example of this symmetry breaking is visualized in \fig{metropolis}. Using the Metropolis algorithm to sample a pseudo-time evolution for a 2D Ising model with $N\times N$ spins, $N=1000$. Note that starting from a disordered state, the all-spins up ground state is randomly chosen by the system at $T<T_c$.
+
+\begin{SCfigure*}
+  \centering
+  \includegraphics[width=0.45\textwidth]{ising_metropolis.pdf}
+  \captionof{figure}{Results of application of the Metropolis algorithm to the Ising model with a randomized starting lattice. White pixels denote spin up, while black pixels denote spin down. The lattice used is $N\times N$ spins large, where $N=1000$. $t_i$ denote "time", i.e.\ the number of Monte Carlo cycles performed, but $t_i$ and $t_{i+1}$ are not necessarily equidistant for every $i$. $\mathcal{M}$ denotes the sum of all the spins ($1$ or $-1$) such that $\mathcal{M} / N^2$ is the relative magnetization of a single spin in the lattice. The temperature used was $1.2$ in units of $k_\text{B}T/J_0$, where $k_\text{B}$ is the Boltzmann constant. \label{fig:metropolis}}
+\end{SCfigure*}
 
 
 
-\subsection{The two-dimensional Ising model}
-\lipsum[7]
 \section{Results and discussion}
 \lipsum[8]
 \subsection{Learning the one-dimensional Ising Hamiltonian}

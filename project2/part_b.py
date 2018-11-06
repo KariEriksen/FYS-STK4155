@@ -27,8 +27,8 @@ def setup(L = 40, N = 1000, train = 0.4) :
     X_train = X_total[:N_train]
     y_train = y_total[:N_train]
 
-    X_test  = X_total[N_train:N_train+N_test]
-    y_test  = y_total[N_train:N_train+N_test]
+    X_test  = X_total[N_train:]
+    y_test  = y_total[N_train:]
     
     return ising, ols, ridge, lasso, X_train, X_test, y_train, y_test, X_total, y_total   
 
@@ -36,6 +36,8 @@ def setup(L = 40, N = 1000, train = 0.4) :
 def MSE_R2_as_function_of_lambda(L = 40, N = 1000, train=0.4, plotting=False) :
     _, ols, ridge, lasso, X_train, X_test, y_train, y_test, _, _ = setup(L,N,train)
 
+    print(y_train)
+    sgkshg
     ols.fit(X_train, y_train)
     ols.predict(X_test)
     ols.y = y_test
@@ -43,11 +45,17 @@ def MSE_R2_as_function_of_lambda(L = 40, N = 1000, train=0.4, plotting=False) :
     # Copy the value for convenience when plotting later.
     MSE_ols = [ols.MSE() for i in range(2)]
     R2_ols  = [ols.R2()  for i in range(2)]
+    ols.y = y_train
+    ols.predict(X_train)    
+    R2_ols_train = [ols.R2()  for i in range(2)]
+
 
     MSE_ridge = []
     MSE_lasso = []
     R2_ridge  = []
     R2_lasso  = []
+    R2_ridge_train = []
+    R2_lasso_train = []
 
     for method in ['ridge','lasso'] :
         if method == 'ridge' :
@@ -55,10 +63,17 @@ def MSE_R2_as_function_of_lambda(L = 40, N = 1000, train=0.4, plotting=False) :
         elif method == 'lasso' :
             fitter = lasso
 
-        lambdas = np.logspace(-3, 5, 10)
+        lambdas = np.logspace(-5, 5, 100)
         for lambda_ in lambdas :
             fitter.setLambda(lambda_)
             fitter.fit(X_train, y_train)
+            fitter.predict(X_train)
+
+            if method == 'ridge' :
+                R2_ridge_train.append(fitter.R2())
+            elif method == 'lasso' :
+                R2_lasso_train.append(fitter.R2())
+
             fitter.predict(X_test)
             fitter.y = y_test
 
@@ -75,28 +90,38 @@ def MSE_R2_as_function_of_lambda(L = 40, N = 1000, train=0.4, plotting=False) :
 
     R2_ols   = np.array(R2_ols)
     R2_ridge = np.array(R2_ridge)
-    R2_lasso = np.array(R2_lasso)    
+    R2_lasso = np.array(R2_lasso) 
+
+    R2_lasso_train = np.array(R2_lasso_train)
+    R2_ridge_train = np.array(R2_ridge_train)
+    R2_ols_train   = np.array(R2_ols_train)   
 
     if plotting :
         plt.rc('text', usetex=True)
-        plt.loglog([lambdas[0], lambdas[-1]], MSE_ols,   marker='o', markersize=2, label=r'OLS')
+        plt.loglog([lambdas[0], lambdas[-1]], MSE_ols,   'k--',                    label=r'OLS')
         plt.loglog(lambdas,                   MSE_ridge, marker='o', markersize=2, label=r'Ridge')
         plt.loglog(lambdas,                   MSE_lasso, marker='o', markersize=2, label=r'Lasso')
         plt.legend(fontsize=10)
         plt.xlabel(r'shrinkage parameter $\lambda$', fontsize=10)
         plt.ylabel(r'MSE',                           fontsize=10)
-        plt.subplots_adjust(left=0.2,bottom=0.2)
+        #plt.subplots_adjust(left=0.2,bottom=0.2)
         plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'MSE_ising_lambda.png'), transparent=True, bbox_inches='tight')
         plt.show()
 
         plt.figure()
-        plt.loglog([lambdas[0], lambdas[-1]], 1.0 - R2_ols,   marker='o', markersize=2, label=r'OLS')
-        plt.loglog(lambdas,                   1.0 - R2_ridge, marker='o', markersize=2, label=r'Ridge')
-        plt.loglog(lambdas,                   1.0 - R2_lasso, marker='o', markersize=2, label=r'Lasso')
+        plt.semilogx([lambdas[0], lambdas[-1]], R2_ols,      'b--', label=r'Test  (OLS)')
+        plt.semilogx([lambdas[0], lambdas[-1]], R2_ols_train,'b-',  label=r'Train (OLS)')
+
+        plt.semilogx(lambdas, R2_ridge,       'r--', label=r'Test  (Ridge)')
+        plt.semilogx(lambdas, R2_ridge_train, 'r-',  label=r'Train (Ridge)')
+
+        plt.semilogx(lambdas, R2_lasso,       'g--', label=r'Test  (Lasso)')
+        plt.semilogx(lambdas, R2_lasso_train, 'g-',  label=r'Train (Lasso)')
+
         plt.legend(fontsize=10)
         plt.xlabel(r'shrinkage parameter $\lambda$', fontsize=10)
-        plt.ylabel(r'$1-R^2$ score',                 fontsize=10)
-        plt.subplots_adjust(left=0.2,bottom=0.2)
+        plt.ylabel(r'$R^2$ score',                   fontsize=10)
+        #plt.subplots_adjust(left=0.2,bottom=0.2)
         plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'R2_ising_lambda.png'), transparent=True, bbox_inches='tight')
         plt.show()
 
@@ -267,13 +292,13 @@ def cross_validation(L = 40, N = 1000, k=10, plotting=False) :
 
 if __name__ == '__main__':
     np.random.seed(2018)
-    #MSE_R2_as_function_of_lambda(L=40, N=1000, train=0.2, plotting=True)
+    MSE_R2_as_function_of_lambda(L=40, N=1000, train=0.5, plotting=True)
 
     np.random.seed(2019)
     #MSE_R2_as_function_of_training_set_size(L=40, N=1500, M=50, plotting=True)
 
     np.random.seed(2020)
-    cross_validation(L=40, N=400, k=10, plotting=True)
+    #cross_validation(L=40, N=400, k=10, plotting=True)
 
 
 

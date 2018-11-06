@@ -33,7 +33,7 @@
 \usepackage{chngcntr}                        % Change counter behaviour, supress increment of sub counters.
 \usepackage{tikz}                            % Draw complicated pictures in a super hard way.
 \usepackage{cuted}                           % Place long equations in @twocolumn over entire page.
-\usepackage{mhchem}                          % Chemical reaction equations using \ce{...}.
+\usepackage[version=4]{mhchem}               % Chemical reaction equations using \ce{...}.
 \usepackage[%                                % Adds functionality to captions.
   tableposition = top,
   labelsep      = period,
@@ -813,6 +813,33 @@ The free energy $F$ here denotes the Helmholtz free energy.
 
 \section{Results and discussion}
 \subsection{Regression analysis on the one-dimensional Ising Hamiltonian}
+Since we have already validated the implementations of the linear regression methods in project 1, we go straight to the applications on the Ising model.
+
+In the following we will take the 1D Ising model interaction matrix $J$ to be equal to
+\begin{align}
+J=J_0\pmat{cccccccc}{
+  0 & 1 & 0 & 0 & \dots & 0 & 0 & 1 \\
+  1 & 0 & 1 & 0 & \dots & 0 & 0 & 0 \\
+  0 & 1 & 0 & 1 & \dots & 0 & 0 & 0 \\
+  0 & 0 & 1 & 0 & \dots & 0 & 0 & 0 \\
+  \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots & \vdots \\
+  0 & 0 & 0 & 0 & \dots & 0 & 1 & 0 \\
+  0 & 0 & 0 & 0 & \dots & 1 & 0 & 1 \\
+  1 & 0 & 0 & 0 & \dots & 0 & 1 & 0 \\
+}
+\end{align}
+with $J_0=1$ being the coupling constant. We will start out by applying the regression schemes developed in project 1 to the 1D spin lattice and estimate the coupling constant $J_0$. We generate $N_s=1000$ sample lattice configurations (with the lattice size $L=40$) $\mathbf{s}_k$ and compute their energies as $H(\mathbf{s}_k)=\mathbf{s}_k^TJ\mathbf{s}_k$. For each configuration, we construct the design matrix by taking every possible combination of two spins multiplied. The rows of the design matrix take the following form
+\begin{strip}
+\begin{align}
+\text{Row}_i(X) = \Big(s_1s_1, \,s_1s_2, \dots, s_1s_N,\, s_2s_1,\, s_2 s_2,\, s_2s_3, \dots, s_{N}s_{N-1},\, s_Ns_N \Big).
+\end{align}
+\end{strip}
+The samples are split into a training set and a validation (test) set. We use a $50/50$ split, so the training set has size $N_t=500$ and the validation set has size $N_v=500$. The target data we fit against is the energy, $E_k$. Since the input is in the form of pairs of spins, we can directly interpret the found optimal $\beta$ parameters to be the full interaction matrix $J$. Inspired by the paper by Mehta et al.\autocite{mehta2018highbias}, we calculate the coefficient of determination, $R^2$ score, for the three different regression schemes, with varying degrees of regularization $\lambda$. This is shown in \fig{R2_lambda}. 
+\begin{SCfigure*}
+  \centering
+  \includegraphics[width=0.52\textwidth]{R2_ising_lambda.png}
+  \caption{Coefficient of determination, $R^2$ score, for the ordinary least squares, the Ridge, and the Lasso regression schemes applied to the 1D Ising model energy. Inspired by a similar figure in \cite{mehta2018highbias}. As expected, the OLS scheme outperforms the other methods on the \textit{training} set, but the Lasso regularization scheme is the only scheme which performs adequately on the validation set (for regularization parameter $\lambda$ in the range of approximately $10^{-1}$\textemdash$10^{-4}$).  \label{fig:R2_lambda}}
+\end{SCfigure*}
 
 
 \subsection{Classifying phases of the two-dimensional Ising model}

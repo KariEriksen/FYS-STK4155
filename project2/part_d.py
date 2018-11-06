@@ -15,7 +15,7 @@ from neuralNetwork  import NeuralNetwork
 
 
 
-def train_net_predict_energy(L = 40, N = 5000) :
+def train_net_predict_energy(L = 10, N = 5000) :
     ising = Ising(L, N)
     X, y  = ising.generateTrainingData1D()
     y    /= L
@@ -36,7 +36,7 @@ def train_net_predict_energy(L = 40, N = 5000) :
     nn.fit( X.T, 
             y,
             shuffle             = True,
-            batch_size          = 500,
+            batch_size          = 1000,
             validation_fraction = 0.2,
             learning_rate       = 0.001,
             verbose             = False,
@@ -65,7 +65,7 @@ def train_net_predict_energy(L = 40, N = 5000) :
     plt.legend(fontsize=10)
     plt.xlabel(r'Validation sample', fontsize=10)
     plt.ylabel(r'$E / L$',           fontsize=10)
-    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'nn_1d_energy_predict' + str(L) + '.png'), transparent=True, bbox_inches='tight')
+    #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'nn_1d_energy_predict' + str(L) + '.png'), transparent=True, bbox_inches='tight')
 
     # Plot the training / validation loss during training.
     training_loss     = nn.training_loss
@@ -84,7 +84,7 @@ def train_net_predict_energy(L = 40, N = 5000) :
     plt.legend(fontsize=10)
     plt.xlabel(r'Epoch',            fontsize=10)
     plt.ylabel(r'Cost $C(\theta)$', fontsize=10)
-    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'nn_1d_loss' + str(L) + '.png'), transparent=True, bbox_inches='tight')
+    #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'nn_1d_loss' + str(L) + '.png'), transparent=True, bbox_inches='tight')
     plt.show()
 
 

@@ -33,6 +33,7 @@
 \usepackage{chngcntr}                        % Change counter behaviour, supress increment of sub counters.
 \usepackage{tikz}                            % Draw complicated pictures in a super hard way.
 \usepackage{cuted}                           % Place long equations in @twocolumn over entire page.
+\usepackage{mhchem}                          % Chemical reaction equations using \ce{...}.
 \usepackage[%                                % Adds functionality to captions.
   tableposition = top,
   labelsep      = period,
@@ -162,20 +163,15 @@
 
 
 \section{Introduction}
-There are many problems that require a probability estimate as output. 
-This could for example predicting whether a 
-person will develop a specific disease given genetic information. Another example, which we will examine closer, is to 
-predict if a given spin-configuration generated from the two-dimension Ising model is ordrered or disordered. Problems of this 
-type are referred to as \textit{classification} problems. 
+There are many problems that require a probability estimate as output. This could for example predicting whether a person will develop a specific disease given genetic information. Another example, which we will examine closer, is to predict if a given spin-configuration generated from the two-dimension Ising model is ordrered or disordered. Problems of this type are referred to as \textit{classification} problems. 
 
-Classification is fundamentally different from the regression problems we studied previously, 
-in the sense that the predicted outcome only takes values across discrete categories. 
-Thus, we will need different tools than that of linear regression. In this work we first consider 
-\textit{logistic regression} as a method for classification. 
+Classification is fundamentally different from the regression problems we studied previously, in the sense that the predicted outcome only takes values across discrete categories.  Thus, we will need different tools than that of linear regression. In this work we first consider \textit{logistic regression} as a method for classification. 
 
-Somethingsomething background deep neural networks 
+Artificial neural networks (ANN or simply NN) are essentially ubiquitous in modern technology today. Whenever you use a computer\textemdash whether you are using Youtube, searching Google, exchanging currency in a bank, interacting with a virtual assistant (such as Amazon's \textit{Alexa}, Google's \textit{Google assitant}, or Apple's \textit{Siri}), editing photos, etc.\textemdash you are most likely interacting with a neural network. As a subfield of AI and machine learning research, NNs represent models which can learn to predict outcomes of new input data, by being repeatedly shown series of input/output pairs to \textit{learn} from. Individual network models fall under the category of \textit{narrow AI}, as each model is only able to do one (or a few) highly specialized tasks it was designed for. In the past few decades, such narrow AI NN models have reached super-human performance in a wide range of applications, e.g.\ board games (e.g.\ chess and go), visual pattern recognition (e.g.\ traffic sign recognition), parsing handwritten text, etc.
 
-Apply it to one-dim Ising and classification of two-dim Ising.
+We will use NNs for both regression and classification analysis in the present project. Unlike for the linear models, the fundamental structure of the model and the training remains the same for NNs when interchanging regression\ce{<=>}classification, and the only change needed is exchanging the cost function employed in the training. 
+
+Our test system for this project is the Ising model, invented in 1920 by German physicist Wilhelm Lenz and solved (the 1D case) in 1925 by Ernst Ising\autocite{Ising1925}. The much more interesting (and computationally much more challenging) two-dimensional version was not solved until Lars Onsager tackled the problem in 1944\autocite{onsager1944crystal}. The Ising model\textemdash a lattice of spins with a local, nearest neighbors, interaction energy\textemdash is a simple but enormously important model system in theoretical physics as it is the first and simplest statistical mechanics model system exhibiting a phase transition which may be solved analytically\autocite{mccoy2012importance}. We will use regression and classification analysis to estimate the interaction energy parameter and the total energy, and classifying sub-critical ordered and super-critical disordered states of the system.
 
 \section{Theory}
 In the following we outline the theory of the present work. We 
@@ -763,12 +759,12 @@ The Adam scheme uses a moving, exponentially decaying, average of the first and 
 In this work we apply the machine learning algorithms discussed to the one- and two-dimensional Ising model. 
 Linear regression and neural networks are used to estimate the coupling constant of the one-dimensional Ising model.
 
-The two-dimensional Ising model is known to show phase transition. In particular, these phases can be labeled as ordered 
-or disordered. Thus it is interesting to investigate whether logistic regression or neural networks can be trained to to 
-classify the phases. 
+The two-dimensional Ising model is known to exhibit a first order phase transition at the critical \textit{Curie temperature}. In particular, the states of the model at sub-critical temperatures present as ordered, with large regions of spins aligned. At super-critical temperatures, the spins are disordered and essentially randomly uncorrelated. Thus it is interesting to investigate whether logistic regression or neural networks can be trained to to classify the phases. 
 
 \subsection{The one-dimensional Ising model}
-\lipsum[6]
+
+
+
 \subsection{The two-dimensional Ising model}
 \lipsum[7]
 \section{Results and discussion}

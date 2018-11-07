@@ -955,10 +955,41 @@ W=
 -0.22 &  0.39 & -0.48 &  0.81 & -1.03 \\
 -1.79 &  0.72 &  0.52 &  0.07 & -0.41
 } \nonumber
+% {{0.59,-1.77, 0.18, 0.22, 0.83},
+%  {0.81,-0.14,-1.65,-0.39,-0.72}, 
+% {-0.18, 0.69,-0.85,-0.48,-0.52}, 
+% {-0.22, 0.39,-0.48, 0.81,-1.03}, 
+% {-1.79, 0.72, 0.52, 0.07,-0.41}}
+%
+%{{0,1,0,0,0},
+% {0,0,1,0,0},
+% {0,0,0,1,0},
+% {0,0,0,0,1},
+% {1,0,0,0,0}}
+%
 \end{align}
-It is hard to say why and how this matrix should yield essentially exactly correct energies for all $2000$ samples in the validation set, and we can offer no insight into the mechanism at work here. This outlines a fundamental difficulty in working with machine learning algorithms such as the present one; it is essentially a \textit{black box}. Even when it works perfectly, it is not always possible to pinpoint \textit{why} or \textit{how} it works.
+It is hard to say why and how this matrix should yield essentially exactly correct energies for all $2000$ samples in the validation set, and we can offer no insight into the mechanism at work here. However, we find that $\mathbf{s}_k^T W \mathbf{s}_k=\mathbf{s}_k^T J \mathbf{s}_k$ to machine precision. 
+
+This outlines a fundamental difficulty in working with machine learning algorithms such as the present one; it is essentially a \textit{black box}. Even when it works perfectly, it is not always possible to pinpoint \textit{why} or \textit{how} it works.
 
 Finally: We consider this network architecture and the structuring of the input data to be essentially cheating, so we did not explore this further for larger system sizes\textemdash we chose to stick with the aforementioned network structure and training schemes.
+
+\subsubsection{Just dicking around...}
+Apparently, the polynomial 
+\begin{strip}
+\begin{align}
+P(x,y,z,t,u) &= x (0.22 t + 0.83 u + 0.59 x - 1.77 y + 0.18 z) \nonumber \\
+& \ \ \  \ \ \  \ \  - y (0.39 t + 0.72 u - 0.81 x + 0.14 y + 1.65 z) \nonumber \\
+& \ \ \  \ \ \  \ \  - z (0.48 t + 0.52 u + 0.18 x - 0.69 y + 0.85 z) \nonumber \\
+& \ \ \  \ \ \  \ \  + t (0.81 t - 1.03 u - 0.22 x + 0.39 y - 0.48 z) \nonumber \\
+& \ \ \  \ \ \  \ \  + u (0.07 t - 0.41 u - 1.79 x + 0.72 y + 0.52 z) 
+\end{align}
+\end{strip}
+is equal to the polynomial 
+\begin{align}
+Q(x,y,z,y,u) &= t u + x u + x y + t z + y z
+\end{align}
+over the set $x,y,z,t,u\in\{-1,1\}$. Doubt this is useful to anyone in the world. 
 
 \subsection{Classifying phases of the two-dimensional Ising model}
 \lipsum[10]

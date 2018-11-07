@@ -195,7 +195,7 @@ def R2_versus_lasso() :
 
 def visualize_beta() :
     L = 5
-    nn = pickle.load(open('nn.p', 'rb'))
+    nn = pickle.load(open('nn5_final.p', 'rb'))
     for w in nn.weights[:1] :
         with np.printoptions(precision=2, suppress=True) :
             print(w.reshape((-1,L)))
@@ -206,28 +206,31 @@ def visualize_beta() :
     training_fraction = 0.4
     ising = Ising(L, N)
     D, ry = ising.generateDesignMatrix1D()
-    X, y  = ising.generateTrainingData1D()
-    y    /= L
+    #X, y  = ising.generateTrainingData1D()
+    #y    /= L
 
     print(ising.states.shape)
-    J = nn.weights[0].reshape((-1,L))*nn.weights[1]
+    W = nn.weights[0].reshape((-1,L))*nn.weights[1]
+    JJ = ising.J
     for i in range(10) :
         row = ising.states[i,:]
         des = D[i,:]
         E   = ry[i]
         print(row.shape)
         row = np.expand_dims(row,1)
-        print("s J s:", row.T @ J @ row)
+        print("s W s:", row.T @ W.T @ row)
+        print("s J s:", row.T @ JJ @ row)
         print("D w:  ", nn.weights[0].T @ des * nn.weights[1])
         print("pred: ", nn.predict(np.expand_dims(des.T,1)))
         print("E:    ", E)
-        print("")   
+        print("")
+
+    with np.printoptions(precision=2, suppress=True) :
+        for a in np.linalg.eig(W) : 
+            print(a)
 
     print(sklearn.metrics.mean_squared_error(np.squeeze(ry), np.squeeze(nn.predict(D.T))))
-    for w in nn.weights :
-        print(w)
-    for b in nn.biases :
-        print(b)
+    
 
 
 if __name__ == '__main__':

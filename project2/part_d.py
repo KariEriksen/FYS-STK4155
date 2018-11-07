@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import functools
 import pickle
+import sklearn
 import matplotlib.pyplot as plt
 
 # Add the src/ directory to the python path so we can import the code 
@@ -12,6 +13,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'project1', 'src')
 
 from ising          import Ising
 from neuralNetwork  import NeuralNetwork
+from leastSquares   import LeastSquares
 
 
 
@@ -129,8 +131,73 @@ def visualize_unbalanced() :
     plt.show()
 
 
+def R2_versus_lasso() :
+    L = 15
+    N = 5000
+    training_fraction = 0.4
+    ising = Ising(L, N)
+    D, ry = ising.generateDesignMatrix1D()
+    X, y  = ising.generateTrainingData1D()
+    y    /= L
+
+    D_train       = D [int (training_fraction*N):,:]
+    ry_train      = ry[int (training_fraction*N):]
+    D_validation  = D [:int(training_fraction*N),:]
+    ry_validation = ry[:int(training_fraction*N)]
+
+    lasso = LeastSquares(method='lasso', backend='skl')
+    lasso.setLambda(1e-2)
+    lasso.fit(D_train,ry_train)
+    lasso.y = ry_validation
+    lasso.predict(D_validation)
+    lasso_R2 = sklearn.metrics.mean_squared_error(ry_validation/L,lasso.predict(D_validation)/L)
+
+
+    n_samples, n_features = X.shape
+
+    nn = NeuralNetwork( inputs          = L,
+                        neurons         = L*L,
+                        outputs         = 1,
+                        activations     = 'sigmoid',
+                        cost            = 'mse',
+                        silent          = False)
+    nn.addLayer(neurons = L*L)
+    #nn.addLayer(neurons = L*L)
+    nn.addOutputLayer(activations = 'identity')
+
+    validation_skip = 100
+    epochs = 10000
+    nn.fit( X.T, 
+            y,
+            shuffle             = True,
+            batch_size          = 1000,
+            validation_fraction = 1-training_fraction,
+            learning_rate       = 0.001,
+            verbose             = False,
+            silent              = False,
+            epochs              = epochs,
+            validation_skip     = validation_skip,
+            optimizer           = 'adam')
+    
+    plt.rc('text', usetex=True)
+    validation_loss = nn.validation_loss_improving
+    validation_ep   = np.linspace(0,epochs,len(nn.validation_loss_improving))
+    plt.semilogy(validation_ep, validation_loss, 'r-', label=r'NN')
+    plt.semilogy([0, epochs], np.array([lasso_R2, lasso_R2]), 'k--', label=r'Lasso')
+    plt.xlabel(r'Epoch', fontsize=10)
+    plt.ylabel(r'Mean squared error', fontsize=10)
+    plt.legend(fontsize=10)
+    plt.xlim((0,epochs))
+    ax = plt.gca()
+    ymin, ymax = ax.get_ylim()
+    if ymin > pow(10,-5) :
+        ymin = pow(10,-5)
+    #plt.ylim((ymin,ymax))
+    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'NN_compare_lasso.png'), transparent=True, bbox_inches='tight')
+    #plt.show()
 
 if __name__ == '__main__':
     #train_net_predict_energy()
     #load_trained_network()
-    visualize_unbalanced()
+    #visualize_unbalanced()
+    R2_versus_lasso()

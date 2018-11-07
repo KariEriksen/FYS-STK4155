@@ -57,6 +57,10 @@ class Ising :
 
 
     def generateTrainingData1D(self, systemSize=None, numberOfStates=None) :
+        """
+        Performs even sampling, resulting in equal probability for states of all
+        possible energies.
+        """
         self.systemSize     = systemSize     if (systemSize is not None)     else self.systemSize
         self.numberOfStates = numberOfStates if (numberOfStates is not None) else self.numberOfStates
 

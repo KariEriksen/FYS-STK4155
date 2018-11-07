@@ -6,6 +6,7 @@ import time
 import numpy as np
 import sklearn
 import pickle
+from sklearn import metrics
 from math import ceil
 
 # Add the project2/src/ directory to the python path so we can import the code 
@@ -297,6 +298,10 @@ class NeuralNetwork :
         validation_it        = 0
         self.validation_loss = np.zeros(int(ceil(epochs / validation_skip))+1)
         self.training_loss   = np.zeros(epochs)
+        self.R2              = np.zeros_like(self.validation_loss)
+        self.R2 *= np.nan
+        self.validation_loss_improving = np.zeros_like(self.validation_loss)
+        self.validation_loss_improving *= np.nan
 
         if not shuffle :
             raise NotImplementedError("~")
@@ -354,7 +359,8 @@ class NeuralNetwork :
                     y_validation = self.forward_pass(self.x_validation)
                     self.validation_loss[validation_it] = self.cost(y_validation, self.target_validation)
                     self.loss = self.validation_loss[validation_it]
-
+                    self.validation_loss_improving[validation_it] = self.best_loss
+                    
                     save = False
                     if (self.best_loss is None) or \
                        (self.best_loss > self.validation_loss[validation_it]) :
@@ -362,6 +368,8 @@ class NeuralNetwork :
                         self.best_loss  = self.validation_loss[validation_it]
                         self.best_param = [params for params in self.weights+self.biases]
                         self.bestEpoch  = epoch
+                        self.R2[validation_it] = metrics.r2_score(np.squeeze(self.target_validation), np.squeeze(y_validation))
+                        self.validation_loss_improving[validation_it] = self.validation_loss[validation_it]
                         pickle.dump(self, open('nn.p', 'wb'))
                         save = True
 
@@ -378,7 +386,8 @@ class NeuralNetwork :
                                                                                     "",
                                                                                     self.validation_loss[validation_it-1],
                                                                                     "ckpt" if save else ""))
-        
+        self.validation_loss_improving[-1] = self.best_loss
+
         # Finished fitting, set the weights / biases to the best found throughout 
         # training, i.e. the ones which resulted in the lowest validation cost.
         self.weights = [w for w in self.best_param[:len(self.weights)]]

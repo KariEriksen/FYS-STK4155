@@ -28,6 +28,7 @@
 \usepackage{tabulary}                        % Tables and stuff.
 \usepackage[sf,sl,outermarks]{titlesec}      % Change fonts in section{}, subsection{}, etc.
 \usepackage[subfigure]{tocloft}              % Change spacing between numbers and titles in TOC.
+\usepackage{pgfplots}                        % Making Tikz plots.
 \usepackage{booktabs}                        % \toprule, \midrule, etc. for tables.
 \usepackage{siunitx}                         % Allows S table column, aligning on decimal point.
 \usepackage{chngcntr}                        % Change counter behaviour, supress increment of sub counters.
@@ -877,11 +878,57 @@ We flipped the three spins with indices $2$, $8$, and $16$ and ended up with a $
   \caption{Cumulative probability density function for picking a random sample with energy $E_i$ out of the total data set, for the straight forward sampling method and the even sampling described in section \ref{sect:1d_results}. Note that a linear cumulative distribution means the probability density is flat, i.e.\ uniform probability. The naively generated data set exhibits a probability density function sharply peaked around $E=0$. \label{fig:cdf}}
 \end{figure}
 
-Having devised a method of sampling states which will be helpful for the NN training, we move on to the training. 
+Having devised a method of sampling states which will be helpful for the NN training, we move on to the training. First off, we prepare networks with $L$ inputs, a single hidden layer of $L^2$ neurons, and an output with identity activations. For the moment, we use sigmoid activations for the hidden layer. We prepare a data set of $N=5000$ lattice configurations of \textit{evenly} sampled energies, and reserve $N_v=1000$ of them for validation purposes. The Adam optimizer is run for a total of $1000$ epochs, with a batch size of $1000$, and an initial step size $\alpha=0.001$. The mean squared difference between the target energies and the NN output is used as the cost function for training with the bakcpropagation algorithm. For varying lattice sizes $L=10,\dots,40$ we perform the fit and visualize the output. This is shown in \fig{NN_out}. Note that the energies are normalized (divided by $L$) and take values in $[-1,1]$, to help the NN during training. 
 
-% Training 5000  epochs L=5:       36.547 s
-% Training 10000 epochs L=10: 3min 37.836 s
+\begin{figure*}[p]
+\centering
+\subfloat[$L=10$]{\includegraphics[width=0.5\linewidth]{nn_1d_energy_predict10.png}}
+\subfloat[$L=20$]{\includegraphics[width=0.5\linewidth]{nn_1d_energy_predict20.png}} \\[-10pt]
+\subfloat[$L=30$]{\includegraphics[width=0.5\linewidth]{nn_1d_energy_predict30.png}}
+\subfloat[$L=40$]{\includegraphics[width=0.5\linewidth]{nn_1d_energy_predict40.png}}
+\captionof{figure}{Raw NN output and target validation energies for different lattice sizes after training for $1000$ epochs with a data set of $N=5000$ samples. The energies are normalized by $L$. We note that the NN output roughly follows the true target, but more training is necessary to reach very good results.\label{fig:NN_out}}
+\end{figure*}
 
+From the figure we notice that the roug
+
+% Training 5000  epochs L=5:         36.547 s
+% Training 10000 epochs L=10: 3  min 37.836 s
+%          10000 epochs L=15: 4  min 19.580 s
+%          20000              10 min 41.648 s
+%          20000        L=20: 19 min 23.448 s
+%          20000        L=25: 34 min 48.781 s
+
+\begin{figure}
+\centering
+\begin{tikzpicture}
+  \begin{axis}[
+    width=\textwidth,
+    xlabel=Lattice size $L$,
+    ylabel={Training time, $[\text{s}]$},
+    legend pos=north east]
+  \addplot[color=red,mark=o] coordinates {
+    (5,    36.547)
+    (10,  217.836)
+    (15,  641.648)
+    (20, 1163.448)
+    (25, 2088.781)
+  };
+  \addlegendentry{NN} 
+  \addplot[color=black,mark=x] coordinates {
+    (5,   1.527)
+    (10,  1.680)
+    (15,  1.771)
+    (20,  1.793)
+    (25,  2.153)
+    (30,  2.190)
+    (50,  2.443)
+    %(100, 5.089)
+  };
+  \addlegendentry{Lasso} 
+  \end{axis}
+\end{tikzpicture}
+\caption{\label{fig:time}}
+\end{figure}
 
 
 \subsection{Classifying phases of the two-dimensional Ising model}

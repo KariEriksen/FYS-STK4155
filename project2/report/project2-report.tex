@@ -903,7 +903,7 @@ Having devised a method of sampling states which will be helpful for the NN trai
     width=0.5\textwidth,
     xlabel=Lattice size $L$,
     ylabel={Training time, $[\text{s}]$},
-    legend pos=north east]
+    legend pos=north west]
   \addplot[color=red,mark=o] coordinates {
     (5,    36.547)
     (10,  217.836)
@@ -931,11 +931,11 @@ Having devised a method of sampling states which will be helpful for the NN trai
 
 From the plots in \fig{NN_out}, it is pretty clear that our trained networks leave a lot to be desired. One remedy it increasing the data set size for training, and increasing the training time (number of epochs). In order to compare against the linear regression models we discussed earlier, we investigate now how much training is necessary in order to surpass the performance of the Lasso regression at $\lambda=10^{-2}$. This was deemed the best of the linear methods earlier. 
 
-We consider small enough system sizes $L$ for the training to be feasible (training time on a late\textendash2013 MacBook pro running OSX10.11.6 approximately less than 30 minutes), and keep going until the MSE has reached an apparent plateu. Comparing the mean squared error of the trained NN against the $\lambda=10^{-2}$ for varying small lattices is shown in \fig{NN_lattice}. It is clear that in some cases, the NN scheme is able to surpass the performance on the validation sets. However, as the lattice grows in size, the required training time becomes unfeasible, as shown in \fig{time}. It is hard to justify an order of magnitude or two drop in MSE at the cost of over $1500$ times increase(!) in preparation time (the Lasso scheme does not require more than at most $2.2\,\text{s}$ for even the largest of these lattices). 
+We consider small enough system sizes $L$ for the training to be feasible (training time on a late\textendash2013 MacBook pro running OSX10.11.6 approximately less than 60 minutes), and keep going until the MSE has reached an apparent plateu. Comparing the mean squared error of the trained NN against the $\lambda=10^{-2}$ for varying small lattices is shown in \fig{NN_lattice}. It is clear that in some cases, the NN scheme is able to surpass the performance on the validation sets. However, as the lattice grows in size, the required training time becomes unfeasible, as shown in \fig{time}. It is hard to justify an order of magnitude or two drop in MSE at the cost of over $1500$ times increase(!) in preparation time (the Lasso scheme does not require more than at most $2.2\,\text{s}$ for even the largest of these lattices). 
 
 \begin{figure*}[p]
 \centering
-\subfloat[$L=5$] {\includegraphics[width=0.5\linewidth]{NN_compare_lasso5.png}}
+\subfloat[$L=5$] {\includegraphics[width=0.5\linewidth]{NN_compare_lasso5_2.png}}
 \subfloat[$L=10$]{\includegraphics[width=0.5\linewidth]{NN_compare_lasso10_2.png}} \\[-10pt]
 \subfloat[$L=15$]{\includegraphics[width=0.5\linewidth]{NN_compare_lasso15_2.png}}
 \subfloat[$L=20$]{\includegraphics[width=0.5\linewidth]{NN_compare_lasso20.png}} \\[-10pt]
@@ -943,6 +943,21 @@ We consider small enough system sizes $L$ for the training to be feasible (train
 \subfloat[$L=30$]{\includegraphics[width=0.5\linewidth]{NN_compare_lasso30.png}}
 \captionof{figure}{Mean squared error calculated from trained networks applied to small\textendash medium sized Ising lattices. We note that for sufficiently small system sizes, the NN outperforms the Lasso scheme (which was shown to be the best performer of the linear models). However, as the lattice growns, the training time required either makes training unfeasible or the training is simply not able to reduce the MSE to below that of the Lasso scheme (a plateu is hit before the NN performance surpasses that of the Lasso method). The training time for each network is shown in \fig{time}. \label{fig:NN_lattice}}
 \end{figure*}
+
+As a closing remark for the neural network regression section, we note the apparent difficulty of recreating the $J$ matrix using the neural network scheme. Even using identity activations, the design matrix as network input (each sample being $L^2$ values of every combination of $s_is_j$) and a single hidden layer with one neuron (making the first network weight $L\times L$), and freezing the intercepts at $0$, we are still not able to recreate the $J$ matrix. As an example, training a $L=5$ model like this yields an MSE that vanishes to machine precision ($\sim10^{-30}$), however the resulting weight matrix takes the form:
+\begin{align}
+W=
+\pmat{ccccc}{
+ 0.59 & -1.77 &  0.18 &  0.22 &  0.83 \\
+ 0.81 & -0.14 & -1.65 & -0.39 & -0.72 \\
+-0.18 &  0.69 & -0.85 & -0.48 & -0.52 \\
+-0.22 &  0.39 & -0.48 &  0.81 & -1.03 \\
+-1.79 &  0.72 &  0.52 &  0.07 & -0.41
+} \nonumber
+\end{align}
+It is hard to say why and how this matrix should yield essentially exactly correct energies for all $2000$ samples in the validation set, and we can offer no insight into the mechanism at work here. This outlines a fundamental difficulty in working with machine learning algorithms such as the present one; it is essentially a \textit{black box}. Even when it works perfectly, it is not always possible to pinpoint \textit{why} or \textit{how} it works.
+
+Finally: We consider this network architecture and the structuring of the input data to be essentially cheating, so we did not explore this further for larger system sizes\textemdash we chose to stick with the aforementioned network structure and training schemes.
 
 \subsection{Classifying phases of the two-dimensional Ising model}
 \lipsum[10]

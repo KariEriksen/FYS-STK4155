@@ -132,8 +132,8 @@ def visualize_unbalanced() :
 
 
 def R2_versus_lasso() :
-    L = 30
-    N = 5000
+    L = 5
+    N = 10000
     training_fraction = 0.4
     ising = Ising(L, N)
     D, ry = ising.generateDesignMatrix1D()
@@ -153,24 +153,23 @@ def R2_versus_lasso() :
 
     n_samples, n_features = X.shape
 
-    nn = NeuralNetwork( inputs          = L,
-                        neurons         = L*L,
+    nn = NeuralNetwork( inputs          = L*L,
+                        neurons         = L,
                         outputs         = 1,
-                        activations     = 'sigmoid',
+                        activations     = 'identity',
                         cost            = 'mse',
                         silent          = False)
-    nn.addLayer(neurons = L*L)
-    #nn.addLayer(neurons = L*L)
+    nn.addLayer(neurons = 1)
     nn.addOutputLayer(activations = 'identity')
 
     validation_skip = 100
-    epochs = 20000
-    nn.fit( X.T, 
-            y,
+    epochs = 50000
+    nn.fit( D.T, 
+            ry,
             shuffle             = True,
-            batch_size          = 1000,
+            batch_size          = 2000,
             validation_fraction = 1-training_fraction,
-            learning_rate       = 0.001,
+            learning_rate       = 0.0001,
             verbose             = False,
             silent              = False,
             epochs              = epochs,
@@ -194,8 +193,49 @@ def R2_versus_lasso() :
     plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'NN_compare_lasso.png'), transparent=True, bbox_inches='tight')
     #plt.show()
 
+def visualize_beta() :
+    L = 5
+    nn = pickle.load(open('nn.p', 'rb'))
+    for w in nn.weights[:1] :
+        with np.printoptions(precision=2, suppress=True) :
+            print(w.reshape((-1,L)))
+    #plt.imshow(nn.weights[0].reshape((L,-1)))
+    #plt.show()
+
+    N = 1000
+    training_fraction = 0.4
+    ising = Ising(L, N)
+    D, ry = ising.generateDesignMatrix1D()
+    X, y  = ising.generateTrainingData1D()
+    y    /= L
+
+    print(ising.states.shape)
+    J = nn.weights[0].reshape((-1,L))*nn.weights[1]
+    for i in range(10) :
+        row = ising.states[i,:]
+        des = D[i,:]
+        E   = ry[i]
+        print(row.shape)
+        row = np.expand_dims(row,1)
+        print("s J s:", row.T @ J @ row)
+        print("D w:  ", nn.weights[0].T @ des * nn.weights[1])
+        print("pred: ", nn.predict(np.expand_dims(des.T,1)))
+        print("E:    ", E)
+        print("")   
+
+    print(sklearn.metrics.mean_squared_error(np.squeeze(ry), np.squeeze(nn.predict(D.T))))
+    for w in nn.weights :
+        print(w)
+    for b in nn.biases :
+        print(b)
+
+
 if __name__ == '__main__':
     #train_net_predict_energy()
     #load_trained_network()
     #visualize_unbalanced()
-    R2_versus_lasso()
+    #R2_versus_lasso()
+    visualize_beta()
+
+
+

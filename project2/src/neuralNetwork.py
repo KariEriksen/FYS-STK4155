@@ -360,7 +360,7 @@ class NeuralNetwork :
                     self.validation_loss[validation_it] = self.cost(y_validation, self.target_validation)
                     self.loss = self.validation_loss[validation_it]
                     self.validation_loss_improving[validation_it] = self.best_loss
-                    
+
                     save = False
                     if (self.best_loss is None) or \
                        (self.best_loss > self.validation_loss[validation_it]) :

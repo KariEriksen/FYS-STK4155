@@ -889,20 +889,18 @@ Having devised a method of sampling states which will be helpful for the NN trai
 \captionof{figure}{Raw NN output and target validation energies for different lattice sizes after training for $1000$ epochs with a data set of $N=5000$ samples. The energies are normalized by $L$. We note that the NN output roughly follows the true target, but more training is necessary to reach very good results.\label{fig:NN_out}}
 \end{figure*}
 
-From the figure we notice that the roug
-
 % Training 5000  epochs L=5:         36.547 s
 % Training 10000 epochs L=10: 3  min 37.836 s
 %          10000 epochs L=15: 4  min 19.580 s
 %          20000              10 min 41.648 s
 %          20000        L=20: 19 min 23.448 s
 %          20000        L=25: 34 min 48.781 s
+%          20000        L=30: 54 min  4.239 s
 
-\begin{figure}
-\centering
+\begin{SCfigure*}
 \begin{tikzpicture}
   \begin{axis}[
-    width=\textwidth,
+    width=0.5\textwidth,
     xlabel=Lattice size $L$,
     ylabel={Training time, $[\text{s}]$},
     legend pos=north east]
@@ -912,6 +910,7 @@ From the figure we notice that the roug
     (15,  641.648)
     (20, 1163.448)
     (25, 2088.781)
+    (30, 3244.239)
   };
   \addlegendentry{NN} 
   \addplot[color=black,mark=x] coordinates {
@@ -921,15 +920,29 @@ From the figure we notice that the roug
     (20,  1.793)
     (25,  2.153)
     (30,  2.190)
-    (50,  2.443)
+    %(50,  2.443)
     %(100, 5.089)
   };
   \addlegendentry{Lasso} 
   \end{axis}
 \end{tikzpicture}
-\caption{\label{fig:time}}
-\end{figure}
+\captionof{figure}{Training time for the regression neural networks trained to estimate the energy of 1D Ising lattice configurations for different system sizes $L$. Even though the NN may outperform the linear schemes in terms of the mean squared error on a validation set\textemdash for small $L$\textemdash it is hard to justify the cost\textendash benefit ratio in terms of training time required. The Lasso time peaks at around $2\,\text{s}$. \label{fig:time}}
+\end{SCfigure*}
 
+From the plots in \fig{NN_out}, it is pretty clear that our trained networks leave a lot to be desired. One remedy it increasing the data set size for training, and increasing the training time (number of epochs). In order to compare against the linear regression models we discussed earlier, we investigate now how much training is necessary in order to surpass the performance of the Lasso regression at $\lambda=10^{-2}$. This was deemed the best of the linear methods earlier. 
+
+We consider small enough system sizes $L$ for the training to be feasible (training time on a late\textendash2013 MacBook pro running OSX10.11.6 approximately less than 30 minutes), and keep going until the MSE has reached an apparent plateu. Comparing the mean squared error of the trained NN against the $\lambda=10^{-2}$ for varying small lattices is shown in \fig{NN_lattice}. It is clear that in some cases, the NN scheme is able to surpass the performance on the validation sets. However, as the lattice grows in size, the required training time becomes unfeasible, as shown in \fig{time}. It is hard to justify an order of magnitude or two drop in MSE at the cost of over $1500$ times increase(!) in preparation time (the Lasso scheme does not require more than at most $2.2\,\text{s}$ for even the largest of these lattices). 
+
+\begin{figure*}[p]
+\centering
+\subfloat[$L=5$] {\includegraphics[width=0.5\linewidth]{NN_compare_lasso5.png}}
+\subfloat[$L=10$]{\includegraphics[width=0.5\linewidth]{NN_compare_lasso10_2.png}} \\[-10pt]
+\subfloat[$L=15$]{\includegraphics[width=0.5\linewidth]{NN_compare_lasso15_2.png}}
+\subfloat[$L=20$]{\includegraphics[width=0.5\linewidth]{NN_compare_lasso20.png}} \\[-10pt]
+\subfloat[$L=25$]{\includegraphics[width=0.5\linewidth]{NN_compare_lasso25.png}}
+\subfloat[$L=30$]{\includegraphics[width=0.5\linewidth]{NN_compare_lasso30.png}}
+\captionof{figure}{Mean squared error calculated from trained networks applied to small\textendash medium sized Ising lattices. We note that for sufficiently small system sizes, the NN outperforms the Lasso scheme (which was shown to be the best performer of the linear models). However, as the lattice growns, the training time required either makes training unfeasible or the training is simply not able to reduce the MSE to below that of the Lasso scheme (a plateu is hit before the NN performance surpasses that of the Lasso method). The training time for each network is shown in \fig{time}. \label{fig:NN_lattice}}
+\end{figure*}
 
 \subsection{Classifying phases of the two-dimensional Ising model}
 \lipsum[10]

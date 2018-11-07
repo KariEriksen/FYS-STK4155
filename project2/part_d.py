@@ -132,7 +132,7 @@ def visualize_unbalanced() :
 
 
 def R2_versus_lasso() :
-    L = 100
+    L = 30
     N = 5000
     training_fraction = 0.4
     ising = Ising(L, N)
@@ -150,7 +150,6 @@ def R2_versus_lasso() :
     lasso.fit(D_train,ry_train)
     lasso.y = ry_validation
     lasso_R2 = sklearn.metrics.mean_squared_error(ry_validation/L,lasso.predict(D_validation)/L)
-    return
 
     n_samples, n_features = X.shape
 

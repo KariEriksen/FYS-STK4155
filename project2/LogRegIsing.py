@@ -8,69 +8,34 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numba
 import sys
 import time
-
-def vizualise():
-    # set colourbar map
-    cmap_args=dict(cmap='plasma_r')
-
-    # plot states
-    fig, axarr = plt.subplots(nrows=1, ncols=3)
-
-    plt.figure(1)
-    plt.subplot(311)
-    plt.imshow(X_train_ordered[20001].reshape(L,L),**cmap_args)
-
-    plt.subplot(312)
-    plt.imshow(X_critical[10001].reshape(L,L),**cmap_args)
-
-    plt.subplot(313)
-    plt.imshow(X_train_disordered[50001].reshape(L,L),**cmap_args)
-
-    plt.show()
-
-def logistic(s):
-    return np.exp(s)/(1.0+np.exp(s))
-
-def plot_logisticFunction():
-    
-    s = np.linspace(-10,10,100)
-    plt.plot(s,logistic(s))
-    plt.show()
+from scipy.special import expit
 
 
-def crossEntropy(beta,X,y):
-    
-    Cbeta = 0
-    
-    for i in range(len(y)):
-        tmp    = np.dot(X[i],beta)
-        val    = y[i]*tmp - np.log(1+np.exp(tmp))
-        Cbeta -= val
-    
-    return Cbeta/float(len(y))
-
-def gradientCrossEntropy(X,p,y):
-    return -np.dot(X.T,y-p)/float(X.shape[0])
-
-def gradienDescent(X_train,y_train,Lambda,eta=0.005,max_iters=150,tolerance=1e-1):
+def gradientAscent(X,y,Lambda,eta=5e-7,max_iters=150,tolerance=1e-4):
     
     #Initialize beta-parameters
-    beta   = np.random.uniform(-0.5,0.5,L*L+1)
-    beta   = beta/np.linalg.norm(beta)
+    beta   = np.zeros(X.shape[1])
     norm   = 100
     
-    for i in range(max_iters):
-        p_hat  = logistic(np.dot(X_train,beta))
-        gradC  = gradientCrossEntropy(X_train,p_hat,y_train)
-        gradC += Lambda*beta/X_train.shape[0]
-        beta   = beta - eta*gradC
-        norm   = np.linalg.norm(gradC)
+    for i in range(0,max_iters):
+        
+        z = np.dot(X, beta)
+        p = expit(z)
+
+        gradient = np.dot(X.T,y-p) - Lambda*beta
+        beta    += eta*gradient
+        norm     = np.linalg.norm(gradient)
+        
+        if(i%1000 == 0):
+            print(norm)
+
         if(norm < tolerance):
-            print("Gradient descent converged to given precision")
+            print("Gradient ascent converged to given precision in %d iterations" % i)
             break
+    
     return beta, norm
 
-np.random.seed(1)
+np.random.seed(12)
 L = 40 #Nr of spins 40x40
 
 label_filename = "data/Ising2DFM_reSample_L40_T=All_labels.pkl"
@@ -84,14 +49,14 @@ with open(label_filename, "rb") as f:
 with open(dat_filename, "rb") as f:
     data = np.unpackbits(pickle.load(f)).reshape(-1, 1600).astype("int")
 
-data[data == 0] = -1
+data[data     == 0] = -1
 
 # Set up slices of the dataset
-ordered    = slice(0     , 20000 )
+ordered    = slice(0     , 5000 )
 critical   = slice(70000 , 100000)
-disordered = slice(100000, 110000)
+disordered = slice(100000, 104900)
 
-#Uses more memory but more compact
+
 X_train, X_test, y_train, y_test = skms.train_test_split(
     np.concatenate((data[ordered], data[disordered])),
     np.concatenate((labels[ordered], labels[disordered])),
@@ -103,45 +68,58 @@ y_critical = labels[critical]
 
 del data, labels
 
+
+Lambda = 1
+
+logreg = skl.LogisticRegression(fit_intercept=True,C=1.0/Lambda,tol=1e-8)
+logreg.fit(X_train,y_train)
+beta_scikit = np.zeros(X_train.shape[1]+1)
+beta_scikit[0] = logreg.intercept_
+beta_scikit[1:] = logreg.coef_[0]
+print(beta_scikit[0:10])
+
+# check accuracy
+train_accuracy    = logreg.score(X_train,y_train)
+test_accuracy     = logreg.score(X_test,y_test)
+crit_accuracy = logreg.score(X_critical,y_critical)
+print("Training accuracy (skl): %.6f" % train_accuracy)
+print("Test accuracy     (skl): %.6f" % test_accuracy)
+print("Critical accuracy (skl): %g" % crit_accuracy)
+
+sys.exit(1)
 #Add intercept column
-X_train = np.c_[np.ones(X_train.shape[0]), X_train]
-X_test = np.c_[np.ones(X_test.shape[0]), X_test]
+X_train    = np.c_[np.ones(X_train.shape[0]), X_train]
+X_test     = np.c_[np.ones(X_test.shape[0]), X_test]
 X_critical = np.c_[np.ones(X_critical.shape[0]), X_critical]
 print(X_train.shape)
-print(X_test.shape)
-print(y_train.shape)
-print(y_test.shape)
+
+beta,norm  = gradientAscent(X_train,y_train,Lambda=Lambda,max_iters=100000,tolerance=1e-4)
+
+p_predict  = expit(np.dot(X_train,beta))
+p_test     = expit(np.dot(X_test,beta))
+p_critical = expit(np.dot(X_critical,beta))
+
+train_accuracy = ( (p_predict  > 0.5) == y_train     ).mean()
+test_accuracy  = ( (p_test     > 0.5) == y_test      ).mean()
+crit_accuracy  = ( (p_critical > 0.5) == y_critical  ).mean()
+
+#print("Lambda: %g" % lmbda)
+print("norm(gradC): %g" % norm)
+print("Training accuracy: %.6f" % train_accuracy)
+print("Test accuracy: %.6f" % test_accuracy)
+print("Critical accuracy: %g" % crit_accuracy)
 
 
-lmbdas         = np.logspace(-5,5,11)
-train_accuracy = np.zeros(lmbdas.shape,np.float64)
-test_accuracy  = np.zeros(lmbdas.shape,np.float64)
-crit_accuracy  = np.zeros(lmbdas.shape,np.float64)
 
-#Train the model
-for i,Lambda in enumerate(lmbdas):
-    
-    beta, norm = gradienDescent(X_train,y_train,Lambda,max_iters=150)
-    
-    p_predict  = logistic(np.dot(X_train,beta))
-    p_test     = logistic(np.dot(X_test,beta))
-    p_critical = logistic(np.dot(X_critical,beta))
-    
-    train_accuracy[i] = np.sum( (p_predict  > 0.5)  == y_train    )/float(X_train   .shape[0])
-    test_accuracy[i]  = np.sum( (p_test     > 0.5)  == y_test     )/float(X_test    .shape[0])
-    crit_accuracy[i]  = np.sum( (p_critical > 0.5)  == y_critical )/float(X_critical.shape[0])
-    
-    print("Lambda: %g" % Lambda)
-    print("norm(gradC): %g" % norm)
-    print("Training accuracy: %.6f" % train_accuracy[i])
-    print("Test accuracy: %.6f" % test_accuracy[i])
-    print("Critical accuracy: %g" % crit_accuracy[i])
+print(beta[0])
+print(beta[1:4])
 
 
+"""
 # plot accuracy against regularisation strength
-plt.semilogx(lmbdas,train_accuracy,'*-b',label='Train')
-plt.semilogx(lmbdas,test_accuracy,'*-r',label='Test')
-plt.semilogx(lmbdas,crit_accuracy,'*-g',label='Critical')
+plt.plot(lmbdas,train_accuracy,'*-b',label='Train')
+plt.plot(lmbdas,test_accuracy,'*-r',label='Test')
+plt.plot(lmbdas,crit_accuracy,'*-g',label='Critical')
 
 plt.xlabel('$\\lambda$')
 plt.ylabel('$\\mathrm{accuracy}$')
@@ -150,3 +128,4 @@ plt.grid()
 plt.legend()
 plt.savefig("figures/logReg_acc_vs_regstrength.png")
 plt.show()
+"""

@@ -233,7 +233,8 @@ Then, the parameters $\beta$ are chosen to maximize the likelihood.
 It turns out that it is easier to work with the \textit{log-likelihood}
 \begin{align}
  l(\beta) &= \log(L(\beta)) \nonumber \\
- &= \sum_{i=1}^n y_i p(y_i=1 | \mathbf{x}^{(i)}) + (1-y_i)( 1-p(y_i=1 | \mathbf{x}^{(i)}).
+ &= \sum_{i=1}^n \Big[y_i p(y_i=1 | \mathbf{x}^{(i)}) \nonumber \\
+ & \ \ \ \  \ \ \ \ + (1-y_i)( 1-p(y_i=1 | \mathbf{x}^{(i)})\Big]. \nonumber
 \end{align}
 Maximizing the logarithm of a function is equivalent to maximizing the function itself. 
 

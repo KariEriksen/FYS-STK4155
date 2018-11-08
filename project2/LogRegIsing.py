@@ -21,7 +21,7 @@ def gradientDescent(X,y,Lambda,eta=1e-4,max_iters=150,tolerance=1e-4,scale=1.0):
     
     #Initialize beta-parameters
     beta    = np.random.uniform(-0.5,0.5,X.shape[1])
-    beta[0] = 1
+    #beta[0] = 1
     beta /= np.linalg.norm(beta)
     beta_prev = beta.copy()
 
@@ -99,6 +99,7 @@ y_critical = labels[critical]
 
 del data, labels
 
+
 #Add intercept column
 X_train    = np.c_[np.ones(X_train.shape[0])   , X_train]
 X_test     = np.c_[np.ones(X_test.shape[0])    , X_test]
@@ -107,7 +108,7 @@ X_critical = np.c_[np.ones(X_critical.shape[0]), X_critical]
 
 # define regularisation parameter
 
-lmbdas = np.array([1e5]) #np.logspace(-5,4,10)
+lmbdas = lmbdas = np.logspace(-5,5,11) 
 
 # preallocate data
 train_accuracy=np.zeros(lmbdas.shape,np.float64)
@@ -135,57 +136,34 @@ for i,Lambda in enumerate(lmbdas):
     p_test     = expit(np.dot(X_test,beta))
     p_critical = expit(np.dot(X_critical,beta))
 
-
-    # check accuracy
-    print("Lambda: %g" % Lambda)
-
-    
+    """
     print("Training accuracy (skl): %.6f" % train_accuracy)
     print("Test accuracy     (skl): %.6f" % test_accuracy)
     print("Critical accuracy (skl): %g" % critical_accuracy)
-    
+    """
 
     train_accuracy[i] = ( (p_predict  > 0.5) == y_train     ).mean()
     test_accuracy[i]  = ( (p_test     > 0.5) == y_test      ).mean()
     critical_accuracy[i]  = ( (p_critical > 0.5) == y_critical  ).mean()
 
+    # check accuracy
+    print("Lambda: %g" % Lambda)
     print("Training accuracy  (GD): %.6f" % train_accuracy[i])
     print("Test accuracy      (GD): %.6f" % test_accuracy[i])
     print("Critical accuracy  (GD): %g" % critical_accuracy[i])
 
 
-#np.save("train_acc",train_accuracy)
-#np.save("test_acc",test_accuracy)
-#np.save("crit_acc",critical_accuracy)
-#print(beta_scikit[0:10])
-#print(beta[0:10])
 
-train_accuracy_old = np.load("train_acc_old.npy")
-test_accuracy_old = np.load("test_acc_old.npy")
-critical_accuracy_old = np.load("crit_acc_old.npy")
 
-train_accuracy_new = np.zeros(11)
-test_accuracy_new  = np.zeros(11)
-critical_accuracy_new = np.zeros(11) 
-
-train_accuracy_new[0:10] = train_accuracy_old
-test_accuracy_new[0:10] = test_accuracy_old
-critical_accuracy_new[0:10] = critical_accuracy_old
-
-train_accuracy_new[10] = train_accuracy[0]
-test_accuracy_new[10] = test_accuracy[0]
-critical_accuracy_new[10] = critical_accuracy[0]
-
-lmbdas = np.logspace(-5,5,11)
 # plot accuracy against regularisation strength
-plt.semilogx(lmbdas,train_accuracy_new,'*-b',label='Train')
-plt.semilogx(lmbdas,test_accuracy_new,'*-r',label='Test')
-plt.semilogx(lmbdas,critical_accuracy_new,'*-g',label='Critical')
+plt.semilogx(lmbdas,train_accuracy,'*-b',label='Train')
+plt.semilogx(lmbdas,test_accuracy,'*-r',label='Test')
+plt.semilogx(lmbdas,critical_accuracy,'*-g',label='Critical')
 
 plt.xlabel('$\\lambda$')
 plt.ylabel('$\\mathrm{accuracy}$')
 
 plt.grid()
 plt.legend()
-plt.savefig("figures/logReg_acc_vs_regstrength.png")
+plt.savefig("figures/logReg_acc_vs_regstrength_noIntercept.png")
 plt.show()

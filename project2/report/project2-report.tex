@@ -1055,7 +1055,45 @@ Finally we note a curiosity: The $\text{Tr}\,D=0$ demand is simply an artifact o
 
 
 \subsection{Classifying phases of the two-dimensional Ising model}
-\lipsum[10]
+
+\subsubsection{Logistic regression analysis on the two-dimensional Ising model}
+We consider the 2D Ising model on a $40 \times 40$ lattice. There are three possible types of states: ordered $T/J < 2.0$, 
+critical $2.0 \leq T/J \leq 2.5$ and disordered $ T/J > 2.5$.
+
+Mehta et al.\autocite{mehta2018highbias} 
+have made avaiable a data set where Monte Carlo sampling is used to prepare $10^4$ states at sixteen uniformly spaced 
+temperatures $T/J \in [0.25,4.0]$.
+
+The logistic regression model is trained using a set of ordered and disordered states, while the critical states are left out. 
+This training set is split 50/50 in a training and test set. When the training procedure is finished, the performance of 
+the model is measured on both the test set and the set of critical states not used in the training phase. 
+
+In Fig.\ref{MehtaComparison} we have computed the training, test and critical accuracy for regularization parameters 
+$\lambda \in [10^{-5},10^{5}]$. The results are in excellent agreement those obtained by Mehta using scikit-learn's \textit{logistic regression}
+functionality \footnote{\href{https://scikit-learn.org/stable/modules/generated/sklearn.linear\_model.LogisticRegression.html}{https://scikit-learn.org/}}.
+
+For small $\lambda$ we observe that the accuracies are essentially unaffected by the regularization strength. 
+However for $\lambda$ roughly in the range $10-100$ we see a slight increase in the critical accuracy while the training and 
+test accuracy stays the same. On the other hand, for large $\lambda$ we observe an increasing critical accuracy at the cost of 
+decreasing training and test accuracy. 
+
+Furthermore, we note that in general the model seems to perform roughly $10$\% worse on 
+the critical states compared with the ordered and disordered states.  
+
+
+
+\begin{figure}[h!]
+\centering
+ \includegraphics[width=1\linewidth]{logReg_acc_vs_regstrength_Final.png}
+ \captionof{figure}{Training, test and critical accuracy plotted as function of regularization parameter $\lambda$. 
+ We remark that for small $\lambda$ the accuracies are essentially unaffected by the regularization. However for $\lambda$ roughly in 
+ the range $10-100$ we see a slight increase in the critical accuracy while the training and test accuracy stays the same. On the 
+ other hand, for large $\lambda$ we observe an increasing critical accuracy at the cost of decreasing training and 
+ test accuracy.}
+ \label{MehtaComparison}
+\end{figure}
+
+
 \section{Conclusion}
 \lipsum[11]
 

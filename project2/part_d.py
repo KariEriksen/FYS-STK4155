@@ -132,7 +132,7 @@ def visualize_unbalanced() :
 
 
 def R2_versus_lasso() :
-    L = 5
+    L = 3
     N = 10000
     training_fraction = 0.4
     ising = Ising(L, N)
@@ -202,34 +202,59 @@ def visualize_beta() :
     #plt.imshow(nn.weights[0].reshape((L,-1)))
     #plt.show()
 
-    N = 1000
+    N = 5000
     training_fraction = 0.4
     ising = Ising(L, N)
+    X, y  = ising.generateTrainingData1D()
     D, ry = ising.generateDesignMatrix1D()
-    #X, y  = ising.generateTrainingData1D()
     #y    /= L
 
     print(ising.states.shape)
     W = nn.weights[0].reshape((-1,L))*nn.weights[1]
-    JJ = ising.J
+    J = ising.J
     for i in range(10) :
         row = ising.states[i,:]
         des = D[i,:]
         E   = ry[i]
         print(row.shape)
         row = np.expand_dims(row,1)
-        print("s W s:", row.T @ W.T @ row)
-        print("s J s:", row.T @ JJ @ row)
+        print("s W s:", row.T @ W @ row)
+        print("s (W+W')/2 s:", row.T @ (W+W.T)/2 @ row)
+        print("s J s:", row.T @ J @ row)
         print("D w:  ", nn.weights[0].T @ des * nn.weights[1])
         print("pred: ", nn.predict(np.expand_dims(des.T,1)))
         print("E:    ", E)
         print("")
 
+    for i in range(N) :
+        row = ising.states[i,:]
+        des = D[i,:]
+        E   = ry[i]
+        atol = 1e-14
+        rtol = 1e-14
+        assert np.allclose(row.T @ W @ row, row.T @ (W+W.T)/2 @ row, atol=atol, rtol=rtol)
+        assert np.allclose(row.T @ (W+W.T)/2 @ row, row.T @ J @ row, atol=atol, rtol=rtol)
+
     with np.printoptions(precision=2, suppress=True) :
         for a in np.linalg.eig(W) : 
             print(a)
 
-    print(sklearn.metrics.mean_squared_error(np.squeeze(ry), np.squeeze(nn.predict(D.T))))
+    with np.printoptions(precision=2, suppress=True) :
+        print(np.dot(W.T,W))
+        print(np.dot(W,W.T))
+        print(np.dot(W.T,W)-np.dot(W,W.T))
+        print(np.linalg.det(W))
+        print(np.linalg.cond(W))
+        print("")
+        print(J)
+        print("W+W'/2\n", (W+W.T)/2)
+        print("J+J'/2\n", (J+J.T)/2)
+        print(np.sum(np.diag((W+W.T)/2)))
+        
+    with np.printoptions(precision=16, suppress=True) :
+        print(W)
+
+    #print(sklearn.metrics.mean_squared_error(np.squeeze(ry), np.squeeze(nn.predict(D.T))))
     
 
 

@@ -882,7 +882,18 @@ Shown in the figure are the $R^2$ score as calculated from the training and the 
 
 As the optimized $\beta$ parameters can be interpreted as the estimated interaction matrix $J$, it is natural to visualize the form of the $\beta$ matrices for each method. This is shown in \fig{imshow}, where we perform fits for varying values of regularization $\lambda$. It is interesting to note that in the cases of OLS and Ridge regression, the solutions found exhibit a new symmetry that the input $J$ matrix does not. In the generated input data, only the upper $i=j+1$ diagonal of $J$ is populated with the values $J_0=1$. However, the computed energy is the same if we take $J$ to have both the $i=j+1$ and $i=j-1$ diagonals populated by $J_0/2$. This is what is found by the two mentioned schemes. The Lasso method, on the other hand, finds the single diagonal version of $J$ as it prefers performing variable selection\textemdash essentially zeroing out any unnecessary $\beta$s not absolutely needed\textemdash to find the optimal parameters.
 
-\textbf{{\color{red} TODO: Add bias-variance tradeoff analysis for the linear regression schemes!}}
+The bias-variance tradeoff and the decomposition of the mean squared error into bias, variance, and irreducible error terms was discussed in project 1. We will not repeat the theory in the present work, but present in \fig{bias-variance} a bias-variance analysis of the linear models for varying regularization parameters $\lambda$. We use $k$-fold cross-validation with $k=10$ in order to extract the variance of the models. The reader is referred to the report for project 1 for a discussion about cross-validation. A system size of $L=40$ and $N=1000$ samples were used for all plots in \fig{bias-variance}. 
+
+As expected, the sum of the bias squared and the variance equals the MSE for all models (to around machine precision). We will not introduce any noise in the current project, and thus our irreducible error vanishes. As the bias and variance of the OLS scheme does not depend on $\lambda$, that specific plot is ommitted. We note that as the regularization increases in strength, the bias increases. In general, it appears that the MSE of both Lasso and Ridge regressions are dominated by the bias term, except for very weak regularizations, $\lambda\sim10^{-5}$.
+
+\begin{figure*}[p]
+\centering
+\subfloat[]     {\includegraphics[width=0.8\linewidth]{bias-variance-1.png}} \\
+\subfloat[Ridge]{\includegraphics[width=0.5\linewidth]{bias-variance-ridge.png}}
+\subfloat[Lasso]{\includegraphics[width=0.5\linewidth]{bias-variance-lasso.png}}
+\captionof{figure}{Absolute difference between the mean squared error and the sum of the bias squared and the variance in each model (top), and the individual MSE, bias, and variance for the Ridge and Lasso schemes (bottom). A system size of $L=40$ and $N=1000$ samples, with a $k$-fold cross-validation with $k=10$, were used to generate the data and extract the variance. Note the $y$-scale of the top plot, the $|\text{MSE}-(\text{bias}^2+\text{variance})|$ difference vanishes\textemdash despite the irregular appearance\textemdash to close to machine precision.  \label{fig:bias-variance}}
+\end{figure*}
+
 
 \subsubsection{Neural network regression}
 We now turn our attention to regression analysis using neural networks. Training neural networks is a lot more tricky than optimizing linear regression models, so preparing our training samples requires a bit more finesse in this case. The statistical mechanical multiplicity of lattice states with net magnetization and energies close to $E,\mathcal{M}\sim0$ is \textbf{very} large compared the multiplicity of the ground state ($2$) and low/high $E,\mathcal{M}$ states. This means that if we just randomly generate $N$ arrays filled with $L$ values of $-1$ or $+1$, we will generate a vast majority of states with $E,\mathcal{M}$ close to zero, and almost no states with extreme $E\sim\pm J_0L,\mathcal{M}\sim \pm L$. This yields an inherent problem, as the NN can not be expected to approximate well sample states which it has only seen \textit{a few} times before in training. This problem of unbalanced training data can be solved easily in this case (but alas not in general, when generating new data is not as easy as pressing a button) by being smart about picking samples.
@@ -978,7 +989,7 @@ We consider small enough system sizes $L$ for the training to be feasible (train
 \subsubsection{Recovering the $J$ matrix in the neural network model}
 As a closing remark for the neural network regression section, we note the apparent difficulty of recreating the $J$ matrix using the neural network scheme. Even using identity activations, the design matrix as network input (each sample being $L^2$ values of every combination of $s_is_j$) and a single hidden layer with one neuron (making the first network weight $L\times L$), and freezing the intercepts at $0$, we are still not able to recreate the $J$ matrix. As an example, training a $L=5$ model like this yields an MSE that vanishes to machine precision ($\sim10^{-30}$), however the resulting weight matrix takes the form:
 \begin{align}
-W=
+W\approx
 \pmat{ccccc}{
  0.59 & -1.77 &  0.18 &  0.22 &  0.83 \\
  0.81 & -0.14 & -1.65 & -0.39 & -0.72 \\

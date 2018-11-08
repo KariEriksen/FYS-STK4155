@@ -207,14 +207,9 @@ The term $\beta \cdot \mathbf{x} = \beta_0 + \sum_{k=1}^p \beta_k x_k $ is known
 \begin{equation}
 \sigma(\beta \cdot \mathbf{x}) = \frac{1}{1+e^{-\beta \cdot \mathbf{x}}} 
 \end{equation}
-is called the \textit{sigmoid} of $\beta \cdot \mathbf{x}$. Also note that the sigmoid satisfies 
-\begin{align}
- \lim_{t \rightarrow \infty} \sigma(t) &= 1 \\
- \lim_{t \rightarrow -\infty} \sigma(t) &= 0
-\end{align}
-which justifies its use as a model for probabilities.
+is called the \textit{sigmoid} of $\beta \cdot \mathbf{x}$. 
 
-The logistic model can now be used for classification by predicting a class using the estimated probabilities according to 
+The logistic model can now be used for classification using the estimated probabilities  
 \begin{equation}
  \hat{y}_i = \begin{cases}
             1 \ \ \text{if }  p \left(y=1 | \mathbf{x}^{(i)} \right) \geq 0.5 \\
@@ -226,15 +221,16 @@ How do we train the logistic model? The answer is to use the prinicple of \texti
 that every sample $\mathbf{x}^{(i)}$ is indenpendent, the likelihood is given by 
 \begin{align}
  L(\beta) &= \prod_{i : y_i = 1} p(y_i=1 | \mathbf{x}^{(i)}) \prod_{i : y_i = 0} p(y_i=0 | \mathbf{x}^{(i)}) \nonumber \\
- &= \prod_{i=1}^n p(y_i=1 | \mathbf{x}^{(i)})^{y_i} ( 1-p(y_i=1 | \mathbf{x}^{(i)}))^{1-y_i}.
+ &= \prod_{i=1}^n p(y_i=1 | \mathbf{x}^{(i)})^{y_i} ( 1-p(y_i=1 | \mathbf{x}^{(i)}))^{1-y_i} \nonumber \\
+ &= \prod_{i=1}^n \sigma(\beta \cdot \mathbf{x}^{(i)})^{y_i} ( 1-\sigma(\beta \cdot \mathbf{x}^{(i)}))^{1-y_i}
 \end{align}
 Then, the parameters $\beta$ are chosen to maximize the likelihood. 
 
 It turns out that it is easier to work with the \textit{log-likelihood}
 \begin{align}
  l(\beta) &= \log(L(\beta)) \nonumber \\
- &= \sum_{i=1}^n \Big[y_i p(y_i=1 | \mathbf{x}^{(i)}) \nonumber \\
- & \ \ \ \  \ \ \ \ + (1-y_i)( 1-p(y_i=1 | \mathbf{x}^{(i)})\Big]. \nonumber
+ &= \sum_{i=1}^n \Big[y_i \sigma(\beta \cdot \mathbf{x}^{(i)}) \nonumber \\
+ & \ \ \ \  \ \ \ \ + (1-y_i)( 1-\sigma(\beta \cdot \mathbf{x}^{(i)}) )\Big]. \nonumber
 \end{align}
 Maximizing the logarithm of a function is equivalent to maximizing the function itself. 
 
@@ -263,13 +259,17 @@ Then, $\beta$ is found by \textit{minimizing} the cross-entropy.
 Note here that we can not find a analytical solution for the maximizer. This means that we have to use a
 numerical opimization algorithm, such as gradient descent which we discuss later, to find the optimal parameters.
 
-However, the gradient of the cross entropy can be given in closed-form 
+The gradient of the cross-entropy can be given in closed-form in terms of its components
+\begin{equation}
+ \frac{\partial}{\partial \beta_j} C(\beta) = - \sum_{i=1}^n \mathbf{x}_j^{(i)} \left( y^{(i)} - \sigma(\beta \cdot \mathbf{x}^{(i)}) \right)
+\end{equation}
+or more compactly as
 \begin{equation}
  \nabla_\beta C(\beta) = - X^{T} \left( \mathbf{y} - \mathbf{p} \right). 
 \end{equation}
 Here we have defined \begin{align}
 \mathbf{y} &\equiv (y_1,\dots,y_n), \\       
-      \mathbf{p} &\equiv \left( p(y_1=1|\mathbf{x}^{(1)}),\dots,p(y_n=1|\mathbf{x}^{(n)}) \right)
+      \mathbf{p} &\equiv \left( \sigma(\beta \cdot \mathbf{x}^{(1)}),\dots,\sigma(\beta \cdot \mathbf{x}^{(n)}) \right)
       \end{align}
 and $X \in \mathbb{R}^{n \times (p+1)}$ is the design-matrix containing $\mathbf{x}^{(i)}$ as its i-th row.
 

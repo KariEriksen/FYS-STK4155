@@ -108,7 +108,7 @@ X_critical = np.c_[np.ones(X_critical.shape[0]), X_critical]
 
 # define regularisation parameter
 
-lmbdas = lmbdas = np.logspace(-5,5,11) 
+lmbdas = np.logspace(-5,5,11) 
 
 # preallocate data
 train_accuracy=np.zeros(lmbdas.shape,np.float64)

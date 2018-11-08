@@ -1091,7 +1091,8 @@ decreasing training and test accuracy.
 Furthermore, we note that in general the model seems to perform roughly $10$\% worse on 
 the critical states compared with the ordered and disordered states.  
 
-
+Another observation is that if the logistic model is trained without an intercept term, we end up with a result 
+which is essentially guessing as shown in Fig.\ref{logRegNoIntercept}.
 
 \begin{figure}[h!]
 \centering
@@ -1102,6 +1103,16 @@ the critical states compared with the ordered and disordered states.
  other hand, for large $\lambda$ we observe an increasing critical accuracy at the cost of decreasing training and 
  test accuracy.}
  \label{MehtaComparison}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+ \includegraphics[width=1\linewidth]{logReg_acc_vs_regstrength_noIntercept.png}
+ \captionof{figure}{Training, test and critical accuracy plotted as function of regularization parameter $\lambda$ without 
+ intercept term. We clearly see that the training, test and critical accuracies are close to 50\%, i.e. we end up with 
+ a sophisticated way of wild guessing. 
+ }
+ \label{logRegNoIntercept}
 \end{figure}
 
 

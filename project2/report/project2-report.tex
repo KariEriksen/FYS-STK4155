@@ -975,6 +975,7 @@ We consider small enough system sizes $L$ for the training to be feasible (train
 
 \newcommand{\sym}{\text{Sym}\,}
 \renewcommand{\skew}{\text{Skew}\,}
+\subsubsection{Recovering the $J$ matrix in the neural network model}
 As a closing remark for the neural network regression section, we note the apparent difficulty of recreating the $J$ matrix using the neural network scheme. Even using identity activations, the design matrix as network input (each sample being $L^2$ values of every combination of $s_is_j$) and a single hidden layer with one neuron (making the first network weight $L\times L$), and freezing the intercepts at $0$, we are still not able to recreate the $J$ matrix. As an example, training a $L=5$ model like this yields an MSE that vanishes to machine precision ($\sim10^{-30}$), however the resulting weight matrix takes the form:
 \begin{align}
 W=
@@ -988,7 +989,7 @@ W=
 \end{align}
 It is not at all obvious why this matrix should yield essentially zero error in the energy for every single $L=5$ state available. In order to make sense of this, we note a \textit{key observation}: The energy is given by the quadratic form $\mathbf{s}^TJ\mathbf{s}=E$ and any quadratic form $\mathbf{x}^TA\mathbf{x}$ is invariant under the exchange of $A$ and the symmetric part of the matrix, $(A+A^T)/2$. As an example of this, the symmetric part of the standard $J$ interaction matrix used so far in the present work is (zeros ommitted)
 \begin{align}
-\frac{J+J^T}{2}&=-\frac{1}{2}\pmat{ccccccc}{
+\hspace{-1cm}\frac{J+J^T}{2}&=-\frac{1}{2}\pmat{ccccccc}{
    & 1 &   &   &   &   &  1\\
  1 &   & 1 &   &   &   &   \\
    & 1 &   & 1 &   &   &   \\
@@ -996,7 +997,7 @@ It is not at all obvious why this matrix should yield essentially zero error in 
    &   &   &   & \ddots & & \\
    &   &   &   &   &   & 1 \\
  1 &   &   &   &   & 1 &  
-},\nonumber 
+},\label{eq:symj}
 \end{align}
 which we have already discussed: This is is the symmetric version found by the OLS and Ridge regression methods. In the following, we denote the symmetric part of a square matrix $A$ by
 \begin{align}
@@ -1017,15 +1018,41 @@ D_1'& 1 &   &   & 1  \\
    &   & 1 &D_4'& 1  \\
  1 &   &   & 1 & D_5'
 }\nonumber \\
-&= \sym J + D.
+&= \sym J + D. \label{eq:wsym}
 \end{align}
-As we can see, we are tantalizingly close to recreating the symmetric part of $J$\textemdash the only difference is the diagonal elements, which we may organize in a matrix $D$ with elements\footnote{The $D_i$ and the $D_i'$ elements shown in $(W+W^T)/2$ are related by $D_i=-D_i'/2$, where we simply absorbed the constant into $D_i'$ for ease of notation.} $D_i$. It is obvious that since the original $\mathbf{s}^TW\mathbf{s}=\mathbf{s}^TJ\mathbf{s}$, and the quadratic form is invariant under any $A\mapsto \sym A$ transformation, then $\mathbf{s}^T\sym W\mathbf{s}=\mathbf{s}^T(\sym J + D)\mathbf{s}$ which can only be true if $\mathbf{s}^TD\mathbf{s}=0$. In general, quadratic forms are not invariant under $A\mapsto A+D$, with $D$ a diagonal matrix. However, in our special case\textemdash recall that the input state can only take values $s_i=\pm 1$\textemdash it is, if and only if $\text{Tr}\,D=0$. 
+As we can see, we are tantalizingly close to recreating the symmetric part of $J$\textemdash the only difference is the diagonal elements, which we may organize in a matrix $D$ with elements\footnote{The $D_i$ and the $D_i'$ elements shown in \eq{wsym} are related by $D_i=-D_i'/2$, where we simply absorbed the constant into $D_i'$ for ease of notation.} $D_i$. It is obvious that since the original equation $\mathbf{s}^TW\mathbf{s}=\mathbf{s}^TJ\mathbf{s}$ holds, and any quadratic form is invariant under a $A\mapsto \sym A$ transformation, then 
+\begin{align}
+E&=\mathbf{s}^T W\mathbf{s}\nonumber \\
+&=\mathbf{s}^T\sym W\mathbf{s}\nonumber \\
+&=\mathbf{s}^T(\sym J + D)\mathbf{s} \nonumber \\
+&=\mathbf{s}^T\sym J \mathbf{s} + \mathbf{s}^T D\mathbf{s} \nonumber \\
+&= E + \mathbf{s}^T D\mathbf{s}\label{eq:esym}
+\end{align}
+which can only be true if $\mathbf{s}^TD\mathbf{s}=0$. In general, quadratic forms are not invariant under $A\mapsto A+D$, with $D$ a diagonal matrix. However, in our special case\textemdash recall that the input state can only take values $s_i=\pm 1$\textemdash it is, if and only if $\text{Tr}\,D=0$. 
+
+To see that this is the case, consider the $D$ term of \eq{esym}, which itself is a quadratic form
+\begin{align}
+\mathbf{s}^TD\mathbf{s}=\sum_{i=1}^L s_i s_i D_i,
+\end{align}
+and note that this corresponds to self-interaction in the Ising lattice (spin $i$ interacting with spin $i$, itself). Since $s_i^2=1$ for any $s_i\in\{-1,1\}$, we find that
+\begin{align}
+\mathbf{s}^TD\mathbf{s}=\sum_{i=1}^L s_i^2D_i = \text{Tr}\,D.
+\end{align}
+Of course, the $W$ matrix found by our neural network has vanishing trace, explaining how it is able to recover the energy perfectly. 
+
+In general, any regression scheme (linear or NN-based or otherwise) is not concerned with recovering the matrix $J$, but rather with finding any matrix $A$ in the class of $L\times L$ matrices, which satisfy
+\begin{align}
+\Big\{A\in &\mathds{R}^{L\times L}\,:\,\sym A=\sym J+D, \nonumber \\
+& D=\text{diag}(D_1,\dots,D_L), \,\text{Tr}\,D=0 \Big\}.
+\end{align}
+
 
 %It is hard to say why and how this matrix should yield essentially exactly correct energies for all $2000$ samples in the validation set, and we can offer no insight into the mechanism at work here. However, we find that $\mathbf{s}_k^T W \mathbf{s}_k=\mathbf{s}_k^T J \mathbf{s}_k$ to machine precision. 
 
-This outlines a fundamental difficulty in working with machine learning algorithms such as the present one; it is essentially a \textit{black box}. Even when it works perfectly, it is not always easy to pinpoint \textit{why} or \textit{how} it works.
+This whole ordeal outlines a fundamental difficulty in working with machine learning algorithms such as the present one; it is essentially a \textit{black box}. Even when it works perfectly, understanding \textit{why} or \textit{how} it works may involve a considerable amount of effort.
 
-Finally: We consider this network architecture and the structuring of the input data to be essentially cheating, so we did not explore this further for larger system sizes\textemdash we chose to stick with the aforementioned network structure and training schemes.
+Finally we note a curiosity: The $\text{Tr}\,D=0$ demand is simply an artifact of the way we train the model. If we add a constant $\alpha$ to all energies when training, $E\mapsto E+\alpha$, we would recover it as $\text{Tr}\,D=\alpha$. Physically, a constant shift in the energy has no impact on the dyanamics of a system, and physically nothing prevents us from adding such terms. In the Ising model, we could interpret the self-interaction of spin $s_i$ as the \textit{self-energy} of spin $i$, i.e.\ the energy necessary for spin $s_i$ to simply exist in the lattice regardless of it's interaction with the other spins.
+
 
 \subsection{Classifying phases of the two-dimensional Ising model}
 \lipsum[10]

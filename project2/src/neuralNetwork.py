@@ -464,5 +464,5 @@ class NeuralNetwork :
         self.change = change
 
         self.weights = [w + dw for w, dw in zip(self.weights, change[:len(self.weights)])]
-        #self.biases  = [b + db for b, db in zip(self.biases,  change[len(self.weights):])]
+        self.biases  = [b + db for b, db in zip(self.biases,  change[len(self.weights):])]
 

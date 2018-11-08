@@ -945,6 +945,8 @@ We consider small enough system sizes $L$ for the training to be feasible (train
 \captionof{figure}{Mean squared error calculated from trained networks applied to small\textendash medium sized Ising lattices. We note that for sufficiently small system sizes, the NN outperforms the Lasso scheme (which was shown to be the best performer of the linear models). However, as the lattice growns, the training time required either makes training unfeasible or the training is simply not able to reduce the MSE to below that of the Lasso scheme (a plateu is hit before the NN performance surpasses that of the Lasso method). The training time for each network is shown in \fig{time}. \label{fig:NN_lattice}}
 \end{figure*}
 
+\newcommand{\sym}{\text{Sym}\,}
+\renewcommand{\skew}{\text{Skew}\,}
 As a closing remark for the neural network regression section, we note the apparent difficulty of recreating the $J$ matrix using the neural network scheme. Even using identity activations, the design matrix as network input (each sample being $L^2$ values of every combination of $s_is_j$) and a single hidden layer with one neuron (making the first network weight $L\times L$), and freezing the intercepts at $0$, we are still not able to recreate the $J$ matrix. As an example, training a $L=5$ model like this yields an MSE that vanishes to machine precision ($\sim10^{-30}$), however the resulting weight matrix takes the form:
 \begin{align}
 W=
@@ -955,41 +957,47 @@ W=
 -0.22 &  0.39 & -0.48 &  0.81 & -1.03 \\
 -1.79 &  0.72 &  0.52 &  0.07 & -0.41
 } \nonumber
-% {{0.59,-1.77, 0.18, 0.22, 0.83},
-%  {0.81,-0.14,-1.65,-0.39,-0.72}, 
-% {-0.18, 0.69,-0.85,-0.48,-0.52}, 
-% {-0.22, 0.39,-0.48, 0.81,-1.03}, 
-% {-1.79, 0.72, 0.52, 0.07,-0.41}}
-%
-%{{0,1,0,0,0},
-% {0,0,1,0,0},
-% {0,0,0,1,0},
-% {0,0,0,0,1},
-% {1,0,0,0,0}}
-%
 \end{align}
-It is hard to say why and how this matrix should yield essentially exactly correct energies for all $2000$ samples in the validation set, and we can offer no insight into the mechanism at work here. However, we find that $\mathbf{s}_k^T W \mathbf{s}_k=\mathbf{s}_k^T J \mathbf{s}_k$ to machine precision. 
+It is not at all obvious why this matrix should yield essentially zero error in the energy for every single $L=5$ state available. In order to make sense of this, we note a \textit{key observation}: The energy is given by the quadratic form $\mathbf{s}^TJ\mathbf{s}=E$ and any quadratic form $\mathbf{x}^TA\mathbf{x}$ is invariant under the exchange of $A$ and the symmetric part of the matrix, $(A+A^T)/2$. As an example of this, the symmetric part of the standard $J$ interaction matrix used so far in the present work is (zeros ommitted)
+\begin{align}
+\frac{J+J^T}{2}&=-\frac{1}{2}\pmat{ccccccc}{
+   & 1 &   &   &   &   &  1\\
+ 1 &   & 1 &   &   &   &   \\
+   & 1 &   & 1 &   &   &   \\
+   &   & 1 &   &   &   &   \\
+   &   &   &   & \ddots & & \\
+   &   &   &   &   &   & 1 \\
+ 1 &   &   &   &   & 1 &  
+},\nonumber 
+\end{align}
+which we have already discussed: This is is the symmetric version found by the OLS and Ridge regression methods. In the following, we denote the symmetric part of a square matrix $A$ by
+\begin{align}
+\sym A=\frac{A+A^T}{2},
+\end{align}
+while the remaining, non-symmetric, part of $A$ is called the \textit{skew}-symmetric (or anti-symmetric) part of $A$,
+\begin{align}
+\skew A=\frac{A-A^T}{2}.
+\end{align}
+Note that $A=\sym A+\skew A$, with $(\sym A)^T=\sym A$ and $(\skew A)^T=-\skew A$.
 
-This outlines a fundamental difficulty in working with machine learning algorithms such as the present one; it is essentially a \textit{black box}. Even when it works perfectly, it is not always possible to pinpoint \textit{why} or \textit{how} it works.
+As the aforementioned $W$ matrix recovers the energy to machine precision, that must necessarily mean that $\mathbf{s}^TW\mathbf{s}=\mathbf{s}^TJ\mathbf{s}=E$. Computing the symmetric part of $W$ yields an interesting result:
+\begin{align}
+\sym W&=-\frac{1}{2}\pmat{ccccccc}{
+D_1'& 1 &   &   & 1  \\
+ 1 &D_2'& 1 &   &    \\
+   & 1 &D_3'& 1 &    \\
+   &   & 1 &D_4'& 1  \\
+ 1 &   &   & 1 & D_5'
+}\nonumber \\
+&= \sym J + D.
+\end{align}
+As we can see, we are tantalizingly close to recreating the symmetric part of $J$\textemdash the only difference is the diagonal elements, which we may organize in a matrix $D$ with elements\footnote{The $D_i$ and the $D_i'$ elements shown in $(W+W^T)/2$ are related by $D_i=-D_i'/2$, where we simply absorbed the constant into $D_i'$ for ease of notation.} $D_i$. It is obvious that since the original $\mathbf{s}^TW\mathbf{s}=\mathbf{s}^TJ\mathbf{s}$, and the quadratic form is invariant under any $A\mapsto \sym A$ transformation, then $\mathbf{s}^T\sym W\mathbf{s}=\mathbf{s}^T(\sym J + D)\mathbf{s}$ which can only be true if $\mathbf{s}^TD\mathbf{s}=0$. In general, quadratic forms are not invariant under $A\mapsto A+D$, with $D$ a diagonal matrix. However, in our special case\textemdash recall that the input state can only take values $s_i=\pm 1$\textemdash it is, if and only if $\text{Tr}\,D=0$. 
+
+%It is hard to say why and how this matrix should yield essentially exactly correct energies for all $2000$ samples in the validation set, and we can offer no insight into the mechanism at work here. However, we find that $\mathbf{s}_k^T W \mathbf{s}_k=\mathbf{s}_k^T J \mathbf{s}_k$ to machine precision. 
+
+This outlines a fundamental difficulty in working with machine learning algorithms such as the present one; it is essentially a \textit{black box}. Even when it works perfectly, it is not always easy to pinpoint \textit{why} or \textit{how} it works.
 
 Finally: We consider this network architecture and the structuring of the input data to be essentially cheating, so we did not explore this further for larger system sizes\textemdash we chose to stick with the aforementioned network structure and training schemes.
-
-\subsubsection{Just dicking around...}
-Apparently, the polynomial 
-\begin{strip}
-\begin{align}
-P(x,y,z,t,u) &= x (0.22 t + 0.83 u + 0.59 x - 1.77 y + 0.18 z) \nonumber \\
-& \ \ \  \ \ \  \ \  - y (0.39 t + 0.72 u - 0.81 x + 0.14 y + 1.65 z) \nonumber \\
-& \ \ \  \ \ \  \ \  - z (0.48 t + 0.52 u + 0.18 x - 0.69 y + 0.85 z) \nonumber \\
-& \ \ \  \ \ \  \ \  + t (0.81 t - 1.03 u - 0.22 x + 0.39 y - 0.48 z) \nonumber \\
-& \ \ \  \ \ \  \ \  + u (0.07 t - 0.41 u - 1.79 x + 0.72 y + 0.52 z) 
-\end{align}
-\end{strip}
-is equal to the polynomial 
-\begin{align}
-Q(x,y,z,y,u) &= t u + x u + x y + t z + y z
-\end{align}
-over the set $x,y,z,t,u\in\{-1,1\}$. Doubt this is useful to anyone in the world. 
 
 \subsection{Classifying phases of the two-dimensional Ising model}
 \lipsum[10]

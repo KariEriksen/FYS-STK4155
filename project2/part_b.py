@@ -260,23 +260,29 @@ def cross_validation(L = 40, N = 1000, k=10, plotting=False) :
     N_fold = N // k
     N = N*(k+1)//k
     _, ols, ridge, lasso, _, _, _, _, X, yy = setup(L=L, N=N, train=0.5)
-    _, _, _, _, _, _, _, _, X_test, yy_test = setup(L=L, N=N, train=0.5)
+    
+    ising = Ising(L,N)
+    ising.generateTrainingData1D()
+    X_test, yy_test = ising.generateDesignMatrix1D()
+    #_, _, _, _, _, _, _, _, X_test, yy_test = setup(L=L, N=N, train=0.5)
 
-    ridge.setLambda(10)
-    lasso.setLambda(1e-3)
 
     for fitter in [ols, ridge, lasso] :
         print(fitter.getMethod() + " ===========")
-        
-        M = 10
-        noise = np.logspace(-5,1,M)
+        if fitter.getMethod() == 'ols' :
+            M = 2        
+        else :
+            M = 50
+        noise = np.logspace(-5,5,M)
         performance = np.empty((M,3))
 
         for i in range(len(noise)) :
             noise_var = noise[i]
-            test_noise = np.random.normal(0, np.sqrt(noise_var), size=yy_test.shape[0])
-            y       = yy      + np.random.normal(0, np.sqrt(noise_var), size=yy.shape[0])
-            y_test  = yy_test + test_noise#np.random.normal(0, np.sqrt(noise_var), size=yy_test.shape[0])
+            ridge.setLambda(noise_var)
+            lasso.setLambda(noise_var)
+            #test_noise = np.random.normal(0, np.sqrt(noise_var), size=yy_test.shape[0])
+            y       = yy#      + np.random.normal(0, np.sqrt(noise_var), size=yy.shape[0])
+            y_test  = yy_test# + test_noise#np.random.normal(0, np.sqrt(noise_var), size=yy_test.shape[0])
             
             y_predict = np.zeros((N,k))
 
@@ -297,19 +303,20 @@ def cross_validation(L = 40, N = 1000, k=10, plotting=False) :
 
             MSE = np.mean( np.mean((y_test - y_predict)**2, axis=1, keepdims=True) )
             bias2 = np.mean( (yyy_test - np.mean(y_predict, axis=1, keepdims=True))**2 )
-            bias2noise = np.mean( (y_test - np.mean(y_predict, axis=1, keepdims=True))**2 )
+            #bias2noise = np.mean( (y_test - np.mean(y_predict, axis=1, keepdims=True))**2 )
             variance = np.mean( np.var(y_predict, axis=1, keepdims=True) )
 
             # MSE = bias^2 + var(y_predict) + var(noise)
             print("MSE:                 ", MSE)
             print("bias^2:              ", bias2)
-            print("bias^2(noise):       ", bias2noise)
+            #print("bias^2(noise):       ", bias2noise)
             print("var(y_predict):      ", variance)
-            print("var(noise):          ", noise_var)
-            print("computed var(noise): ", np.var(test_noise))
-            print("E(test_noise): ", np.mean(test_noise))
-            print("MSE - [bias^2(noise) + var(y_predict)]: %10.15f"              %(MSE - (bias2noise+variance)))
-            print("MSE - [bias^2        + var(y_predict) + var(noise)]: %10.15f" %(MSE - (bias2+variance+np.var(test_noise))))
+            #print("var(noise):          ", noise_var)
+            #print("computed var(noise): ", np.var(test_noise))
+            #print("E(test_noise): ", np.mean(test_noise))
+            #print("MSE - [bias^2(noise) + var(y_predict)]: %10.15f"              %(MSE - (bias2noise+variance)))
+            #print("MSE - [bias^2        + var(y_predict) + var(noise)]: %10.15f" %(MSE - (bias2+variance+np.var(test_noise))))
+            print("MSE - [bias^2  + var(y_predict)]: %10.15f" %(MSE - (bias2+variance)))
             print(" ")
             #np.set_printoptions(precision=2, suppress=True)
             #print(np.reshape(beta,(L,L)))
@@ -318,33 +325,52 @@ def cross_validation(L = 40, N = 1000, k=10, plotting=False) :
             performance[i,1] = bias2
             performance[i,2] = variance
 
-        plt.loglog(noise, performance[:,0], label=r'MSE ' + fitter.getMethod())
-        #plt.loglog(noise, performance[:,1], label='bias2')
-        #plt.loglog(noise, performance[:,2], label='var')
+        plt.figure(1)
+        plt.loglog(noise, np.abs(performance[:,0]-(performance[:,1]+performance[:,2]))+1e-22, label=r'' + fitter.getMethod())
 
+        f = 2
+        if fitter.getMethod() == 'ridge' :
+            f = 3
+        elif fitter.getMethod() == 'lasso' :
+            f = 4
+        plt.figure(f)
+
+        plt.loglog(noise, performance[:,0], label=r'MSE')
+        plt.loglog(noise, performance[:,1], label=r'bias${}^2$')
+        plt.loglog(noise, performance[:,2], label='variance')
+
+    plt.figure(1)
     plt.rc('text', usetex=True)
-    plt.xlabel(r'var$($noise$)$', fontsize=10)
-    plt.ylabel(r'MSE', fontsize=10)
+    plt.xlabel(r'Regularization $\lambda$', fontsize=10)
+    plt.ylabel(r'MSE - [bias${}^2$ + variance]', fontsize=10)
     plt.legend(fontsize=10)
-    plt.subplots_adjust(left=0.2,bottom=0.2)
-    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'MSE_as_function_of_noise.png'), transparent=True, bbox_inches='tight')
+    #plt.subplots_adjust(left=0.2,bottom=0.2)
+    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'bias-variance-1.png'), transparent=True, bbox_inches='tight')
+    #plt.show()
+
+    for i in [2,3,4] :
+        f_n = ['', '', 'ols', 'ridge', 'lasso']
+        plt.figure(i)
+        plt.rc('text', usetex=True)
+        plt.xlabel(r'Regularization $\lambda$', fontsize=10)
+        plt.ylabel(r'MSE - [bias${}^2$ + variance]', fontsize=10)
+        plt.legend(fontsize=10)
+        plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'bias-variance-' + f_n[i] + '.png'), transparent=True, bbox_inches='tight')
+
     plt.show()
-
-
-
 
         
 
 
 if __name__ == '__main__':
     np.random.seed(2018)
-    MSE_R2_as_function_of_lambda(L=40, N=1000, train=0.4, plotting=True)
+    #MSE_R2_as_function_of_lambda(L=40, N=1000, train=0.4, plotting=True)
 
     np.random.seed(2019)
     #MSE_R2_as_function_of_training_set_size(L=40, N=1500, M=9, plotting=True)
 
     np.random.seed(2020)
-    #cross_validation(L=40, N=400, k=10, plotting=True)
+    cross_validation(L=40, N=1000, k=10, plotting=True)
 
 
 

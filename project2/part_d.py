@@ -194,23 +194,29 @@ def R2_versus_lasso() :
     #plt.show()
 
 def visualize_beta() :
-    L = 5
+    L = 10
     nn = pickle.load(open('nn5_final.p', 'rb'))
-    for w in nn.weights[:1] :
-        with np.printoptions(precision=2, suppress=True) :
-            print(w.reshape((-1,L)))
+    #for w in nn.weights[:1] :
+    #    with np.printoptions(precision=2, suppress=True) :
+    #        print(w.reshape((-1,L)))
     #plt.imshow(nn.weights[0].reshape((L,-1)))
     #plt.show()
 
     N = 5000
     training_fraction = 0.4
     ising = Ising(L, N)
-    X, y  = ising.generateTrainingData1D()
+    #X, y  = ising.generateTrainingData1D()
     D, ry = ising.generateDesignMatrix1D()
     #y    /= L
 
+    ols = LeastSquares(method='ols', backend='manual')
+    ols.setLambda(0.1)
+    ols.fit(D,ry)
+
+
     print(ising.states.shape)
-    W = nn.weights[0].reshape((-1,L))*nn.weights[1]
+    #W = nn.weights[0].reshape((-1,L))*nn.weights[1]
+    W = ols.beta.reshape((-1,L))
     J = ising.J
     for i in range(10) :
         row = ising.states[i,:]
@@ -221,8 +227,8 @@ def visualize_beta() :
         print("s W s:", row.T @ W @ row)
         print("s (W+W')/2 s:", row.T @ (W+W.T)/2 @ row)
         print("s J s:", row.T @ J @ row)
-        print("D w:  ", nn.weights[0].T @ des * nn.weights[1])
-        print("pred: ", nn.predict(np.expand_dims(des.T,1)))
+        #print("D w:  ", W.T @ des * nn.weights[1])
+        #print("pred: ", nn.predict(np.expand_dims(des.T,1)))
         print("E:    ", E)
         print("")
 
@@ -232,27 +238,23 @@ def visualize_beta() :
         E   = ry[i]
         atol = 1e-14
         rtol = 1e-14
-        assert np.allclose(row.T @ W @ row, row.T @ (W+W.T)/2 @ row, atol=atol, rtol=rtol)
-        assert np.allclose(row.T @ (W+W.T)/2 @ row, row.T @ J @ row, atol=atol, rtol=rtol)
+        #assert np.allclose(row.T @ W @ row, row.T @ (W+W.T)/2 @ row, atol=atol, rtol=rtol)
+        #assert np.allclose(row.T @ (W+W.T)/2 @ row, row.T @ J @ row, atol=atol, rtol=rtol)
 
     with np.printoptions(precision=2, suppress=True) :
         for a in np.linalg.eig(W) : 
             print(a)
 
     with np.printoptions(precision=2, suppress=True) :
-        print(np.dot(W.T,W))
-        print(np.dot(W,W.T))
-        print(np.dot(W.T,W)-np.dot(W,W.T))
-        print(np.linalg.det(W))
-        print(np.linalg.cond(W))
+        
+        print("det=", np.linalg.det(W))
+        print("cond=", np.linalg.cond(W))
         print("")
-        print(J)
+        print("J:\n:",J)
         print("W+W'/2\n", (W+W.T)/2)
         print("J+J'/2\n", (J+J.T)/2)
-        print(np.sum(np.diag((W+W.T)/2)))
+        print("Tr D:", np.sum(np.diag((W+W.T)/2)))
         
-    with np.printoptions(precision=16, suppress=True) :
-        print(W)
 
     #print(sklearn.metrics.mean_squared_error(np.squeeze(ry), np.squeeze(nn.predict(D.T))))
     

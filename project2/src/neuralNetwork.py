@@ -26,7 +26,8 @@ class NeuralNetwork :
                  neurons     = None,
                  activations = None,
                  cost        = 'mse',
-                 silent      = False) :
+                 silent      = False,
+                 lmbda       = 0.0) :
 
         self.inputs         = inputs
         self.outputs        = outputs
@@ -34,6 +35,7 @@ class NeuralNetwork :
         self.neurons        = neurons
         self.activations    = activations
         self.silent         = silent
+        self.lmbda          = lmbda
 
         self.weights        = None
         self.biases         = None
@@ -71,13 +73,11 @@ class NeuralNetwork :
             r = 4.0 * np.sqrt(6.0 / (n_in + n_out))
             return np.random.uniform(-r, r, size=(n_in, n_out))
 
-
         # He initializations (https://arxiv.org/pdf/1502.01852.pdf).
         elif activations == 'relu' or activations == 'leaky_relu' or activations == 'elu' :
             return np.random.normal(size=(n_in, n_out)) * np.sqrt(2.0 / n_in)
 
-
-        elif activations == 'identity' :
+        else :
             return np.random.normal(size=(n_in, n_out))
 
 
@@ -172,7 +172,6 @@ class NeuralNetwork :
             self.weights.append(W)
             self.biases .append(b)
             self.act    .append(f)
-
         else :
             if not self.silent :
                 print(  "Adding layer with " + str(neurons) + " neurons using "  +
@@ -246,6 +245,8 @@ class NeuralNetwork :
             self.d_weights[-i]  = np.dot(self.a[-i-1], self.delta[-i]) / self.n_samples
             self.d_biases[-i]   = np.mean(self.delta[-i], axis = 0, keepdims = True).T
 
+        for i, dw in enumerate(self.d_weights) :
+            self.d_weights[i] = dw + self.lmbda * self.weights[i]
 
     def fit(self,
             x,
@@ -258,7 +259,10 @@ class NeuralNetwork :
             validation_skip     = 10,
             verbose             = False,
             silent              = False,
-            optimizer           = 'sgd') :
+            optimizer           = 'sgd',
+            lmbda               = None) :
+
+        self.lmbda = lmbda if lmbda is not None else self.lmbda
 
         self.learning_rate = learning_rate
         self.best_loss  = None
@@ -274,6 +278,9 @@ class NeuralNetwork :
             raise ValueError(   "The optimizer " + str(optimizer) + " is not supported.")
 
         self.n_features, self.n_samples = x.shape
+        x, target = sklearn.utils.shuffle(x.T, target.T, n_samples = self.n_samples)
+        x = x.T
+        target = target.T
 
         if not (self.n_features == self.inputs) :
             raise ValueError(   "The number of features in the input data does not equal " +
@@ -334,6 +341,11 @@ class NeuralNetwork :
                     y_batch = self.forward_pass(x_batch.T)
                     self.backpropagation(y_batch.T, target_batch)
                     batch_loss = self.cost(y_batch.T, target_batch)
+
+                    # Add L2 regularization to the loss
+                    reg_loss = np.sum(np.array([np.dot(s.ravel(), s.ravel()) for s in self.weights])) * 0.5 * self.lmbda / self.batch_size
+                    batch_loss += reg_loss
+
                     epoch_loss += batch_loss
 
                     self.optimizer()
@@ -344,7 +356,7 @@ class NeuralNetwork :
                 batch_time_average /= float(self.batches_per_epoch)
                 epoch_time          = time.time() - epoch_start_time
 
-                if verbose or (epoch % 5 == 0) :
+                if verbose or (epoch % 10 == 0) :
                     #       ep      t/b   t/e    t    rt     bcost   vcost
                     print(" %5d    %-20s %-20s %-15.3s %-20s %-15.5g %-15s " % (epoch, 
                                                                                 "",
@@ -358,6 +370,11 @@ class NeuralNetwork :
                 if epoch % validation_skip == 0 or (epoch == epochs-1):
                     y_validation = self.forward_pass(self.x_validation)
                     self.validation_loss[validation_it] = self.cost(y_validation, self.target_validation)
+
+                    # Add L2 regularization to the loss
+                    reg_loss = np.sum(np.array([np.dot(s.ravel(), s.ravel()) for s in self.weights])) * 0.5 * self.lmbda / self.batch_size
+                    self.validation_loss[validation_it] += reg_loss
+
                     self.loss = self.validation_loss[validation_it]
                     self.validation_loss_improving[validation_it] = self.best_loss
 
@@ -368,7 +385,7 @@ class NeuralNetwork :
                         self.best_loss  = self.validation_loss[validation_it]
                         self.best_param = [params for params in self.weights+self.biases]
                         self.bestEpoch  = epoch
-                        self.R2[validation_it] = metrics.r2_score(np.squeeze(self.target_validation), np.squeeze(y_validation))
+                        #self.R2[validation_it] = metrics.r2_score(np.squeeze(self.target_validation), np.squeeze(y_validation))
                         self.validation_loss_improving[validation_it] = self.validation_loss[validation_it]
                         pickle.dump(self, open('nn.p', 'wb'))
                         save = True

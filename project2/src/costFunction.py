@@ -16,6 +16,9 @@ class CostFunction :
         if self.function == 'mse' :
             self.function    = self._mse
             self.derivative_ = self._mse_derivative 
+        elif self.function == 'cross-entropy' :
+            self.function    = self._cross_entropy
+            self.derivative  = self._cross_entropy_derivative
         else :
             raise ValueError("Cost function <" + str(string) + "> not recognized.")
 
@@ -24,6 +27,13 @@ class CostFunction :
 
     def _mse_derivative(self, y, target) :
         return y - target
+
+    def _cross_entropy(self, y, target) :
+        return -np.sum(target * np.log(y) + (1-target)*np.log(1-y)) / y.shape[0]
+
+    def _cross_entropy_derivative(self, y, target) :
+        #return -np.sum(target/y - (1-target)/(1-y))
+        return target - y
 
     def derivative(self, y, target) :
         return self.derivative_(y, target)

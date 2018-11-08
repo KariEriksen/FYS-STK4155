@@ -42,6 +42,9 @@ class Activation :
         elif string == 'elu' :
             self.derivative = self._elu_derivative
             return self._elu
+        elif string == 'softmax' :
+            self.derivative = self._softmax_derivative
+            return self._softmax
         else :
             raise ValueError("Unrecognized activation function <" + str(string) + ">.")
 
@@ -87,6 +90,13 @@ class Activation :
         #x[x<0.0] = self.alpha * np.exp(x[neg])
         x[neg] = np.exp(x[neg])
         x[x >= 0.0] = 1.0
+
+    def _softmax(self, x) :
+        exps = np.exp(x - np.max(x))
+        return exps / np.sum(exps, axis=1, keepdims=True)
+
+    def _softmax_derivative(self, x) :
+        return x
 
     def __call__(self, x) :
         return self.function(x)

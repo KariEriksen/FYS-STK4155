@@ -252,7 +252,7 @@ also maximize $\log(f(x))$.
 Thus, taking $\beta$ to maximize the log-likelihood is equivalent to maximizing the likelihood itself. Finally, we take our 
 cost function to be the so-called \textit{cross-entropy} which is defined as the negative log-likelihood 
 \begin{equation}
- C(\beta) \equiv  -l(\beta).
+ C(\beta) \equiv  -l(\beta) \label{logRegCrossEntropy}.
 \end{equation}
 Then, $\beta$ is found by \textit{minimizing} the cross-entropy. 
 
@@ -272,6 +272,34 @@ Here we have defined \begin{align}
       \mathbf{p} &\equiv \left( \sigma(\beta \cdot \mathbf{x}^{(1)}),\dots,\sigma(\beta \cdot \mathbf{x}^{(n)}) \right)
       \end{align}
 and $X \in \mathbb{R}^{n \times (p+1)}$ is the design-matrix containing $\mathbf{x}^{(i)}$ as its i-th row.
+\subsubsection{Convexity of the cross-entropy}
+It is well known that any local minimum of a convex function is also a global minimum. This has the important consequence 
+that if a minimum is found we are sure that the solution is optimal. For a multivariate function convexity is guaranteed 
+if the corresponding Hessian matrix of second partial derivatives is positive semidefinite.
+
+We show here that the cross-entropy (\ref{logRegCrossEntropy}) is a convex function. In the following we 
+write $p_i \equiv \sigma(\beta \cdot \mathbf{x}^{(i)})$. 
+
+The components of the Hessian is 
+\begin{align*}
+ \frac{\partial^2C(\beta)}{ \partial \beta_k \partial \beta_j}  &= - \sum_{i=1}^n \mathbf{x}_j^{(i)} \frac{\partial}{\partial \beta_k} \left( y^{(i)} - p_i \right) \\
+ &= - \sum_{i=1}^n \mathbf{x}_j^{(i)} \mathbf{x}_k^{(i)} p_i(p_i-1).
+\end{align*}
+Written on matrix form we have that the Hessian $\nabla^2_\beta C(\beta)$ is given by
+\begin{equation}
+ \nabla^2_\beta C(\beta) = -\sum_{i=1}^n \mathbf{x}^{(i)} (\mathbf{x}^{(i)})^T p_i (p_i-1).
+\end{equation}
+Note here that by $\mathbf{x}^{(i)} (\mathbf{x}^{(i)})^T$ we refer to the \textit{outer product} of the i-th row of the design matrix 
+$X$.
+
+Now, a matrix $A \in \mathbb{R}^{n \times n}$ is positive semi-definite if $\mathbf{z}^T A z \geq 0$ for all $\mathbf{z} \in \mathbb{R}^n$.
+In particular, we have 
+\begin{align*}
+ \mathbf{z}^T \nabla^2_\beta C(\beta) \mathbf{z} &=  -\sum_{i=1}^n \mathbf{z}^T \mathbf{x}^{(i)} (\mathbf{x}^{(i)})^T \mathbf{z} p_i(p_i-1) \\
+ &= \sum_{i=1}^n || (\mathbf{x}^{(i)})^T \mathbf{z} ||^2 p_i (1-p_i) \geq 0, \\
+\end{align*}
+where the last inequality follows since we have a sum of non-negative terms. Thus, the Hessian of the cross-entropy is 
+positive semi-definite which shows that the cross-entropy is a convex function.
 
 
 \subsection[Neural networks]{Neural networks \protect\footnote{This section follows chapter 7 of \cite{ledum2017computational} because I am lazy.}}

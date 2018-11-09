@@ -369,7 +369,7 @@ class NeuralNetwork :
                 # Every validation_skip epochs, test against the validation set.
                 if epoch % validation_skip == 0 or (epoch == epochs-1):
                     y_validation = self.forward_pass(self.x_validation)
-                    self.validation_loss[validation_it] = self.cost(y_validation, self.target_validation)
+                    self.validation_loss[validation_it] = self.cost(y_validation.T, self.target_validation.T)
 
                     # Add L2 regularization to the loss
                     reg_loss = np.sum(np.array([np.dot(s.ravel(), s.ravel()) for s in self.weights])) * 0.5 * self.lmbda / self.batch_size
@@ -437,7 +437,6 @@ class NeuralNetwork :
             self.vh = [np.zeros_like(p) for p in self.param]
 
             self.adam_initialized = True
-
 
     def adam(self) :
         beta1   = 0.9

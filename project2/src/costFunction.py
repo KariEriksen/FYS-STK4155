@@ -33,7 +33,7 @@ class CostFunction :
 
     def _cross_entropy_derivative(self, y, target) :
         #return -np.sum(target/y - (1-target)/(1-y))
-        return target - y
+        return  y - target
 
     def derivative(self, y, target) :
         return self.derivative_(y, target)

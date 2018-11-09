@@ -1,5 +1,6 @@
 import os
 import sys
+import copy
 import numpy as np
 import functools
 import pickle
@@ -18,72 +19,125 @@ from neuralNetwork  import NeuralNetwork
 from leastSquares   import LeastSquares
 
 
+def to_onehot(labels):
+    assert np.squeeze(labels).ndim == 1
+    n_samples    = labels.size
+    n_categories = int(np.max(labels) + 1)
+    one_hot      = np.zeros((n_samples, n_categories))
+    one_hot[range(n_samples), labels.astype(int)] = 1
+    return one_hot
+
+def to_label(one_hot, axis=0) :
+    return np.argmax(one_hot, axis=axis)
+
+def accuracy_score_numpy(Y_test, Y_pred):
+    return np.sum(Y_test == Y_pred) / len(Y_test)
+
+
 def mnist() :
-    np.random.seed(92898)
-    # download MNIST dataset
-    digits = datasets.load_digits()
+    np.random.seed()
+    
+    # Steal MNIST data from sklearn.
+    data = datasets.load_digits()
 
-    # define inputs and labels
-    inputs = digits.images
-    labels = digits.target
+    # Shift images +/- 1 pixel in each direction to conjure up 5 times more 
+    # training data.
+    n_samples_original = 1797
+    images_extended  = np.zeros(shape=(n_samples_original*4, 8, 8))
+    target_extended = np.zeros(n_samples_original*4)
 
-    print("inputs = (n_inputs, pixel_width, pixel_height) = " + str(inputs.shape))
-    print("labels = (n_inputs) = " + str(labels.shape))
+    for i, (shift, axis) in enumerate(zip([1,1,-1,-1],[1,2,1,2])) :
+        im = np.roll(copy.deepcopy(data.images), shift, axis=axis)
+        if shift == 1 :
+            if axis == 1 :
+                im[:,0,:] = 0
+            else :
+                im[:,:,0] = 0
+        else :
+            if axis == 1 :
+                im[:,-1,:] = 0
+            else :
+                im[:,:,-1] = 0
+        images_extended[i*n_samples_original:(i+1)*n_samples_original] = copy.deepcopy(im)
+        target_extended[i*n_samples_original:(i+1)*n_samples_original] = copy.deepcopy(data.target)
+    
+    n_samples_extended, im_width, im_height = images_extended.shape
+    images_extended = np.reshape(images_extended, (n_samples_extended, -1))
+    n_features = images_extended.shape[1]
 
+    # Reserve 20% of the original MNIST images for validation.
+    images_original = np.reshape(data.images, (n_samples_original, -1))
 
-    # flatten the image
-    # the value -1 means dimension is inferred from the remaining dimensions: 8x8 = 64
-    n_inputs = len(inputs)
-    inputs = inputs.reshape(n_inputs, -1)
-    n_samples, n_features = inputs.shape
-    print("X = (n_inputs, n_features) = " + str(inputs.shape))
+    # Shuffle the images first, then we pick the first 20%.
+    images_original, target_original = sklearn.utils.shuffle(images_original, 
+                                                             data.target,
+                                                             n_samples = n_samples_original)
+    n_samples_validation = int(0.2 * n_samples_original)
+    x_validation         = images_original[:n_samples_validation,:]
+    target_validation    = target_original[:n_samples_validation]
 
+    # The rest of the original, and the extended images become the training data.
+    n_samples    = 5 * n_samples_original - n_samples_validation
+    x_train      = np.zeros(shape=(n_samples, 64))
+    target_train = np.zeros(n_samples)
+
+    x_train[:n_samples_original*4,:] = images_extended
+    x_train[n_samples_original*4:,:] = images_original[:n_samples_original-n_samples_validation:,:]
+
+    target_train[:n_samples_original*4]  = target_extended
+    target_train[n_samples_original*4:] = target_original[:n_samples_original-n_samples_validation:]
+
+    # Make sure that none of the images are blank.
+    assert not np.any(0 == np.sum(x_train,      axis=1))
+    assert not np.any(0 == np.sum(x_validation, axis=1))
 
     # choose some random images to display
-    indices = np.arange(n_inputs)
-    random_indices = np.random.choice(indices, size=5)
+    random_indices = np.random.choice(np.arange(n_samples), size=10)
+    """
+    for i, image in enumerate(x_train[random_indices]):
+        ax = plt.subplot(5, 5, i+1)
+        plt.axis('on')
+        ax.get_yaxis().set_ticks([])
+        ax.get_xaxis().set_ticks([])
+        plt.imshow(image.reshape((8,8)), cmap=plt.cm.gray_r)
+    plt.show()
+    """
 
-    for i, image in enumerate(digits.images[random_indices]):
-        plt.subplot(1, 5, i+1)
-        plt.axis('off')
-        plt.imshow(image, cmap=plt.cm.gray_r, interpolation='nearest')
-        plt.title("Label: %d" % digits.target[random_indices[i]])
-    #plt.show()
+    target_train_onehot = to_onehot(target_train)
 
-    train_size = 0.8
-    test_size = 1 - train_size
-    X_train, X_test, Y_train, Y_test = train_test_split(inputs, labels, train_size=train_size,
-                                                        test_size=test_size)
-    def to_categorical_numpy(integer_vector):
-        n_inputs = len(integer_vector)
-        n_categories = np.max(integer_vector) + 1
-        onehot_vector = np.zeros((n_inputs, n_categories))
-        onehot_vector[range(n_inputs), integer_vector] = 1
-        return onehot_vector
-
-    Y_train_onehot, Y_test_onehot = to_categorical_numpy(Y_train), to_categorical_numpy(Y_test)
-
-    n_labels  = Y_train_onehot.shape[1]
-    n_neurons = 50
+    n_labels  = target_train_onehot.shape[1]
 
     nn = NeuralNetwork(inputs   = n_features,
                        outputs  = n_labels,
-                       neurons  = n_neurons,
                        cost     = 'cross-entropy')
-    nn.addLayer(activations = 'sigmoid')
+    nn.addLayer(activations = 'sigmoid', neurons = 100)
+    nn.addLayer(activations = 'sigmoid', neurons = 50)
     nn.addLayer(activations = 'softmax', neurons = n_labels, output = True)
     
-    epochs = 10000
-    print(X_train.shape)
-    nn.fit(X_train.T,
-           Y_train_onehot.T,
-           batch_size           = 800,
+    epochs = 1000
+    nn.fit(
+           #x_train.T,
+           #target_train_onehot.T,
+           images_original.T,
+           to_onehot(target_original).T,
+           batch_size           = 200,
            epochs               = epochs,
            validation_fraction  = 0.2,
-           validation_skip      = 100,
+           validation_skip      = 1,
            verbose              = False,
            optimizer            = 'adam',
            lmbda                = 0.0)
+
+
+    y_validation = nn.predict(x_validation.T)
+    print(y_validation.shape)
+    print(target_validation.shape)
+    y_validation = to_label(y_validation)
+    print(y_validation.shape)
+
+    acc = accuracy_score_numpy(target_validation, y_validation)
+
+    print("accuracy: ", acc)
 
 
 

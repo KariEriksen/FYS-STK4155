@@ -260,7 +260,8 @@ class NeuralNetwork :
             verbose             = False,
             silent              = False,
             optimizer           = 'sgd',
-            lmbda               = None) :
+            lmbda               = None,
+            save_always         = False) :
 
         self.lmbda = lmbda if lmbda is not None else self.lmbda
 
@@ -356,7 +357,7 @@ class NeuralNetwork :
                 batch_time_average /= float(self.batches_per_epoch)
                 epoch_time          = time.time() - epoch_start_time
 
-                if verbose or (epoch % 10 == 0) :
+                if (verbose or (epoch % 10 == 0)) and (not silent) :
                     #       ep      t/b   t/e    t    rt     bcost   vcost
                     print(" %5d    %-20s %-20s %-15.3s %-20s %-15.5g %-15s " % (epoch, 
                                                                                 "",
@@ -390,6 +391,8 @@ class NeuralNetwork :
                         pickle.dump(self, open('nn.p', 'wb'))
                         save = True
 
+                    if save_always :
+                        self.param_save = [params for params in self.weights+self.biases]
                     validation_it += 1
 
 
@@ -409,6 +412,10 @@ class NeuralNetwork :
         # training, i.e. the ones which resulted in the lowest validation cost.
         self.weights = [w for w in self.best_param[:len(self.weights)]]
         self.biases  = [b for b in self.best_param[len(self.weights):]]
+
+        if save_always :
+            self.weights = [w for w in self.param_save[:len(self.weights)]]
+            self.biases  = [b for b in self.param_save[len(self.weights):]]            
 
     def sgd(self) :
         for i, d_w in enumerate(self.d_weights) :

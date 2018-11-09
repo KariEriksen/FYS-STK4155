@@ -235,6 +235,8 @@ def load_ising_smaller(n_samples = 5000) :
 
 
 def ising_classify(n_samples = 5000) :
+    np.random.seed(294782)
+
     x_train,      \
     x_test,       \
     target_train, \
@@ -251,17 +253,21 @@ def ising_classify(n_samples = 5000) :
     nn.addLayer(activations = 'sigmoid', neurons = 100)
     nn.addLayer(activations = 'softmax', neurons = n_labels, output = True)
     
-    epochs = 20
-    
+    epochs = 1000
+    """
     nn.fit(x_train.T,
            target_train.T,
-           batch_size           = 500,
+           batch_size           = 2000,
            epochs               = epochs,
            validation_fraction  = 0.2,
            validation_skip      = 50,
            verbose              = False,
            optimizer            = 'adam',
-           lmbda                = 0.0)
+           lmbda                = 0.0,
+           save_always          = True)
+    """
+    with open('nn.p', "rb") as f:
+        nn = pickle.load(f)
 
     y_test = nn.predict(x_test.T)
     y_test = np.squeeze(to_label(y_test, axis=0))
@@ -271,12 +277,160 @@ def ising_classify(n_samples = 5000) :
           accuracy_score_numpy(target_test,
                                y_test))
 
+    y_train = nn.predict(x_train.T)
+    y_train = np.squeeze(to_label(y_train, axis=0))
+    target_train = np.squeeze(to_label(target_train, axis=1))
     
+    print("Training accuracy: ", 
+          accuracy_score_numpy(target_train,
+                               y_train))
 
+
+def accuracy_as_function_of_epochs(n_samples=5000) :
+    #np.random.seed(2248782)
+
+    x_train,      \
+    x_test,       \
+    target_train, \
+    target_test = load_ising_smaller(n_samples)
+
+    target_train = to_onehot(target_train)
+
+    n_labels   = target_train.shape[1]
+    n_features = x_train.shape[1]
+
+    nn = NeuralNetwork(inputs   = n_features,
+                       outputs  = n_labels,
+                       cost     = 'cross-entropy',
+                       silent   = True)
+    nn.addLayer(activations = 'sigmoid', neurons = 100)
+    nn.addLayer(activations = 'softmax', neurons = n_labels, output = True)
+    
+    M = 10
+    epochs = 100
+    critical_accuracy = np.zeros((M,epochs))
+    training_accuracy = np.zeros((M,epochs))
+    for it in range(M) :
+        
+        nn.weights = None
+        nn.addLayer(activations = 'sigmoid', neurons = 100)
+        nn.addLayer(activations = 'softmax', neurons = n_labels, output = True)
+    
+        for ep in range(epochs) :
+            nn.fit(x_train.T,
+                   target_train.T,
+                   batch_size           = 500,
+                   epochs               = 1,
+                   validation_fraction  = 0.01,
+                   validation_skip      = 50,
+                   verbose              = False,
+                   silent               = True,
+                   optimizer            = 'sgd',
+                   lmbda                = 0.0,
+                   save_always          = True)
+
+            acc_crit = accuracy_score_numpy(
+                            np.squeeze(target_test),
+                            np.squeeze(to_label(nn.predict(x_test.T), axis=0))
+                        )
+            acc_train = accuracy_score_numpy(
+                            np.squeeze(to_label(target_train, axis=1)),
+                            np.squeeze(to_label(nn.predict(x_train.T), axis=0))
+                        )
+            
+            print("%-20.15f %-20.15f" %(acc_crit,acc_train))
+
+            critical_accuracy[it,ep] = acc_crit
+            training_accuracy[it,ep] = acc_train
+        print("********************")
+
+    plt.figure(1)
+    for it in range(M) :
+        plt.semilogy(np.arange(epochs), critical_accuracy[it,:])
+    plt.rc('text', usetex=True)
+    plt.xlabel(r'Epochs', fontsize=10)
+    plt.ylabel(r'Validation accuracy', fontsize=10)
+    plt.xlim((0,epochs))
+    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'epoch-validation-accuracy-adam.png'), transparent=True, bbox_inches='tight')
+
+    plt.figure(2)
+    for it in range(M) :
+        plt.semilogy(np.arange(epochs), training_accuracy[it,:])
+    plt.rc('text', usetex=True)
+    plt.xlabel(r'Epochs', fontsize=10)
+    plt.ylabel(r'Training accuracy', fontsize=10)
+    plt.xlim((0,epochs))
+    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'epoch-training-accuracy-adam.png'), transparent=True, bbox_inches='tight')
+    plt.show()
+
+def loss_and_accuracy(n_samples=5000) :
+    np.random.seed(1234)
+
+    x_train,      \
+    x_test,       \
+    target_train, \
+    target_test = load_ising_smaller(n_samples)
+
+    target_train = to_onehot(target_train)
+
+    n_labels   = target_train.shape[1]
+    n_features = x_train.shape[1]
+
+    nn = NeuralNetwork(inputs   = n_features,
+                       outputs  = n_labels,
+                       cost     = 'cross-entropy',
+                       silent   = True)
+    nn.addLayer(activations = 'sigmoid', neurons = 100)
+    nn.addLayer(activations = 'softmax', neurons = n_labels, output = True)
+    
+    epochs = 1000
+    critical_accuracy = np.zeros((epochs))
+    training_accuracy = np.zeros((epochs))
+    
+    for ep in range(epochs) :
+        nn.fit(x_train.T,
+               target_train.T,
+               batch_size           = 2000,
+               epochs               = 2,
+               validation_fraction  = 0.01,
+               validation_skip      = 50,
+               verbose              = False,
+               silent               = True,
+               optimizer            = 'sgd',
+               lmbda                = 0.0,
+               save_always          = True)
+
+        acc_crit = accuracy_score_numpy(
+                        np.squeeze(target_test),
+                        np.squeeze(to_label(nn.predict(x_test.T), axis=0))
+                    )
+        acc_train = accuracy_score_numpy(
+                        np.squeeze(to_label(target_train, axis=1)),
+                        np.squeeze(to_label(nn.predict(x_train.T), axis=0))
+                    )
+        
+        print("%-20.15f %-20.15f" %(acc_crit,acc_train))
+
+        critical_accuracy[ep] = acc_crit
+        training_accuracy[ep] = acc_train
+    print("********************")
+
+    plt.figure(1)
+    plt.semilogy(np.arange(epochs), critical_accuracy)
+    plt.rc('text', usetex=True)
+    plt.xlabel(r'Epochs', fontsize=10)
+    plt.ylabel(r'Validation accuracy', fontsize=10)
+    plt.xlim((0,epochs))
+    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'accuracy-adam.png'), transparent=True, bbox_inches='tight')
+
+    np.savetxt('acc_crit', acc_crit)
+    np.savetxt('acc_train', acc_train)
 
 if __name__ == '__main__':
     #mnist()
-    ising_classify(10000)
+    #ising_classify(20000)
+    #accuracy_as_function_of_epochs(5000)
+    loss_and_accuracy(20000)
 
 
 

@@ -6,7 +6,7 @@ import functools
 import pickle
 import sklearn
 from sklearn import datasets
-from sklearn.model_selection import train_test_split
+import sklearn.model_selection as skms
 import matplotlib.pyplot as plt
 
 # Add the src/ directory to the python path so we can import the code 
@@ -103,7 +103,7 @@ def mnist() :
     nn.addLayer(activations = 'softmax', neurons = n_labels, output = True)
     
     epochs = 2000
-    """
+    
     nn.fit(
            #x_train.T,
            #target_train_onehot.T,
@@ -116,8 +116,8 @@ def mnist() :
            verbose              = False,
            optimizer            = 'adam',
            lmbda                = 0.0)
-    """
-    nn = pickle.load(open('nn.p', 'rb'))
+    
+    #nn = pickle.load(open('nn.p', 'rb'))
 
     y_validation = nn.predict(x_validation.T)
     y_validation = to_label(y_validation)
@@ -151,9 +151,100 @@ def mnist() :
     plt.show()
 
 
-if __name__ == '__main__':
-    mnist()
+def load_ising_data() :
+    L = 40 #Nr of spins 40x40
 
+    label_filename = "data/Ising2DFM_reSample_L40_T=All_labels.pkl"
+    dat_filename   = "data/Ising2DFM_reSample_L40_T=All.pkl"
+
+    # Read in the labels
+    with open(label_filename, "rb") as f:
+        labels = pickle.load(f)
+
+    # Read in the corresponding configurations
+    with open(dat_filename, "rb") as f:
+        data = np.unpackbits(pickle.load(f)).reshape(-1, 1600).astype("int")
+
+    data[data     == 0] = -1
+
+    # Set up slices of the dataset
+    ordered    = slice(0     , 70000 )
+    critical   = slice(70000 , 100000)
+    disordered = slice(100000, 160000)
+
+
+    X_train, \
+    X_test,  \
+    y_train, \
+    y_test = skms.train_test_split(
+                np.concatenate((data  [ordered], data  [disordered])),
+                np.concatenate((labels[ordered], labels[disordered])),
+                test_size = 0.5,
+                shuffle   = True)
+    X_critical = data[critical]
+    y_critical = labels[critical]
+
+    del data, labels
+    return X_train, X_test, y_train, y_test
+
+
+def save_ising_smaller(n_samples = 5000) :
+    X_train, X_test, y_train, y_test = load_ising_data()
+
+    X_train_smaller = X_train[:n_samples]
+    X_test_smaller  = X_test [:n_samples]
+
+    y_train_smaller = y_train[:n_samples]
+    y_test_smaller  = y_test [:n_samples]
+
+    data = {'x_train':      X_train_smaller,
+            'target_train': y_train_smaller,
+            'x_test':       X_test_smaller,
+            'target_test':  y_test_smaller}
+
+    with open('ising_data_'+str(n_samples)+'.p', "wb") as file_handle:
+        pickle.dump(data, 
+                    file_handle, 
+                    protocol = pickle.HIGHEST_PROTOCOL) 
+
+    return X_train_smaller, \
+           X_test_smaller , \
+           y_train_smaller, \
+           y_test_smaller
+
+
+def load_ising_smaller(n_samples = 5000) :
+    try : 
+        with open('ising_data_'+str(n_samples)+'.p', "rb") as file_handle:
+            data = pickle.load(file_handle)
+
+        return data['x_train'],      \
+               data['x_test'],       \
+               data['target_train'], \
+               data['target_test']
+    except :
+        X_train_smaller, \
+        X_test_smaller , \
+        y_train_smaller, \
+        y_test_smaller = save_ising_smaller(n_samples)
+
+        return X_train_smaller, \
+               X_test_smaller , \
+               y_train_smaller, \
+               y_test_smaller 
+
+
+def ising_classify(n_samples = 5000) :
+    x_train,      \
+    x_test,       \
+    target_train, \
+    target_test = load_ising_smaller(n_samples)
+
+
+
+if __name__ == '__main__':
+    #mnist()
+    ising_classify(2500)
 
 
 

@@ -8,6 +8,7 @@ project1/franke2d.m
 *.bcf
 *.blg
 *.flg
+*.bib
 *.fls
 *.fdb_latexmk
 *.out
@@ -17,4 +18,5 @@ project1/franke2d.m
 *__pycache__
 .DS_Store
 *.toc
+*.p
 /project1/figures/bias_variance_tradeoff.png

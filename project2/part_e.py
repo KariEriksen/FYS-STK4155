@@ -240,11 +240,43 @@ def ising_classify(n_samples = 5000) :
     target_train, \
     target_test = load_ising_smaller(n_samples)
 
+    target_train = to_onehot(target_train)
+
+    n_labels   = target_train.shape[1]
+    n_features = x_train.shape[1]
+
+    nn = NeuralNetwork(inputs   = n_features,
+                       outputs  = n_labels,
+                       cost     = 'cross-entropy')
+    nn.addLayer(activations = 'sigmoid', neurons = 100)
+    nn.addLayer(activations = 'softmax', neurons = n_labels, output = True)
+    
+    epochs = 20
+    
+    nn.fit(x_train.T,
+           target_train.T,
+           batch_size           = 500,
+           epochs               = epochs,
+           validation_fraction  = 0.2,
+           validation_skip      = 50,
+           verbose              = False,
+           optimizer            = 'adam',
+           lmbda                = 0.0)
+
+    y_test = nn.predict(x_test.T)
+    y_test = np.squeeze(to_label(y_test, axis=0))
+    target_test = np.squeeze(target_test)
+
+    print("Critical accuracy: ", 
+          accuracy_score_numpy(target_test,
+                               y_test))
+
+    
 
 
 if __name__ == '__main__':
     #mnist()
-    ising_classify(2500)
+    ising_classify(10000)
 
 
 

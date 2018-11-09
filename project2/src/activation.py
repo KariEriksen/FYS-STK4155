@@ -93,7 +93,7 @@ class Activation :
 
     def _softmax(self, x) :
         exps = np.exp(x - np.max(x))
-        return exps / np.sum(exps, axis=1, keepdims=True)
+        return exps / np.sum(exps, axis=0, keepdims=True)
 
     def _softmax_derivative(self, x) :
         return x

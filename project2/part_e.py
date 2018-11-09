@@ -35,7 +35,7 @@ def accuracy_score_numpy(Y_test, Y_pred):
 
 
 def mnist() :
-    np.random.seed()
+    np.random.seed(25251)
     
     # Steal MNIST data from sklearn.
     data = datasets.load_digits()
@@ -91,18 +91,6 @@ def mnist() :
     assert not np.any(0 == np.sum(x_train,      axis=1))
     assert not np.any(0 == np.sum(x_validation, axis=1))
 
-    # choose some random images to display
-    random_indices = np.random.choice(np.arange(n_samples), size=10)
-    """
-    for i, image in enumerate(x_train[random_indices]):
-        ax = plt.subplot(5, 5, i+1)
-        plt.axis('on')
-        ax.get_yaxis().set_ticks([])
-        ax.get_xaxis().set_ticks([])
-        plt.imshow(image.reshape((8,8)), cmap=plt.cm.gray_r)
-    plt.show()
-    """
-
     target_train_onehot = to_onehot(target_train)
 
     n_labels  = target_train_onehot.shape[1]
@@ -114,7 +102,8 @@ def mnist() :
     nn.addLayer(activations = 'sigmoid', neurons = 50)
     nn.addLayer(activations = 'softmax', neurons = n_labels, output = True)
     
-    epochs = 1000
+    epochs = 2000
+    """
     nn.fit(
            #x_train.T,
            #target_train_onehot.T,
@@ -123,24 +112,43 @@ def mnist() :
            batch_size           = 200,
            epochs               = epochs,
            validation_fraction  = 0.2,
-           validation_skip      = 1,
+           validation_skip      = 50,
            verbose              = False,
            optimizer            = 'adam',
            lmbda                = 0.0)
-
+    """
+    nn = pickle.load(open('nn.p', 'rb'))
 
     y_validation = nn.predict(x_validation.T)
-    print(y_validation.shape)
-    print(target_validation.shape)
     y_validation = to_label(y_validation)
-    print(y_validation.shape)
 
     acc = accuracy_score_numpy(target_validation, y_validation)
 
-    print("accuracy: ", acc)
+    print("Accuracy: ", acc)
 
-
-
+    # Display up to 50 of the digits misclassified
+    miss_ind = np.where(target_validation != y_validation)
+    miss = x_validation[miss_ind]
+    n_missed = miss.shape[0]
+    random_indices = np.random.choice(np.arange(n_missed), size=min(n_missed, 50))
+    
+    for i, image in enumerate(miss[random_indices]):
+        ax = plt.subplot(5, 5, i+1)
+        plt.axis('on')
+        ax.get_yaxis().set_ticks([])
+        ax.get_xaxis().set_ticks([])
+        fontsize = 5
+        classified = 'guess: ' + str(y_validation     [miss_ind[0][random_indices[i]]])
+        true       = 'true: '  + str(target_validation[miss_ind[0][random_indices[i]]])
+        plt.ylabel(classified, fontsize=fontsize)
+        plt.title(true , fontsize=fontsize)
+        plt.imshow(image.reshape((8,8)), cmap=plt.cm.gray_r)
+    vspace = 0.5
+    hspace = 0.5
+    fig = plt.gcf()
+    fig.set_size_inches(10, 10)
+    plt.subplots_adjust(wspace=vspace, hspace=hspace)
+    plt.show()
 
 
 if __name__ == '__main__':

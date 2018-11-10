@@ -5,6 +5,7 @@ import numpy as np
 import functools
 import pickle
 import sklearn
+import collections
 from sklearn import datasets
 import sklearn.model_selection as skms
 import matplotlib.pyplot as plt
@@ -31,8 +32,10 @@ def to_label(one_hot, axis=0) :
     return np.argmax(one_hot, axis=axis)
 
 def accuracy_score_numpy(Y_test, Y_pred):
-    return np.sum(Y_test == Y_pred) / len(Y_test)
+    return np.sum(Y_test.astype(int) == Y_pred.astype(int)) / len(Y_test)
 
+def total_missed(Y_test, Y_pred):
+    return np.sum(Y_test.astype(int) != Y_pred.astype(int))
 
 def mnist() :
     np.random.seed(25251)
@@ -48,6 +51,7 @@ def mnist() :
 
     for i, (shift, axis) in enumerate(zip([1,1,-1,-1],[1,2,1,2])) :
         im = np.roll(copy.deepcopy(data.images), shift, axis=axis)
+        """
         if shift == 1 :
             if axis == 1 :
                 im[:,0,:] = 0
@@ -58,6 +62,7 @@ def mnist() :
                 im[:,-1,:] = 0
             else :
                 im[:,:,-1] = 0
+        """
         images_extended[i*n_samples_original:(i+1)*n_samples_original] = copy.deepcopy(im)
         target_extended[i*n_samples_original:(i+1)*n_samples_original] = copy.deepcopy(data.target)
     
@@ -102,17 +107,17 @@ def mnist() :
     nn.addLayer(activations = 'sigmoid', neurons = 50)
     nn.addLayer(activations = 'softmax', neurons = n_labels, output = True)
     
-    epochs = 2000
+    epochs = 500
     
     nn.fit(
-           #x_train.T,
-           #target_train_onehot.T,
-           images_original.T,
-           to_onehot(target_original).T,
-           batch_size           = 200,
+           x_train.T,
+           target_train_onehot.T,
+           #images_original.T,
+           #to_onehot(target_original).T,
+           batch_size           = 1000,
            epochs               = epochs,
            validation_fraction  = 0.2,
-           validation_skip      = 50,
+           validation_skip      = 5,
            verbose              = False,
            optimizer            = 'adam',
            lmbda                = 0.0)
@@ -240,8 +245,9 @@ def ising_classify(n_samples = 5000) :
     x_train,      \
     x_test,       \
     target_train, \
-    target_test = load_ising_smaller(n_samples)
-
+    target_test = load_ising_data()
+    #target_test = load_ising_smaller(n_samples)
+    n_samples = 65000
     target_train = to_onehot(target_train)
 
     n_labels   = target_train.shape[1]
@@ -253,14 +259,14 @@ def ising_classify(n_samples = 5000) :
     nn.addLayer(activations = 'sigmoid', neurons = 100)
     nn.addLayer(activations = 'softmax', neurons = n_labels, output = True)
     
-    epochs = 1000
-    """
+    epochs = int(1e6)
+    
     nn.fit(x_train.T,
            target_train.T,
-           batch_size           = 2000,
+           batch_size           = 5000,
            epochs               = epochs,
            validation_fraction  = 0.2,
-           validation_skip      = 50,
+           validation_skip      = 5,
            verbose              = False,
            optimizer            = 'adam',
            lmbda                = 0.0,
@@ -268,7 +274,7 @@ def ising_classify(n_samples = 5000) :
     """
     with open('nn.p', "rb") as f:
         nn = pickle.load(f)
-
+    """
     y_test = nn.predict(x_test.T)
     y_test = np.squeeze(to_label(y_test, axis=0))
     target_test = np.squeeze(target_test)
@@ -426,11 +432,106 @@ def loss_and_accuracy(n_samples=5000) :
     np.savetxt('acc_crit', acc_crit)
     np.savetxt('acc_train', acc_train)
 
+def check_accuracy(fileName, n_samples=None) :
+    nn = pickle.load(open(fileName, 'rb'))
+    
+    if n_samples is None :
+        x_train, x_test, target_train, target_test = load_ising_data()
+    else :
+        x_train, x_test, target_train, target_test = load_ising_smaller(n_samples)
+
+    pred_test  = np.squeeze(to_label(nn.predict(x_test.T), axis=0))
+    pred_train = np.squeeze(to_label(nn.predict(x_train.T), axis=0))
+
+    acc_crit = accuracy_score_numpy(
+                    np.squeeze(target_test),
+                    pred_test
+                )
+    acc_train = accuracy_score_numpy(
+                    np.squeeze(target_train),
+                    pred_train
+                )
+    miss_crit = total_missed(
+                    np.squeeze(target_test),
+                    pred_test
+                )
+    miss_train = total_missed(
+                    np.squeeze(target_train),
+                    pred_train
+                )
+
+
+    print("Accuracy (critical): %20.15f    total missed: %-20d" % (acc_crit,  miss_crit))
+    print("Accuracy (training): %20.15f    total missed: %-20d" % (acc_train, miss_train))
+
+
+def trim_nn_file(fileName) :
+    nn = pickle.load(open(fileName, 'rb'))
+    
+    
+    nn.a = None
+    nn.validation_loss_improving = None
+    nn.grad = None
+    nn.validation_loss = None
+    nn.x_validation = None
+    nn.x_train = None
+    nn.R2 = None
+    nn.target_validation = None
+    nn.target_train = None
+    nn.training_loss = None
+    nn.loss = None
+    nn.d_weights = None
+    nn.d_biases = None
+    nn.delta = None
+    nn.best_param = None
+    nn.change = None
+    nn.param_save = None
+    
+    nn.m = None
+    nn.v = None
+    nn.mh = None
+    nn.vh = None
+    nn.param = None
+
+    nn.first_feedforward = True
+    nn.first_backprop = True
+    nn.adam_initialized = False
+
+
+
+    variables = nn.__dict__
+    for v in variables :
+        vv = variables[str(v)]
+        print(v, sys.getsizeof(vv), end=" ")
+        if isinstance(vv, collections.Iterable) :
+            for i,vvv in enumerate(vv) :
+                if i < 10 :
+                    if hasattr(vvv, 'nbytes') :
+                        print(vvv.nbytes, end=" ")
+                    else :
+                        print(sys.getsizeof(vvv), end=" ")
+                if i == 10 :
+                    print("total i: ", i)
+                if i > 10 :
+                    print("  ", i , end="\r")
+        print("")
+
+
+    pickle.dump(nn, open('nn.p', 'wb'))
+
+    
+
+
 if __name__ == '__main__':
     #mnist()
     #ising_classify(20000)
     #accuracy_as_function_of_epochs(5000)
-    loss_and_accuracy(20000)
+    #loss_and_accuracy(20000)
+
+    #ising_classify()
+    check_accuracy('nn_ising_classify.p')
+
+    #trim_nn_file('nn_65k.p')
 
 
 

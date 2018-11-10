@@ -357,7 +357,7 @@ class NeuralNetwork :
                 batch_time_average /= float(self.batches_per_epoch)
                 epoch_time          = time.time() - epoch_start_time
 
-                if (verbose or (epoch % 10 == 0)) and (not silent) :
+                if (verbose or (epoch % 1 == 0)) and (not silent) :
                     #       ep      t/b   t/e    t    rt     bcost   vcost
                     print(" %5d    %-20s %-20s %-15.3s %-20s %-15.5g %-15s " % (epoch, 
                                                                                 "",

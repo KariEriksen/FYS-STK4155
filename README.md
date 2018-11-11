@@ -9,5 +9,5 @@ Project work the course FYS-STK4155: Applied data analysis and machine learning 
 
 ### Projects
 - [x] [Project 1](project1/) 
-- [ ] [Project 2](project2/) 
+- [x] [Project 2](project2/) 
 - [ ] [Project 3](project3/) 

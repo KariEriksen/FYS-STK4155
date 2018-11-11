@@ -83,9 +83,9 @@ with open(dat_filename, "rb") as f:
 data[data     == 0] = -1
 
 # Set up slices of the dataset
-ordered    = slice(0     , 70000 )
+ordered    = slice(0     , 10000 )
 critical   = slice(70000 , 100000)
-disordered = slice(100000, 160000)
+disordered = slice(100000, 110000)
 
 
 X_train, X_test, y_train, y_test = skms.train_test_split(
@@ -108,7 +108,7 @@ X_critical = np.c_[np.ones(X_critical.shape[0]), X_critical]
 
 # define regularisation parameter
 
-lmbdas = np.logspace(-5,5,11) 
+lmbdas = np.logspace(-4,4,9) 
 
 # preallocate data
 train_accuracy=np.zeros(lmbdas.shape,np.float64)
@@ -165,5 +165,5 @@ plt.ylabel('$\\mathrm{accuracy}$')
 
 plt.grid()
 plt.legend()
-plt.savefig("figures/logReg_acc_vs_regstrength_noIntercept.png")
+plt.savefig("figures/logReg_acc_vs_regstrength.png")
 plt.show()

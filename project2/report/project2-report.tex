@@ -153,7 +153,24 @@
 \maketitle
 
 \begin{abstract}
+We study the one-dimensional Ising model using linear regression: Ordinary
+least squares (OLS), Ridge regression, and Lasso regression. The interaction matrix $J$ is estimated using a training set 
+consisting of the energy of $500$ sampled lattice configurations. It is found that the Lasso scheme has the best performance 
+on test data, achieving $R^2 \simeq 1$ for regularization paramters $\lambda \sim 10^{-1} - 10^{-4}$. OLS and Ridge on the other fails 
+to break $R^2 \sim 0.7$ for $\lambda \in [10^{-5}, 10^{5}]$. 
 
+Applying neural networks to the same problem results in marginally 
+better results but at a much more expensive computational cost. A seemingly confusing anomaly when trying to recreate the interaction 
+matrix $J$ from the neural network is observed. This is explained by showing that a class of interaction matrices on the 
+form $\text{sym}(A) = \text{sym}(J) + D$ with $tr(D) = 0$, result in the same energies as $J$ itself.
+
+Furthermore, classification of ordered and disordered states of two-dimensional Ising model is studied using both 
+logistic regression with $L_2$ regularization and neural networks. It is found that logistic regression is able to classify 
+roughly $70$\% of ordered and disordered states correctly. However, when performing predictions on states close to the critical phase, only $\sim 60$\% of 
+the states are classified correctly. The results are more or less independent of regularization strength. 
+
+Using a neural network on this problem results in significantly better peformance, as ordered and disordered states 
+are classified correctly in $\sim 99$\% of the cases, while states close the critical phase is predicted with an accuracy of $\sim 95$\%.
 \end{abstract}
 
 \tableofcontents 

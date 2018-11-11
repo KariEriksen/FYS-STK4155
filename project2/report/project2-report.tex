@@ -166,11 +166,13 @@ form $\text{sym}(A) = \text{sym}(J) + D$ with $tr(D) = 0$, result in the same en
 
 Furthermore, classification of ordered and disordered states of two-dimensional Ising model is studied using both 
 logistic regression with $L_2$ regularization and neural networks. It is found that logistic regression is able to classify 
-roughly $70$\% of ordered and disordered states correctly. However, when performing predictions on states close to the critical phase, only $\sim 60$\% of 
-the states are classified correctly. The results are more or less independent of regularization strength. 
+roughly $70$\% of ordered and disordered states correctly. However, when performing predictions on states close to the critical 
+temperature, only $\sim 60$\% of the states are classified correctly. The results are more or less independent of 
+regularization strength. 
 
 Using a neural network on this problem results in significantly better peformance, as ordered and disordered states 
-are classified correctly in $\sim 99$\% of the cases, while states close the critical phase is predicted with an accuracy of $\sim 95$\%.
+are classified correctly in $\sim 99$\% of the cases, while states close the critical temperature is 
+predicted with an accuracy of $\sim 95$\%.
 \end{abstract}
 
 \tableofcontents 
@@ -1169,7 +1171,25 @@ With more data available, the model performs better. Increasing the training dat
 
 
 \section{Conclusion}
-\lipsum[11]
+In this work we extended the study of regression problems from project 1 by applying OLS, Ridge and Lasso regression 
+to the one-dimensional Ising model. We have also applied a neural network to the same problem. It is found that for this 
+particular problem Lasso regression has the over-all best performance in terms of $R^2$ score and computational cost. 
+
+We made the observation that the estimated interaction matrix of the one-dimensional Ising model using the neural network 
+was different from the expected interaction while still producing the same energy to machine precision. This observation is 
+explained by showing that there is a whole class of matrices on the form $\text{sym}(A) = \text{sym}(J) + D$ with $tr(D) = 0$ 
+that produces the same energy. 
+
+Furthermore, we have studied the binary classification problem. In particular we considered logistic regression and NN's 
+applied to the classification of the phases of the two-dimensional Ising model. For this problem it was clear that the 
+flexibility provided by the neural network significantly outperformed the logistic model. In particular we found that 
+the NN achieved an accuracy of $\sim 95$\% when doing predictions on states close to the critical temperature, 
+while the logistic model only obtained an accuracy of $\sim 60$\% independent of regularization strength. 
+
+We conclude that while neural networks in general provides high flexibility it is not necessarily the best choice. 
+Specifically, there are cases where we can get the same performance, using the simpler model as shown in the case of the 
+one-dimensional Ising. Also, the computational cost of applying NN's might be prohibitive if the dimensionality of the problem 
+becomes large.
 
 \onecolumn{
 \printbibliography

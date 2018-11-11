@@ -194,7 +194,7 @@ def load_ising_data() :
 
 
 def save_ising_smaller(n_samples = 5000) :
-    X_train, X_test, y_train, y_test = load_ising_data()
+    X_train, X_test, y_train, y_test, X_critical, y_critical = load_ising_data()
 
     X_train_smaller = X_train[:n_samples]
     X_test_smaller  = X_test [:n_samples]
@@ -202,10 +202,15 @@ def save_ising_smaller(n_samples = 5000) :
     y_train_smaller = y_train[:n_samples]
     y_test_smaller  = y_test [:n_samples]
 
+    X_critical_smaller = X_critical[:min(n_samples,len(X_critical))]
+    y_critical_smaller = y_critical[:min(n_samples,len(X_critical))]
+
     data = {'x_train':      X_train_smaller,
             'target_train': y_train_smaller,
             'x_test':       X_test_smaller,
-            'target_test':  y_test_smaller}
+            'target_test':  y_test_smaller,
+            'x_critical':   X_critical_smaller,
+            'target_critical': y_critical_smaller}
 
     with open('ising_data_'+str(n_samples)+'.p', "wb") as file_handle:
         pickle.dump(data, 
@@ -215,7 +220,9 @@ def save_ising_smaller(n_samples = 5000) :
     return X_train_smaller, \
            X_test_smaller , \
            y_train_smaller, \
-           y_test_smaller
+           y_test_smaller,  \
+           X_critical_smaller, \
+           y_critical_smaller
 
 
 def load_ising_smaller(n_samples = 5000) :
@@ -226,17 +233,23 @@ def load_ising_smaller(n_samples = 5000) :
         return data['x_train'],      \
                data['x_test'],       \
                data['target_train'], \
-               data['target_test']
+               data['target_test'],  \
+               data['x_critical'],   \
+               data['target_critical']
     except :
         X_train_smaller, \
         X_test_smaller , \
         y_train_smaller, \
-        y_test_smaller = save_ising_smaller(n_samples)
+        y_test_smaller,  \
+        X_critical_smaller, \
+        y_critical_smaller = save_ising_smaller(n_samples)
 
         return X_train_smaller, \
                X_test_smaller , \
                y_train_smaller, \
-               y_test_smaller 
+               y_test_smaller,  \
+               X_critical_smaller, \
+               y_critical_smaller
 
 
 def ising_classify(n_samples = 5000) :
@@ -541,7 +554,78 @@ def plot_csv() :
 
 
 
+def train_lambda(lmbda) :
+    nn = pickle.load(open('nn_ising_classify.p', 'rb'))
     
+
+    x_train, \
+    x_test, \
+    target_train, \
+    target_test, \
+    x_crit, \
+    target_crit = load_ising_data()
+    #target_crit = load_ising_smaller(n_samples = 10000)
+
+    target_train = to_onehot(target_train)
+    """
+    print(x_train.shape)
+    n_labels   = target_train.shape[1]
+    n_features = x_train.shape[1]
+
+    nn = NeuralNetwork(inputs   = n_features,
+                       outputs  = n_labels,
+                       cost     = 'cross-entropy',
+                       silent   = True)
+    nn.addLayer(activations = 'sigmoid', neurons = 100)
+    nn.addLayer(activations = 'softmax', neurons = n_labels, output = True)
+    """
+
+    pred_test  = np.squeeze(to_label(nn.predict(x_test.T),  axis=0))
+    pred_train = np.squeeze(to_label(nn.predict(x_train.T), axis=0))
+    pred_crit  = np.squeeze(to_label(nn.predict(x_crit.T),  axis=0))
+
+    acc_train  = accuracy_score_numpy(np.squeeze(target_train),pred_train)
+    acc_test   = accuracy_score_numpy(np.squeeze(target_test),pred_test)
+    acc_crit   = accuracy_score_numpy(np.squeeze(target_crit),pred_crit)
+    miss_train = total_missed(np.squeeze(target_train),pred_train)
+    miss_test  = total_missed(np.squeeze(target_test),pred_test)
+    miss_crit  = total_missed(np.squeeze(target_crit),pred_crit)
+
+    """
+    print("Accuracy (training):   %20.15f    total missed: %-20d" % (acc_train, miss_train))
+    print("Accuracy (validation): %20.15f    total missed: %-20d" % (acc_test,  miss_test))
+    print("Accuracy (critical):   %20.15f    total missed: %-20d" % (acc_crit,  miss_crit))
+    """
+
+    nn.fit(x_train.T,
+           target_train.T,
+           batch_size           = 2000,
+           epochs               = 500,
+           validation_fraction  = 0.001,
+           validation_skip      = 20,
+           learning_rate        = 0.001,
+           verbose              = True,
+           silent               = False,
+           optimizer            = 'adam',
+           lmbda                = lmbda,
+           save_always          = True)
+
+
+    pred_test  = np.squeeze(to_label(nn.predict(x_test.T),  axis=0))
+    pred_train = np.squeeze(to_label(nn.predict(x_train.T), axis=0))
+    pred_crit  = np.squeeze(to_label(nn.predict(x_crit.T),  axis=0))
+
+    acc_train  = accuracy_score_numpy(np.squeeze(target_train),pred_train)
+    acc_test   = accuracy_score_numpy(np.squeeze(target_test),pred_test)
+    acc_crit   = accuracy_score_numpy(np.squeeze(target_crit),pred_crit)
+    miss_train = total_missed(np.squeeze(target_train),pred_train)
+    miss_test  = total_missed(np.squeeze(target_test),pred_test)
+    miss_crit  = total_missed(np.squeeze(target_crit),pred_crit)
+
+    print("Accuracy (training):   %20.15f    total missed: %-20d" % (acc_train, miss_train))
+    print("Accuracy (validation): %20.15f    total missed: %-20d" % (acc_test,  miss_test))
+    print("Accuracy (critical):   %20.15f    total missed: %-20d" % (acc_crit,  miss_crit))
+    print("*********************************")
 
 
 if __name__ == '__main__':
@@ -551,11 +635,19 @@ if __name__ == '__main__':
     #loss_and_accuracy(20000)
 
     #ising_classify()
-    check_accuracy('nn_classify20k_2k_epochs.p')
+    #check_accuracy('nn_classify20k_2k_epochs.p')
 
     #trim_nn_file('nn_65k.p')
 
     #plot_csv()
+
+    train_lambda(1e-3)
+    """
+    for lmbda in np.logspace(-5,1,7) :
+        print("========================================")
+        print(lmbda)
+        train_lambda(lmbda)
+    """
 
 
 

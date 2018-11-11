@@ -142,7 +142,7 @@
 
 % Title
 \title{{\sc Machine learning applied to the one- and two dimensional Ising model. \\ {\large FYS-STK4155: Project 2}}}
-\author{Morten Ledum \& Håkon Kristiansen \\ \faGithub \ {\small \href{https://github.com/mortele/FYS-STK4155/tree/master/project2}{github.com/mortele/FYS-STK4155}}}
+\author{Morten Ledum, Håkon Kristiansen \& Kari Eriksen \\ \faGithub \ {\small \href{https://github.com/mortele/FYS-STK4155/tree/master/project2}{github.com/mortele/FYS-STK4155}}}
 % ---------------------------------------------------------------------------- %
 % ---------------------------------------------------------------------------- %
 \begin{document}
@@ -1136,7 +1136,7 @@ which is essentially guessing as shown in Fig.\ref{logRegNoIntercept}.
 \end{figure}
 
 \subsubsection{Classification using the neural network model}
-Lastly, we turn to classification of the 2D Ising model ordered/disordered states, described in section \ref{sect:ising2d}, using a neural network model. Classification is done with a softmax cross-entropy activation/cost function combo in the last layer of the network, while we retain the sigmoid activations for the earlier layer(s). The network architecture used consists of a single hidden layer of $100$ neurons, feeding into a layer of a single neuron (the softmax activation) and the two outputs (in one-hot vector format). As no regularization was necessary to obtain satisfactory results, $\lambda=0$ was used throughout this section. We use the Adam optimizer, and a batch size of $2000$ states. 
+Lastly, we turn to classification of the 2D Ising model ordered/disordered states, described in section \ref{sect:ising2d}, using a neural network model. Classification is done with a softmax cross-entropy activation/cost function combo in the last layer of the network, while we retain the sigmoid activations for the earlier layer(s). The network architecture used consists of a single hidden layer of $100$ neurons, feeding into a layer of a single neuron (the softmax activation) and the two outputs (in one-hot vector format). No regularization, i.e.\ $\lambda=0$, is used unless otherwise noted. We use the Adam optimizer, and a batch size of $2000$ states. 
 
 As the entire data set is rather large, our first attempt takes only a random subset of $20\,000$ total configurations for training (roughly a third of the Mehta data). Half of the $20\,000$ are used for training, the other half are used for validation. In addition, we use the separate samples around $T_c$ for secondary validation. Training for $2000$ epochs yields an acceptable accuracy, as shown in \fig{nn_accuracy_20k}. Note that $1-\text{accuracy}$ is shown, i.e.\ lower is better. The peak accuracy reached on the training samples was $99.89\%$, while the accuracy on the validation set was $98.86\%$. On the $30\,000$ samples around the Curie temperature, the accuracy attained was $94.50\%$, meaning $1652$ of the $30\,000$ were misclassified. This is already impressive compared to the logistic regression scheme, but we can do better.
 
@@ -1149,6 +1149,34 @@ As the entire data set is rather large, our first attempt takes only a random su
 
 With more data available, the model performs better. Increasing the training data set size to the entirety of the Mehta data (still retaining all critical samples for validation only), we retrain the network and arrive at the very satisfactory validation accuracy of $99.97\%$ (non-critical). Please note that this means we are missclassifying only a total of $22$ configurations, out of the $65\,000$ total. On the critical samples, the fully trained model performs marginally better, correctly classifying an additional $293$ states for a total critical accuracy of $95.47\%$. 
 
+Adding a regularization $\lambda\not=0$ improves performance somewhat. Presented in \tab{nn_2d} are the final accuracy values for the networks and their respective hyperparameters. All networks are trained for $2000$ epochs with all the training data, but not shown any of the validation or critical samples until training is completed. We note that the best performing network is a moderately regularized $\lambda=10^{-3}$, which peaks at $96.1\%$ accuracy for the critical samples, misclassifying just over a thousand states around the Curie temperature. 
+
+A final run with a longer training time for the $\lambda=10^{-3}$ yields the best performance in the present work at $96.8\%$ accuracy for the critical samples. This final network is marked $\ddag$ in \tab{nn_2d}.
+
+\newlength{\myrowskip}
+\setlength{\myrowskip}{10pt}
+\begin{table*}
+\centering\sisetup{table-number-alignment=center}
+\setlength\extrarowheight{2pt}
+\begin{tabularx}{\textwidth}{XXXX}
+\toprule
+& \multicolumn{3}{l}{ \ \ \ \ \ \  \ \ \ \ \ \  \ \ \ \ \ \  \ \ \ \ \ \  \ \ \ \ \ \  \ \ Accuracy} \\
+\cline{2-4}
+$\lambda$ & Training & Validation & Critical \\
+\midrule
+$0$         &   $99.99\%$ $(1)$     & $99.95\%$ $(34)$    & $95.47\%$ $(1359)$ \\ 
+$10^{-5}$   &   $99.99\%$ $(1)$     & $99.96\%$ $(24)$    & $95.58\%$ $(1326)$ \\ 
+$10^{-4}$   &   $99.99\%$ $(1)$     & $99.95\%$ $(31)$    & $95.67\%$ $(1298)$ \\ 
+$10^{-3}$   &   $99.99\%$ $(1)$     & $99.98\%$ $(11)$    & $96.10\%$ $(1172)$ \\ 
+$10^{-3}\ddag$   &   $99.99\%$ $(1)$     & $99.99\%$ $(5)$    & $96.80\%$ $(959)$ \\ 
+$10^{-2}$   &   $99.99\%$ $(1)$     & $99.96\%$ $(28)$    & $95.47\%$ $(2639)$ \\ 
+$10^{-1}$   &   $99.99\%$ $(1)$     & $99.94\%$ $(42)$    & $84.61\%$ $(4616)$ \\ 
+$1$         &   $99.99\%$ $(1)$     & $99.92\%$ $(46)$    & $79.95\%$ $(6015)$ \\ 
+$10$        &   $99.99\%$ $(1)$     & $99.22\%$ $(501)$   & $50.10\%$ $(14969)$ \\
+\bottomrule 
+\end{tabularx}
+\caption{Accuracy scores for the trained neural networks of differing regularization parameters $\lambda$. The number in parenthesis denote the total number of misclassified states out of the entire set. The network marked $\ddag$ was trained for five times longer than the other networks in this table. \label{tab:nn_2d}}
+\end{table*}
 
 
 \section{Conclusion}

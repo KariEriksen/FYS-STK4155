@@ -395,11 +395,15 @@ class NeuralNetwork :
                         self.param_save = [params for params in self.weights+self.biases]
                     validation_it += 1
 
+                    accuracy = -1
+                    if self.cost is CostFunction._cross_entropy and check_accuracy is not None :
+                        print(check_accuracy.shape)
+
 
                     if not silent :
                         #       ep      t/b   t/e    t    rt   bcost vcost
-                        print(" %5s    %-20s %-20s %-15.3s %-20s %-15s %-15.5g %5s" % ("", 
-                                                                                    "",
+                        print(" %5s    %-20.5f %-20s %-15.3s %-20s %-15s %-15.5g %5s" % ("", 
+                                                                                    accuracy,
                                                                                     "",
                                                                                     "",
                                                                                     "",

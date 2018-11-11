@@ -173,6 +173,9 @@ Using a neural network on this problem results in significantly better peformanc
 are classified correctly in $\sim 99$\% of the cases, while states close the critical phase is predicted with an accuracy of $\sim 95$\%.
 \end{abstract}
 
+\twocolumn
+\onecolumn
+
 \tableofcontents 
 %  \end{@twocolumnfalse}
 %]
@@ -1030,7 +1033,7 @@ W\approx
 \end{align}
 It is not at all obvious why this matrix should yield essentially zero error in the energy for every single $L=5$ state available. In order to make sense of this, we note a \textit{key observation}: The energy is given by the quadratic form $\mathbf{s}^TJ\mathbf{s}=E$ and any quadratic form $\mathbf{x}^TA\mathbf{x}$ is invariant under the exchange of $A$ and the symmetric part of the matrix, $(A+A^T)/2$. As an example of this, the symmetric part of the standard $J$ interaction matrix used so far in the present work is (zeros ommitted)
 \begin{align}
-\hspace{-1cm}\frac{J+J^T}{2}&=-\frac{1}{2}\pmat{ccccccc}{
+\frac{J+J^T}{2}&=-\frac{1}{2}\pmat{ccccccc}{
    & 1 &   &   &   &   &  1\\
  1 &   & 1 &   &   &   &   \\
    & 1 &   & 1 &   &   &   \\
@@ -1168,7 +1171,7 @@ With more data available, the model performs better. Increasing the training dat
 
 Adding a regularization $\lambda\not=0$ improves performance somewhat. Presented in \tab{nn_2d} are the final accuracy values for the networks and their respective hyperparameters. All networks are trained for $2000$ epochs with all the training data, but not shown any of the validation or critical samples until training is completed. We note that the best performing network is a moderately regularized $\lambda=10^{-3}$, which peaks at $96.1\%$ accuracy for the critical samples, misclassifying just over a thousand states around the Curie temperature. 
 
-A final run with a longer training time for the $\lambda=10^{-3}$ yields the best performance in the present work at $96.8\%$ accuracy for the critical samples. This final network is marked $\ddag$ in \tab{nn_2d}.
+A final run with a longer training time for the $\lambda=10^{-3}$ yields the best performance in the present work at $96.8\%$ accuracy for the critical samples. This final network is marked $\ddag$ in \tab{nn_2d}. This result is consistent with (but slightly surpasses the accuracy of) the network presented in the work of Mehta et al.\autocite{mehta2018highbias}.
 
 \newlength{\myrowskip}
 \setlength{\myrowskip}{10pt}

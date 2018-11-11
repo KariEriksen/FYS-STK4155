@@ -162,7 +162,7 @@ to break $R^2 \sim 0.7$ for $\lambda \in [10^{-5}, 10^{5}]$.
 Applying neural networks to the same problem results in marginally 
 better results but at a much more expensive computational cost. A seemingly confusing anomaly when trying to recreate the interaction 
 matrix $J$ from the neural network is observed. This is explained by showing that a class of interaction matrices on the 
-form $\text{sym}(A) = \text{sym}(J) + D$ with $tr(D) = 0$, result in the same energies as $J$ itself.
+form $\text{sym}(A) = \text{sym}(J) + D$ with $\text{Tr}(D) = 0$, result in the same energies as $J$ itself.
 
 Furthermore, classification of ordered and disordered states of two-dimensional Ising model is studied using both 
 logistic regression with $L_2$ regularization and neural networks. It is found that logistic regression is able to classify 
@@ -1208,7 +1208,7 @@ particular problem Lasso regression has the over-all best performance in terms o
 
 We made the observation that the estimated interaction matrix of the one-dimensional Ising model using the neural network 
 was different from the expected interaction while still producing the same energy to machine precision. This observation is 
-explained by showing that there is a whole class of matrices on the form $\text{sym}(A) = \text{sym}(J) + D$ with $tr(D) = 0$ 
+explained by showing that there is a whole class of matrices on the form $\text{sym}(A) = \text{sym}(J) + D$ with $\text{Tr}(D) = 0$ 
 that produces the same energy. 
 
 Furthermore, we have studied the binary classification problem. In particular we considered logistic regression and NN's 

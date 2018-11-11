@@ -1078,9 +1078,8 @@ This whole ordeal outlines a fundamental difficulty in working with machine lear
 Finally we note a curiosity: The $\text{Tr}\,D=0$ demand is simply an artifact of the way we train the model. If we add a constant $\alpha$ to all energies when training, $E\mapsto E+\alpha$, we would recover it as $\text{Tr}\,D=\alpha$. Physically, a constant shift in the energy has no impact on the dyanamics of a system, and physically nothing prevents us from adding such terms. In the Ising model, we could interpret the self-interaction of spin $s_i$ as the \textit{self-energy} of spin $i$, i.e.\ the energy necessary for spin $s_i$ to simply exist in the lattice regardless of it's interaction with the other spins.
 
 
-\subsection{Classifying phases of the two-dimensional Ising model}
+\subsection{Classifying phases of the two-dimensional Ising model \label{sect:ising2d}}
 
-\subsubsection{Logistic regression analysis on the two-dimensional Ising model}
 We consider the 2D Ising model on a $40 \times 40$ lattice. There are three possible types of states: ordered $T/J < 2.0$, 
 critical $2.0 \leq T/J \leq 2.5$ and disordered $ T/J > 2.5$.
 
@@ -1095,6 +1094,7 @@ Each data point is represented by a state-vector
 and a label $y_i \in \{0,1\}$ with $y_i = 1$ corresponding to an ordered state.
 
 
+\subsubsection{Logistic regression analysis on the two-dimensional Ising model}
 The logistic regression model is trained using a set of ordered and disordered states, while the critical states are left out. 
 This training set is split 50/50 in a training and test set. When the training procedure is finished, the performance of 
 the model is measured on both the test set and the set of critical states not used in the training phase. 
@@ -1127,13 +1127,28 @@ which is essentially guessing as shown in Fig.\ref{logRegNoIntercept}.
 
 \begin{figure}[h!]
 \centering
- \includegraphics[width=1\linewidth]{logReg_acc_vs_regstrength_noIntercept.png}
+ %\includegraphics[width=1\linewidth]{logReg_acc_vs_regstrength_noIntercept.png}
  \captionof{figure}{Training, test and critical accuracy plotted as function of regularization parameter $\lambda$ without 
  intercept term. We clearly see that the training, test and critical accuracies are close to 50\%, i.e. we end up with 
  a sophisticated way of wild guessing. 
  }
  \label{logRegNoIntercept}
 \end{figure}
+
+\subsubsection{Classification using the neural network model}
+Lastly, we turn to classification of the 2D Ising model ordered/disordered states, described in section \ref{sect:ising2d}, using a neural network model. Classification is done with a softmax cross-entropy activation/cost function combo in the last layer of the network, while we retain the sigmoid activations for the earlier layer(s). The network architecture used consists of a single hidden layer of $100$ neurons, feeding into a layer of a single neuron (the softmax activation) and the two outputs (in one-hot vector format). As no regularization was necessary to obtain satisfactory results, $\lambda=0$ was used throughout this section. We use the Adam optimizer, and a batch size of $2000$ states. 
+
+As the entire data set is rather large, our first attempt takes only a random subset of $20\,000$ total configurations for training (roughly a third of the Mehta data). Half of the $20\,000$ are used for training, the other half are used for validation. In addition, we use the separate samples around $T_c$ for secondary validation. Training for $2000$ epochs yields an acceptable accuracy, as shown in \fig{nn_accuracy_20k}. Note that $1-\text{accuracy}$ is shown, i.e.\ lower is better. The peak accuracy reached on the training samples was $99.89\%$, while the accuracy on the validation set was $98.86\%$. On the $30\,000$ samples around the Curie temperature, the accuracy attained was $94.50\%$, meaning $1652$ of the $30\,000$ were misclassified. This is already impressive compared to the logistic regression scheme, but we can do better.
+
+
+\begin{figure}
+\centering
+ \includegraphics[width=\textwidth]{accuracy-20k.png}
+ \captionof{figure}{Accuracy on the training and the validation sets for the 2D Ising model classification samples using the neural network trained for $2000$ epochs on $20\,000$ samples. Note that neither training or validation sampels in this plot represent the critical samples around the Curie temperature.\label{fig:nn_accuracy_20k}}
+\end{figure}
+
+With more data available, the model performs better. Increasing the training data set size to the entirety of the Mehta data (still retaining all critical samples for validation only), we retrain the network and arrive at the very satisfactory validation accuracy of $99.97\%$ (non-critical). Please note that this means we are missclassifying only a total of $22$ configurations, out of the $65\,000$ total. On the critical samples, the fully trained model performs marginally better, correctly classifying an additional $293$ states for a total critical accuracy of $95.47\%$. 
+
 
 
 \section{Conclusion}

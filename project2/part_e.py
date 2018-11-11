@@ -186,11 +186,11 @@ def load_ising_data() :
                 np.concatenate((labels[ordered], labels[disordered])),
                 test_size = 0.5,
                 shuffle   = True)
-    X_critical = data[critical]
+    X_critical = data  [critical]
     y_critical = labels[critical]
 
     del data, labels
-    return X_train, X_test, y_train, y_test
+    return X_train, X_test, y_train, y_test, X_critical, y_critical
 
 
 def save_ising_smaller(n_samples = 5000) :
@@ -432,42 +432,46 @@ def loss_and_accuracy(n_samples=5000) :
     np.savetxt('acc_crit', acc_crit)
     np.savetxt('acc_train', acc_train)
 
-def check_accuracy(fileName, n_samples=None) :
+def check_accuracy(fileName) :
     nn = pickle.load(open(fileName, 'rb'))
     
-    if n_samples is None :
-        x_train, x_test, target_train, target_test = load_ising_data()
-    else :
-        x_train, x_test, target_train, target_test = load_ising_smaller(n_samples)
+    x_train,      \
+    x_test,       \
+    target_train, \
+    target_test,  \
+    x_crit,       \
+    target_crit = load_ising_data()
 
-    pred_test  = np.squeeze(to_label(nn.predict(x_test.T), axis=0))
+    pred_test  = np.squeeze(to_label(nn.predict(x_test.T),  axis=0))
     pred_train = np.squeeze(to_label(nn.predict(x_train.T), axis=0))
+    pred_crit  = np.squeeze(to_label(nn.predict(x_crit.T),  axis=0))
 
     acc_crit = accuracy_score_numpy(
-                    np.squeeze(target_test),
-                    pred_test
+                    np.squeeze(target_crit),
+                    pred_crit
                 )
     acc_train = accuracy_score_numpy(
                     np.squeeze(target_train),
                     pred_train
                 )
     miss_crit = total_missed(
-                    np.squeeze(target_test),
-                    pred_test
+                    np.squeeze(target_crit),
+                    pred_crit
                 )
     miss_train = total_missed(
                     np.squeeze(target_train),
                     pred_train
                 )
 
-
+    print(target_test.shape)
+    print(target_train.shape)
+    print(target_crit.shape)
     print("Accuracy (critical): %20.15f    total missed: %-20d" % (acc_crit,  miss_crit))
     print("Accuracy (training): %20.15f    total missed: %-20d" % (acc_train, miss_train))
 
 
 def trim_nn_file(fileName) :
     nn = pickle.load(open(fileName, 'rb'))
-    
     
     nn.a = None
     nn.validation_loss_improving = None
@@ -497,8 +501,6 @@ def trim_nn_file(fileName) :
     nn.first_backprop = True
     nn.adam_initialized = False
 
-
-
     variables = nn.__dict__
     for v in variables :
         vv = variables[str(v)]
@@ -516,8 +518,28 @@ def trim_nn_file(fileName) :
                     print("  ", i , end="\r")
         print("")
 
-
     pickle.dump(nn, open('nn.p', 'wb'))
+
+
+def plot_csv() :
+    crit_acc  = np.genfromtxt('crit_acc_20k.txt',  delimiter=',')
+    train_acc = np.genfromtxt('train_acc_20k.txt', delimiter=',')
+
+    epochs = np.linspace(0,2*len(crit_acc)-1,len(crit_acc))
+
+    fontsize = 10
+    plt.rc('text', usetex=True)
+    plt.semilogy(epochs, 1.0 - crit_acc,  label=r'validation samples')
+    plt.semilogy(epochs, 1.0 - train_acc, label=r'training samples')
+
+    plt.xlabel(r'Epochs',   fontsize=fontsize)
+    plt.ylabel(r'$1-\text{accuracy}$', fontsize=fontsize)
+    plt.legend(fontsize=fontsize)
+    plt.xlim((0,max(epochs)))
+    plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'accuracy-20k.png'), transparent=True, bbox_inches='tight')
+    plt.show()
+
+
 
     
 
@@ -529,9 +551,11 @@ if __name__ == '__main__':
     #loss_and_accuracy(20000)
 
     #ising_classify()
-    check_accuracy('nn_ising_classify.p')
+    check_accuracy('nn_classify20k_2k_epochs.p')
 
     #trim_nn_file('nn_65k.p')
+
+    #plot_csv()
 
 
 

@@ -168,7 +168,34 @@
 \lipsum[2]
 
 \subsection{The heat equation}
-\lipsum[3]
+The heat equation is a partial differential equation (in space $x$ and time $t$) which describes the evolution of temperature differences in a region of space over a time interval. It is based on \textit{Fourier's law}; the rate of heat flow through a surface is proportional to the temperature gradient across the surface, i.e.\
+\begin{align}
+\mathbf{q}=-k\nabla T = -k \frac{\partial T}{\partial x},
+\end{align}
+where $\mathbf{q}$ denotes the heat flux density, $k$ is the thermal conductivity of the surface material, and $T$ represents the temperature. Changes in temperature are proportional to changes in internal energy, with the proportionality constant being the specific heat capacity $c_p$. With the arbitrary energy zero point placed at absolute zero, this can be written as
+\begin{align}
+Q = c_p \rho T,
+\end{align}
+with $Q$ being the internal energy and $\rho$ denoting the mass density. This is essentially just a restatement of (a shifted) \textit{first law of thermodynamics}, in the absence of applied work. The total heat energy contained in a region $[a,b]$ is given by the integral
+\begin{align}
+\int_a^b\mathrm{d}x\,c_p\rho T(x,t).
+\end{align}
+Integrating over a small region of space and considering the change in internal energy over a short time interval (assuming $c_p$ and $\rho$ are both time-independent and spatially homogenous) gives 
+\begin{align}
+\Delta Q=& c_p \rho\int_{x}^{x+\Delta x}\mathrm{d}\chi\,\Big[T(\chi,t+\Delta t) - T(\chi,t)\Big] \nonumber \\
+&= c_p\rho \int_x^{x+\Delta x}\mathrm{d}\chi\int_{t}^{t+\Delta t}\mathrm{d}\tau\,\frac{\partial T}{\partial \tau}. \label{eq:energy1}
+\end{align}
+Over a short time period $\Delta t$, the change in internal energy of a short segment of length $\Delta x$  must be entirely due to the heat flux in/out of the boundaries,
+\begin{align}
+\Delta Q &= k\int_t^{t+\Delta t}\mathrm{d}\tau\,\left[\frac{\partial T(x+\Delta x,\tau)}{\partial x} - \frac{\partial T(x,\tau)}{\partial x} \right] \nonumber \\
+%
+&= k\int_t^{t+\Delta t}\mathrm{d}\tau\int_x^{x+\Delta x}\mathrm{d}\chi\,\frac{\partial^2 T}{\partial \chi^2}. \label{eq:energy2}
+\end{align}
+By conservation of energy, the difference between \eq{energy1} and \eq{energy2} must obviously vanish. Since we are integrating over the same spatial and temporal regions in both equations, this means that the integrand must vanish identically:
+\begin{align}
+\frac{k}{c_p\rho} \frac{\partial^2 T}{\partial x^2} = \frac{\partial T}{\partial t}. \label{eq:heat}
+\end{align}
+This is known as the \textit{heat equation} and is a special case of the more general diffusion equation. 
 
 \subsection{Closed form solution}
 \lipsum[4]

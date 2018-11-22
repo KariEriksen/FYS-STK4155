@@ -198,7 +198,73 @@ By conservation of energy, the difference between \eq{energy1} and \eq{energy2} 
 This is known as the \textit{heat equation} and is a special case of the more general diffusion equation. 
 
 \subsection{Closed form solution}
-\lipsum[4]
+The 1D heat equation may be solved by applying a separation of variables ansatz, i.e.\ we assume the solution $u(x,t)$ takes the form
+\begin{align}
+u(x,t) = X(x)T(t), 
+\end{align}
+with $X(x)$ carrying all the $x$-dependence, and $T(t)$ carrying the corresponding time dependence. Introducing the compact notation 
+\begin{align}
+u_{x} \equiv \partial_x u =  \frac{\partial u}{\partial x}, \ \ \text{ and } \ \ u_t \equiv \partial_t u =  \frac{\partial u}{\partial t}, 
+\end{align}
+we find by insertion of the ansatz into \eq{heat}:
+\begin{align}
+\alpha^2\, u_{xx} &= u_t \nonumber \\
+%
+\alpha^2\, \partial_x \Big[\partial_x  X(x)T(t) \Big] &= \partial_t X(x)T(t) \nonumber \\
+%
+\alpha^2\, \partial_x \Big[ X_x T + XT_x \Big] &= X_tT+XT_t \nonumber \\
+%
+\alpha^2\, \Big[X_{xx}T + 2X_xT_x + XT_{xx}\Big]&= XT_t \nonumber \\
+\frac{1}{X(x)} \frac{\partial^2 X(x)}{\partial x^2} &= \frac{1}{\alpha^2\,T(t)}\frac{\partial T(t)}{\partial t},
+\end{align}
+where we defined $\alpha^2\equiv k/c_p\rho$ and used the fact that $X_t=T_x=0$. As the left hand side is independent of $t$ and the right hand side is independent of $x$, the equality can only be achieved if both sides are constant. This reduces the original partial differential equation into a set of two ordinary differential equations 
+\begin{align}
+\frac{1}{X(x)}\frac{\partial^2X(x)}{\partial x^2}&=k  \label{eq:X(x)}\\
+%
+\frac{1}{\alpha^2\,T(t)}\frac{\partial T(t)}{\partial t}&=k, \label{eq:T(t)}
+\end{align} 
+with $k$ an undetermined constant. 
+
+Depending on the value of $k$, the spatial part has solutions $X(x)=Ax+B$ (if $k=0$), $X(x)=A\mathrm{e}^{\mu x}+B\mathrm{e}^{-\mu x}$ (if $k=\mu^2>0$), or $X(x)=A\mathrm{e}^{\mathrm{i}\mu x}+B\mathrm{e}^{-\mathrm{i}\mu x}$ (if $k=-\mu^2<0$). The temporal equation has solutions $T(t)=C$ (if $k=0$), or $T(t)=C\mathrm{e}^{\alpha^2\mu^2 x}$ (otherwise).
+
+\subsubsection{Applying the boundary conditons}
+In order to make progress, we need to apply the specific boundary and initial conditions. In our case, the boundaries at $x=0$ and $x=L=1$ vanish, and the initial spatial solution takes the form $u(x,t=0)=\sin \pi x$. If the $k$ constant of \eq{X(x)} vanishes, then  both constants $A$ and $B$ vanish due to the boundary conditions. The same is true if $k=\mu^2>0$. It follows that the only non-trivial solutions arise when $k=-\mu^2<0$, in which case we find (left boundary)
+\begin{align}
+X(0) &= A\cos \mu x + B\sin\mu x = 0 \Rightarrow A=0 \nonumber 
+\end{align}
+and (right boundary) 
+\begin{align}
+X(1) &= B\sin\mu x = 0 \Rightarrow \mu=\pi n. \nonumber 
+\end{align}
+This gives rise to an infinite set of equations\textemdash one for each $n$\textemdash which determine the Fourier coefficients of the initial condition $u(x,t=0)$:
+\begin{align}
+u(x,t=0) &= \sum_{n=1}^\infty B_n \sin (n\pi x),
+\end{align}
+with 
+\begin{align}
+B_n &= 2\int_0^1\mathrm{d}x\, u(x,t=0)\,\sin(n\pi x).
+\end{align}
+
+The temporal equation, \eq{T(t)}, can now be solved only applying the boundary conditions. With the value of $\mu$ fixed at $\mu=n\pi$, we obtain 
+\begin{align}
+T(t) = \mathrm{e}^{-n^2\pi^2\alpha^2 t}.
+\end{align}
+
+\subsubsection{Applying the initial condition}
+Combining the $X(x)$ and $T(t)$ solutions we obtain a series representation of the solution in terms of the Fourier coefficients of the initial condition $u(x,t=0)$, in which the higher frequency modes of the initial solution decays more rapidly than the corresponding lower frequency modes,
+\begin{align}
+u(x,t) = \sum_{n=1}^\infty B_n \sin(n\pi x)\,\mathrm{e}^{-n^2\pi^2\alpha^2 t}. \label{eq:general}
+\end{align}
+It is easy to see that the steady-state solution is achieved when $u(x,t)=0$, since both boundaries (left and right) act as sinks for the initial heat energy contained in the system, and no heat is ever \textit{added}. In our case, the initial condition makes the general solution \eq{general} take on a very simple form. Applying $u(x,t=0)=\sin \pi x$, it is trivial to evaluate 
+\begin{align}
+B_n &= 2\int_0^1\mathrm{d}x\, \sin(\pi x)\, \sin(n\pi x) = \delta_{1n},
+\end{align}
+due to the orthogonality of $\sin(n\pi x)$ and $\sin(m\pi x)$. This means $B_1=1$ and $B_2,B_3,\dots = 0$,
+and the full solution to \eq{heat} is given by 
+\begin{align}
+u(x,t)=\sin(\pi x)\,\mathrm{e}^{-\pi^2\alpha^2 t}. \label{eq:full}
+\end{align}
+
 
 \subsection{Solving differential equations with neural networks}
 \lipsum[5]

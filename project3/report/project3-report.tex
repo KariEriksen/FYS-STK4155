@@ -266,6 +266,47 @@ u(x,t)=\sin(\pi x)\,\mathrm{e}^{-\pi^2\alpha^2 t}. \label{eq:full}
 \end{align}
 
 
+\section{Finite difference method}
+The most straightforward way to solve \eq{heat} numerically is through \textit{finite difference methods}, i.e.\ discretizing time and space on a grid and Taylor expanding the solution to obtain algebraic equation sets. A multitude of different strategies and schemes exists, but we will consider the \textit{explicit forward Euler} scheme. 
+
+The spatial region $[0,L]$ is discretized by splitting it into $N$ segments, and considering only the functional values on the points $x_i=i\Delta x$ with $i\in[0,N-1]$. We denote a function $f(x,t)$ evaluated at $x_i$ (and at time $t$) by $f_i^t=f(x_i,t)$. Considering $N$ spatial points gives a step size $\Delta x$ between each point of 
+\begin{align}
+\Delta x = \frac{L}{N-1}.
+\end{align}
+In addition, we introduce a discretization in the temporal dimension with step size $\Delta t$. 
+
+Let us consider the Taylor expansion of a function $f(x,t)$ considered at fixed $t$, $f(x;t)$, around a spatial point $x$. We use the shorthand $h\equiv (x-a)$, and consider the expansion at a point $a\not=x$. The expansions of $f(x+h;t)$ and $f(x-h;t)$ are given by, 
+\begin{align}
+f(x+h) &\approx f(x) + hf'(x) + h^2f''(x), \label{eq:f(x+h)}\\
+f(x-h) &\approx f(x) - hf'(x) + h^2f''(x), \label{eq:f(x-h)}
+\end{align}
+respectively. As $t$ is considered a fixed parameter for the moment, we supressed the second functional argument for notational brevity. The shorthand $f'(x)$ is here used to denote differentiation w.r.t.\ $x$. Note that both equations hold with equality if an overall error term proportional to $h^3$ is added on the right hand side, i.e.\ $\mathcal{O}(h^3)$. Adding Eqs. (\ref{eq:f(x+h)}) and (\ref{eq:f(x-h)}) and dividing through by $h^2$ yields
+\begin{strip}
+\begin{align}
+f(x+h)+f(x-h) &= 2f(x) + h^2f''(x) + \mathcal{O}(h^4) \nonumber \\
+%
+f''(x) &= \frac{f(x+h)-2f(x)+f(x-h)}{h^2} + \mathcal{O}(h^2), \label{eq:centraldiff}
+\end{align}
+\end{strip}
+which is the three-point central difference approximation to the second derivative. Note that the resulting error is proportional to $h^2$ because the third order contributions from Eqs. (\ref{eq:f(x+h)}) and (\ref{eq:f(x-h)})\textemdash $h^3f'''(x+h)$ and $-h^3f'''(x+h)$\textemdash cancel exactly. A corresponding temporal first order derivative approximation may be found by simply considering \eq{f(x+h)}, and considering $h$ to be a small temporal step, $x$ to be a fixed parameter, and varying $t$. This gives
+\begin{align}
+f'(t)&= \frac{f(t+h)-f(t)}{h}+\mathcal{O}(h), \label{eq:forwarddiff}
+\end{align}
+where the error term is proportional to $h^2$ when disregarding the last term on the right hand side of \eq{f(x+h)}, which gives $\mathcal{O}(h)$ after dividing through by $h$.
+
+Let us now consider \eq{centraldiff} on the previously defined grid, and take $h=\Delta x$. In the \eq{forwarddiff} case, we define $h=\Delta t$, and equate $\alpha^2\,f''(x)$ with $f'(t)$ as in the heat equation \eq{heat}. The result can be solved for $f(x,t+\Delta t)$, i.e.\ the \textit{next} time step given that the previous step is known:
+\begin{align}
+\frac{f_i^{j+1} - f_i^j}{\Delta t} &= \alpha^2\frac{f_{i+1}^j - 2f_i^j + f_{i-1}^j}{\Delta x^2} \nonumber \\
+%
+f_i^{j+1} &= f_i^j + \beta \Big[f_{i+1}^j - 2f_i^j + f_{i-1}^j\Big], \label{eq:explicit}
+\end{align}
+where $f_i^j$ denotes the discretized $f(x_i,t_j)$ and 
+\begin{align}
+\beta\equiv\alpha^2\left(\frac{\Delta t}{\Delta x^2}\right).
+\end{align}
+Equation (\ref{eq:explicit}) is known as the \textit{explicit Euler} scheme, and can be solved directly for $f(x,t+\Delta t)$ since the right hand side is all known at time step $t$.
+
+
 \subsection{Solving differential equations with neural networks}
 \lipsum[5]
 

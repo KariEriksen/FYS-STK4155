@@ -265,6 +265,56 @@ and the full solution to \eq{heat} is given by
 u(x,t)=\sin(\pi x)\,\mathrm{e}^{-\pi^2\alpha^2 t}. \label{eq:full}
 \end{align}
 
+\subsection{Explicit scheme}
+One of the more simple methods in the world of solving ordinary and partial differential equation numerically is the explicit scheme. This is a method that bases itself upon using the previous value of the derivatives in order to find the new ones.
+We will here derive the explicit scheme for the diffusion equation, \eq{diffusion}.
+\begin{equation} \label{eq:diffusion}
+\frac{\partial^2 u(x,t)}{\partial x^2} = \frac{\partial u(x,t)}{\partial t}
+\end{equation}
+We begin with Taylor expantion of $u(x,t)$ in $t$. 
+\begin{equation*}
+u(x,t + \Delta t) = u(x,t) + \Delta t u'(x,t) + \frac{1}{2} \Delta t^2 u''(x,t) + ...
+\end{equation*}
+Truncating the series after the first term we get an expression of the first derivative of $u$ wrt. $t$ with the truncation error $O(\Delta t)$.
+\begin{equation*}
+u'(x,t) = \frac{u(x,t + \Delta t) - u(x,t)}{\Delta t} + O(\Delta t)
+\end{equation*}
+This can be simplyfied if we rewrite the derivative of $u$ wrt. $t$ as $u_t$ and discretize.
+\begin{align*}
+u_t &\approx \frac{u(x_i, t_j + \Delta t) - u(x_i, t_j)}{\Delta t} \\
+&\approx \frac{u_{i,j+1} - u_{i,j}}{\Delta t}
+\end{align*}
+This is called the forward Euler method, we move one step forward in time in the integration process using the previous step. This is the simplest version of the explicit scheme.
+Now we carry out the same procedure for the spatial part.
+\begin{align*}
+u(x + \Delta x,t) &= u(x,t) + \Delta x u'(x,t) + \frac{1}{2} \Delta x^2 u''(x,t) \\
+&+ \frac{1}{3!} \Delta x^3 u'''(x,t) + ... \\
+u(x - \Delta x,t) &= u(x,t) - \Delta x u'(x,t) + \frac{1}{2} \Delta x^2 u''(x,t) \\
+&- \frac{1}{3!} \Delta x^3 u'''(x,t) + ... 
+\end{align*}
+%\begin{align}
+%\Delta x u'(x,t) &= u(x + \Delta x,t) - u(x,t) - \frac{1}{2} \Delta x^2 u''(x,t) \\
+%\Delta x u'(x,t) &= -u(x - \Delta x,t) + u(x,t) + \frac{1}{2} \Delta x^2 u''(x,t)
+%\end{align}
+%\begin{equation*}
+%u''(x,t) = \frac{u(x + \Delta x,t) - 2u(x,t) + u(x - \Delta x,t)}{\Delta x^2} + O(\Delta x^2)
+%\end{equation*}
+We truncate at second term in order to get the second order derivative and rewrite to simplify as before. 
+\begin{align*}
+u_{xx} &\approx \frac{u(x_i + \Delta x,t_j) - 2u(x_i,t_j) + u(x_i - \Delta x,t_j)}{\Delta x^2} \\
+&\approx \frac{u_{i+1, j} - 2u_{i,j} + u_{i-1,j}}{\Delta x^2}
+\end{align*}
+This is a centered difference method as we are using both previous and latter values in space to find the new second derivative of the spatial coordinate.
+Adding the two solutions into the original differential equation we get the following. 
+\begin{align*}
+u_t &= u_{xx} \\
+u_{i,j+1} - u_{i,j} &= u_{i+1,j} - 2u_{i,j} + u_{i-1,j} \frac{\Delta t}{\Delta x^2}
+\end{align*}
+The full diffusion equation on discretized form can further be rewritten by putting $\beta = \Delta t / \Delta x^2$.
+\begin{align*}
+u_{i, j+1} &= \beta (u_{i+1,j} - 2u_{i,j} + u_{i-1,j}) + u_{i,j} \\
+&= \beta (u_{i+1,j} + u_{i-1,j}) + (1 - 2\beta)u_{i,j} 
+\end{align*}
 
 \section{Finite difference method}
 The most straightforward way to solve \eq{heat} numerically is through \textit{finite difference methods}, i.e.\ discretizing time and space on a grid and Taylor expanding the solution to obtain algebraic equation sets. A multitude of different strategies and schemes exists, but we will consider the \textit{explicit forward Euler} scheme. 

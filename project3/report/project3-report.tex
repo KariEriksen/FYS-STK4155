@@ -429,7 +429,33 @@ Equipping our functional space with the $L^1$ integral inner product (and the as
 
 
 \subsection{Solving differential equations with neural networks}
-\lipsum[5]
+The main focus on this project is exploring partial differential problems with the use of deep learning. Deep neural networks (DNN) are networks that consist of two hidden layers or more. In this part of the project we will be using Googles open-source library Tensorflow. A time consuming part of neural networks is the backpropagation and its equations. By using Tensorflow we avoid having to solve the derivatives of a cost function w.r.t to all the different weights and biases. It also provides us with a wast amount of applications. Different activation functions, gradients, loss function etc. And it is easy to add layers and nodes. 
+
+Our biggest job becomes finding a cost function, and testing for different architectural layouts. We will look at a standard DNN with $n_h$ hidden layers. Each layer may contain different number of neurons, or nodes. 
+
+As optimizer we will use stochastic gradient descent which also have been explained to some extent in previous reports. 
+
+Since our PDE is the diffusion equation it makes sense to use the mean squared error (MSE) as our cost function. We want to minimize the right hand side of \eq{diff_0} which the MSE allow us to do. 
+
+\begin{equation} \label{eq:diff_0}
+0 = \frac{\partial u(x,t)}{\partial t} - \frac{\partial^2 u(x,t)}{\partial x^2} 
+\end{equation}
+
+\begin{equation}
+MSE = \frac{1}{n} \sum^n \left( \frac{\partial u}{\partial t} - \frac{\partial^2 u}{\partial x^2} \right)^2
+\end{equation}
+
+Our next task is designing a trial function that can be used as input for the cost function. Preferably a trial function that satisfy the initial conditions and boundary conditions. If we look at \eq{trial} we see that for $x = 0$ and $x = 1$ the trial function is zero since $\sin (0) = \sin (\pi) = 0$ which is the boundary conditions. For $t = 0$ it is $\sin(\pi x)$ which is the initial condition. And \eq{trial} fulfilles all conditions.
+
+\begin{equation} \label{eq:trial}
+u_{trial}(x,t) = \sin (\pi x) + x(1 - x)tN(x, t, P)
+\end{equation}
+
+We can now begin training the network. Usually one would have one set of training data and one set of test data and compare the results. However we have an exact solution and can check our results directly. 
+
+adjust $\alpha$ and look at the solution, and see how well the fit is
+
+Or compare analytical with dnn solution for different time steps.
 
 
 \section{Results and discussion}

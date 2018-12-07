@@ -358,7 +358,7 @@ Equation (\ref{eq:explicit}) is known as the \textit{explicit Euler} scheme, and
 
 
 \subsection{Implicit schemes}
-As noted in section \ref{sect:finitediff}, applying the forward difference approximation for the first derivative in time\textemdash derived from the Taylor expansion of a function around the point $x+h$\textemdash yields the explicit Euler scheme. However, as we will see in section \ref{sect:finitestability}, the forward method has a rather weak stability criterion which neccessitates the use of very small time steps to ensure the solution remains well-behaved. 
+As noted in section \ref{sect:finitediff}, applying the forward difference approximation for the first derivative in time\textemdash derived from the Taylor expansion of a function around the point $x+h$\textemdash yields the explicit Euler scheme. However, as we will see in section \ref{sect:finitestability}, the forward method has a rather weak stability criterion which necessitates the use of very small time steps to ensure the solution remains well-behaved. 
 
 If we instead employ a backward difference approximation in time (solving \eq{f(x-h)} for an $\mathcal{O}(h)$ approximation of the first derivative) we obtain equations sets which are stable for any combination of $\Delta x$ and $\Delta t$. This allows us to use more reasonable time steps and ultimately speeds up and improves the computed solution. 
 
@@ -418,9 +418,9 @@ As the matrix $A$ is tri-diagonal, efficient linear scaling solution algorithms 
 In the case of the finite difference approximation, the derivatives in the original partial differential equation is transformed into a set of algebraic equations by application of \textit{finite difference} approximations arising from Taylor expansions of the solution function. A fundamentally different, and somewhat more sophisticated, solution strategy entails writing the original differential equation in its \textit{weak form}. This is done by integrating the original equation multiplied by a test function $v(x)$ over the domain in question. Such a \textit{finite element} approach is normally accompanied by a simple finite element scheme in time when partial differential equations are considered. 
 
 \subsubsection{Functional spaces and weak forms}
-Let us consider the vector space of \textit{all} functions $f:\mathds{R}^2\rightarrow\mathds{R}$, which we will call $A(\mathds{R}^2)$. Obviously, the solution to the heat equation is contained in this space, being a real-valued function of two parameters, $x$ and $t$. However, we may consider subspaces with more useful structure than the all-encompassing $A(\mathds{R}^2)$. Assuming the initial and boundary conditions are specified in a sufficiently non-pathological way, the solution at each instant in time will be continous across the spatial integration domain, $\Omega$. In other words, the solution (at some $\tau\ge0$) $u(x;\tau)\in C(\Omega)$: The vector space of \textit{continous} functions $f:\Omega\rightarrow\mathds{R}$. As the heat equation involves a second spatial derivative, we might assume that the solution be twice continously differentiable, i.e.\ $u(x;\tau)\in C^2(\Omega)$.
+Let us consider the vector space of \textit{all} functions $f:\mathds{R}^2\rightarrow\mathds{R}$, which we will call $A(\mathds{R}^2)$. Obviously, the solution to the heat equation is contained in this space, being a real-valued function of two parameters, $x$ and $t$. However, we may consider subspaces with more useful structure than the all-encompassing $A(\mathds{R}^2)$. Assuming the initial and boundary conditions are specified in a sufficiently non-pathological way, the solution at each instant in time will be continuous across the spatial integration domain, $\Omega$. In other words, the solution (at some $\tau\ge0$) $u(x;\tau)\in C(\Omega)$: The vector space of \textit{continuous} functions $f:\Omega\rightarrow\mathds{R}$. As the heat equation involves a second spatial derivative, we might assume that the solution be twice continuously differentiable, i.e.\ $u(x;\tau)\in C^2(\Omega)$.
 
-It turns out that demanding $u\in C^2(\Omega)$ is too strict a bound on the behaviour of the solution. For example, a valid solution may be \textit{not} differentiable on a subset $S\subset\Omega$ with measure zero\footnote{A set $S\subset\mathds{R}$ of measure zeros is a set with vanishing "size," e.g.\ a finite set of \textit{points}.}, known as differentiable almost everywhere (a.e.). It is more useful to consider \textit{weakly differentiable} functions, which encompass the ordinary (strongly) differentiable functions and includes other possible solutions of partial differential equations. 
+It turns out that demanding $u\in C^2(\Omega)$ is too strict a bound on the behavior of the solution. For example, a valid solution may be \textit{not} differentiable on a subset $S\subset\Omega$ with measure zero\footnote{A set $S\subset\mathds{R}$ of measure zeros is a set with vanishing "size," e.g.\ a finite set of \textit{points}.}, known as differentiable almost everywhere (a.e.). It is more useful to consider \textit{weakly differentiable} functions, which encompass the ordinary (strongly) differentiable functions and includes other possible solutions of partial differential equations. 
 
 Equipping our functional space with the $L^1$ integral inner product (and the associated norm), consider now a family of functions with compact support\footnote{The support of a function $f$ is the (closure) of the set of points in the domain of $f$ for which $f(x)$ does \textit{not} vanish, i.e.\ the set $\{x\in\Omega:f(x)\not=0\}$.} $\phi\in C^\infty(\Omega)$, with $\phi(\partial\Omega)=0$, where we denote by $\partial\Omega$ the boundary of the integration domain (in one dimension, this is just the end two points). Any function $f:\Omega\rightarrow\mathds{R}$ which is bounded on $\Omega$ and thus locally integrable (in the Lebesgue sense) on $\Omega$ defines a linear functional $\Lambda_f$ on $C^\infty(\Omega)$ through
 \begin{align}
@@ -436,7 +436,7 @@ Integrating by parts and remembering that $\phi(\partial \Omega)=0$, we find
 %
 &=  -\int_\Omega\mathrm{d}x\, f(x)\phi'(x).
 \end{align}
-Note carefully that the first integral is only defined if the limit exists and converges for a.e.\ $x\in\Omega$, but the last integral is defined and well-behaved for any locally integrable (bounded) function $f$. This functional exists even if \eq{limit} does not converge pointwise for \textit{any} $x\in\Omega$(!).
+Note carefully that the first integral is only defined if the limit exists and converges for a.e.\ $x\in\Omega$, but the last integral is defined and well-behaved for any locally integrable (bounded) function $f$. This functional exists even if \eq{limit} does not converge point wise for \textit{any} $x\in\Omega$(!).
 
 In the spirit of this, we define the \textit{weak derivative}: The $k$-th order weak derivative of $u$ is defined as a function $v$ for which the following holds
 \begin{align}
@@ -444,9 +444,42 @@ In the spirit of this, we define the \textit{weak derivative}: The $k$-th order 
 \end{align}
 where a factor $(-1)$ is picked up for each integration by parts. 
 
-In defining a weak derivative, we have moved the previous demands on $f$ onto a set of test functions $\phi(x)$. Even if the demands on the functions $\phi$ are stronger than the previous demands on $f$ ($\phi\in C^\infty(\Omega)$ [infinitely continously differentiable] as opposed to $f\in C^2(\Omega)$ [twice continously differentiable]), it will turn out that this is easier to control when considering finite element schemes. 
+In defining a weak derivative, we have moved the previous demands on $f$ onto a set of test functions $\phi(x)$. Even if the demands on the functions $\phi$ are stronger than the previous demands on $f$ ($\phi\in C^\infty(\Omega)$ [infinitely continuously differentiable] as opposed to $f\in C^2(\Omega)$ [twice continuously differentiable]), it will turn out that this is easier to control when considering finite element schemes. 
 
+The functional spaces containing functions $f:\mathds{R}^m\rightarrow\mathds{R}$ with $f$ being $k$ times weakly differentiable are called \textit{Sobolev} spaces, and denoted $H^k$. 
 
+\subsubsection{The heat equation in variational (weak) form}
+As we have seen, the solution function of the original heat equation resides in the Sobolev space $H^2(\Omega)$ of a.e.\ continuous functions on the domain $\Omega$ with weak derivatives up to and including order two. Notice that if the strong (ordinary) derivative exists, then the weak and the strong derivatives are equal. This means that $H^2(\Omega)$ is a \textit{larger} space than $C^2(\Omega)$, which is larger again than the set of infinitely continuously differentiable functions $C^\infty(\Omega)$.
+
+Let us consider a stationary diffusion equation on the form
+\begin{align}
+f(x)=\partial_{xx}u(x),
+\end{align} 
+with $f(x)$ some known function. Multiplying from the left by a test function $\phi(x)\in C^\infty(\Omega)$ satisfying $\phi(\partial\Omega)=0$ and integrating over $\Omega$, before integrating by parts, yields a \textit{weak} or \textit{variational} form as
+\begin{align}
+\int_\Omega\mathrm{d}x\, \phi(x)f(x) &= \int_\Omega \mathrm{d}x\, \phi(x)\frac{\partial^2 u}{\partial x^2} \nonumber \\
+%
+&= -\int_\Omega \mathrm{d}x\, \frac{\partial \phi}{\partial x}\frac{\partial u}{\partial x} \label{eq:weak1} \\
+%
+\int_\Omega\mathrm{d}x\, \phi(x)f(x) &=  \int_\Omega \mathrm{d}x\, \frac{\partial^2 \phi}{\partial x^2}u(x). \label{eq:weak2}
+\end{align}
+Proving that a solution of the weak equation is also a solution of the strong form is non-trivial and not always possible. We will in the following take if for granted that this is possible and true, or that when it is not possible we will simply interpret the weak solution as \textit{the solution}. 
+
+\subsubsection{Basis choice and the Galerkin method}
+So far we have ostensibly only introduced a second unknown function into the problem, without gaining much besides relaxation of some demands on the solution function $u$. We will now employ the Galerkin method\textemdash introducing a basis for $\phi(x)$\textemdash and derive a set of algebraic equations which may be solved to obtain an approximation to $u$. 
+
+In order to make the problem numerically tractable, we are now forced to choose a suitable subspace $V$ of $H^2(\Omega)$ to work in. In practice, this is done by introducing a basis $\{\psi_i(x)\}_{i=1}^n$ and letting the subspace be $V_n=\text{Span}(\{\psi_i(x)\})$. In order to simplify the resulting equations, we choose a set of piecewise differentiable functions which vanish exactly on the boundary $\partial \Omega$. One of the simplest choices are the "hat functions,"
+\begin{align}
+\psi_i(x)=\left\{ \begin{matrix}
+0                   & x\in (-\infty, x_i-h) \\%x<x_i-h \\
+\frac{x-(x_i-h)}{h} & x\in [x_i-h, x_i) \\%x_i-h\le x < x_i \\
+1- \frac{x-x_i}{h}  & x\in [x_i, x_i+h) \\%x_i \le x < x_i+h \\
+0                   & x\in [x_i+h, \infty)%x_i+h \le x
+\end{matrix}\right.
+\end{align}
+i.e.\ piecewise linear functions which are non-zero in the range $[x_i-h, x_i+h]$, increasing linearly to unity from $x_i-h$ to $x_i$, before decreasing linearly back to zero between $x_i$ and $x_i+h$. 
+
+Working from the weak form \eq{weak1} (we may also choose to work from \eq{weak2}, but the former yields tidier mathematics), we express the arbitrary $\phi(x)$ in terms of the chosen basis functions $\{\psi_i(x)\}$.
 
 
 \subsection{Solving differential equations with neural networks}

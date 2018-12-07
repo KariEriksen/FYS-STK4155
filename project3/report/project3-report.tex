@@ -422,10 +422,31 @@ Let us consider the vector space of \textit{all} functions $f:\mathds{R}^2\right
 
 It turns out that demanding $u\in C^2(\Omega)$ is too strict a bound on the behaviour of the solution. For example, a valid solution may be \textit{not} differentiable on a subset $S\subset\Omega$ with measure zero\footnote{A set $S\subset\mathds{R}$ of measure zeros is a set with vanishing "size," e.g.\ a finite set of \textit{points}.}, known as differentiable almost everywhere (a.e.). It is more useful to consider \textit{weakly differentiable} functions, which encompass the ordinary (strongly) differentiable functions and includes other possible solutions of partial differential equations. 
 
-Equipping our functional space with the $L^1$ integral inner product (and the associated norm), consider a family of functions $\phi\in C^\infty(\Omega)$, with $\phi(\partial\Omega)=0$, where we denote by $\partial\Omega$ the boundary of the integration domain (in one dimension, this is just the end two points). The weak derivative of $u$ is defined as a function $v$ for which the following holds
+Equipping our functional space with the $L^1$ integral inner product (and the associated norm), consider now a family of functions with compact support\footnote{The support of a function $f$ is the (closure) of the set of points in the domain of $f$ for which $f(x)$ does \textit{not} vanish, i.e.\ the set $\{x\in\Omega:f(x)\not=0\}$.} $\phi\in C^\infty(\Omega)$, with $\phi(\partial\Omega)=0$, where we denote by $\partial\Omega$ the boundary of the integration domain (in one dimension, this is just the end two points). Any function $f:\Omega\rightarrow\mathds{R}$ which is bounded on $\Omega$ and thus locally integrable (in the Lebesgue sense) on $\Omega$ defines a linear functional $\Lambda_f$ on $C^\infty(\Omega)$ through
 \begin{align}
-\int_\Omega \mathrm{d}x\, 
+\Lambda_f(\phi)\equiv \int_\Omega\mathrm{d}x\, f(x)\phi(x).
 \end{align}
+This integral is well defined for any $\phi\in C^\infty(\Omega)$ since $\phi(x)$ is assumed to vanish outside of a compact subset of $\Omega$. Essentially, multiplication with a well-behaved function $\phi$ and integration over $\Omega$ results in something that is more well-behaved than $f$ itself. Next, consider the functional defined by the derivative of $f$, 
+\begin{align}
+f'(x)\equiv \lim_{h\rightarrow0}\frac{f(x+h)-f(x)}{h}. \label{eq:limit}
+\end{align}
+Integrating by parts and remembering that $\phi(\partial \Omega)=0$, we find
+\begin{align}
+\Lambda_{f'}(\phi) &=  \int_\Omega\mathrm{d}x\, f'(x)\phi(x) \nonumber \\
+%
+&=  -\int_\Omega\mathrm{d}x\, f(x)\phi'(x).
+\end{align}
+Note carefully that the first integral is only defined if the limit exists and converges for a.e.\ $x\in\Omega$, but the last integral is defined and well-behaved for any locally integrable (bounded) function $f$. This functional exists even if \eq{limit} does not converge pointwise for \textit{any} $x\in\Omega$(!).
+
+In the spirit of this, we define the \textit{weak derivative}: The $k$-th order weak derivative of $u$ is defined as a function $v$ for which the following holds
+\begin{align}
+\int_\Omega \mathrm{d}x\, v(x)\phi(x) = (-1)^k \int_\Omega\mathrm{d}x\, u(x)\frac{\partial^k \phi}{\partial x^k},
+\end{align}
+where a factor $(-1)$ is picked up for each integration by parts. 
+
+In defining a weak derivative, we have moved the previous demands on $f$ onto a set of test functions $\phi(x)$. Even if the demands on the functions $\phi$ are stronger than the previous demands on $f$ ($\phi\in C^\infty(\Omega)$ [infinitely continously differentiable] as opposed to $f\in C^2(\Omega)$ [twice continously differentiable]), it will turn out that this is easier to control when considering finite element schemes. 
+
+
 
 
 \subsection{Solving differential equations with neural networks}

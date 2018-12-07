@@ -316,7 +316,7 @@ u_{i, j+1} &= \beta (u_{i+1,j} - 2u_{i,j} + u_{i-1,j}) + u_{i,j} \\
 &= \beta (u_{i+1,j} + u_{i-1,j}) + (1 - 2\beta)u_{i,j} 
 \end{align*}
 
-\section{Finite difference method} \label{sect:finitediff}
+\subsection{Finite difference method} \label{sect:finitediff}
 The most straightforward way to solve \eq{heat} numerically is through \textit{finite difference methods}, i.e.\ discretizing time and space on a grid and Taylor expanding the solution to obtain algebraic equation sets. A multitude of different strategies and schemes exists, but we will consider the \textit{explicit forward Euler} scheme. 
 
 The spatial region $[0,L]$ is discretized by splitting it into $N$ segments, and considering only the functional values on the points $x_i=i\Delta x$ with $i\in[0,N-1]$. We denote a function $f(x,t)$ evaluated at $x_i$ (and at time $t$) by $f_i^t=f(x_i,t)$. Considering $N$ spatial points gives a step size $\Delta x$ between each point of 
@@ -370,13 +370,13 @@ introduces additional complexity in that we are no longer able to simply solve f
 \begin{align}
 \frac{f_i^{j} - f_i^{j-1}}{\Delta t} &= \alpha^2\frac{f_{i+1}^j - 2f_i^j + f_{i-1}^j}{\Delta x^2} \nonumber \\
 %
-f_i^{j-1}&= -\beta \big[f_{i+1}^j + f_{i-1}^j\big] + \big(2+\beta\big)f_i^j.
+f_i^{j-1}&= -\beta \big[f_{i+1}^j + f_{i-1}^j\big] + \big(1+2\beta\big)f_i^j.
 \end{align}
-We note that the only known quantity is the left hand side $f_i^{j-1}=f(x,t-\Delta t)$, which means we must solve all the equations for every spatial point $i$ simultaneously in order to ensure they are all satisfied. This gives rise to a matrix-vector equation in the place of the single algebraic equation needed for the explicit scheme. Denoting $\gamma\equiv 2+\beta$ we may write the equation set corresponding to the integration from $t-\Delta t$ to $t$ as
+We note that the only known quantity is the left hand side $f_i^{j-1}=f(x,t-\Delta t)$, which means we must solve all the equations for every spatial point $i$ simultaneously in order to ensure they are all satisfied. This gives rise to a matrix-vector equation in the place of the single algebraic equation needed for the explicit scheme. Denoting $\gamma\equiv 1+2\beta$ we may write the equation set corresponding to the integration from $t-\Delta t$ to $t$ as
 \begin{align}
 A\mathbf{f}^j&=\mathbf{f}^{j-1},
 \end{align}
-with 
+with (zeros ommitted)
 \begin{align}
 A = \begin{pmatrix}
 \gamma & -1 & \\
@@ -405,12 +405,27 @@ f_2^{j-1} \\
 f_N^{j-1}
 \end{pmatrix} 
 \end{align}
+As the matrix $A$ is tri-diagonal, efficient linear scaling solution algorithms exists which circumvent the traditional solution schemes, e.g.\ LU decomposition at $\mathcal{O}(N^3)$.
 
-
-
+\subsection{The Crank-Nicolson scheme}
+\lipsum[3]
 
 \subsection{Stability analysis \label{sect:finitestability}}
 \lipsum[4]
+
+
+\subsection{Finite element methods}
+In the case of the finite difference approximation, the derivatives in the original partial differential equation is transformed into a set of algebraic equations by application of \textit{finite difference} approximations arising from Taylor expansions of the solution function. A fundamentally different, and somewhat more sophisticated, solution strategy entails writing the original differential equation in its \textit{weak form}. This is done by integrating the original equation multiplied by a test function $v(x)$ over the domain in question. Such a \textit{finite element} approach is normally accompanied by a simple finite element scheme in time when partial differential equations are considered. 
+
+\subsubsection{Functional spaces and weak forms}
+Let us consider the vector space of \textit{all} functions $f:\mathds{R}^2\rightarrow\mathds{R}$, which we will call $A(\mathds{R}^2)$. Obviously, the solution to the heat equation is contained in this space, being a real-valued function of two parameters, $x$ and $t$. However, we may consider subspaces with more useful structure than the all-encompassing $A(\mathds{R}^2)$. Assuming the initial and boundary conditions are specified in a sufficiently non-pathological way, the solution at each instant in time will be continous across the spatial integration domain, $\Omega$. In other words, the solution (at some $\tau\ge0$) $u(x;\tau)\in C(\Omega)$: The vector space of \textit{continous} functions $f:\Omega\rightarrow\mathds{R}$. As the heat equation involves a second spatial derivative, we might assume that the solution be twice continously differentiable, i.e.\ $u(x;\tau)\in C^2(\Omega)$.
+
+It turns out that demanding $u\in C^2(\Omega)$ is too strict a bound on the behaviour of the solution. For example, a valid solution may be \textit{not} differentiable on a subset $S\subset\Omega$ with measure zero\footnote{A set $S\subset\mathds{R}$ of measure zeros is a set with vanishing "size," e.g.\ a finite set of \textit{points}.}, known as differentiable almost everywhere (a.e.). It is more useful to consider \textit{weakly differentiable} functions, which encompass the ordinary (strongly) differentiable functions and includes other possible solutions of partial differential equations. 
+
+Equipping our functional space with the $L^1$ integral inner product (and the associated norm), consider a family of functions $\phi\in C^\infty(\Omega)$, with $\phi(\partial\Omega)=0$, where we denote by $\partial\Omega$ the boundary of the integration domain (in one dimension, this is just the end two points). The weak derivative of $u$ is defined as a function $v$ for which the following holds
+\begin{align}
+\int_\Omega \mathrm{d}x\, 
+\end{align}
 
 
 \subsection{Solving differential equations with neural networks}

@@ -1,6 +1,8 @@
 using Polynomials
 using UnicodePlots
+using LinearAlgebra
 using FastGaussQuadrature
+using RowEchelon
 
 function LagrangeInterpolatingPolynomial(x::Array{<:Real,1}, j::Int)
     p = Poly([1.0])
@@ -61,9 +63,16 @@ function piecewise(x::Array{<:Real,1}, basis::basisPolynomial)
                      basis.p₁)
 end
 
+function ∂piecewise(x::Array{<:Real,1}, basis::basisPolynomial)
+    return piecewise(x, 
+                     basis.support, 
+                     basis.∂p₀∂x,
+                     basis.∂p₁∂x)
+end
+
 
 # In order to use P2 basis, we need the total number of points to be odd.
-N = 11
+N = 7
 @assert N >= 5
 @assert N%2 == 1
 
@@ -86,8 +95,7 @@ for i = 1:length(elements)
                 ∂p₀∂x = Poly([0.0])
 
                 ind = elements[1]
-                dx  = nodes[ind[2]] - nodes[ind[1]]
-                support = [nodes[ind[1]]-dx, nodes[ind[1]], nodes[ind[2]]]
+                support = [nodes[ind[1]], nodes[ind[1]], nodes[ind[end]]]
             else 
                 n     = [nodes[elements[i-1][1]], nodes[elements[i-1][2]], nodes[elements[i-1][end]]]
                 p₀    = LagrangeInterpolatingPolynomial(n, length(elements[i-1]))
@@ -109,8 +117,7 @@ for i = 1:length(elements)
                 ∂p₁∂x   = Poly([0.0]) 
 
                 ind     = elements[length(elements)]
-                dx      = nodes[ind[2]] - nodes[ind[1]]
-                support = [nodes[ind[end-1]], nodes[ind[end]], nodes[ind[end]]+dx]
+                support = [nodes[ind[1]], nodes[ind[end]], nodes[ind[end]]]
             else 
                 n     = [nodes[elements[i+1][1]], nodes[elements[i+1][2]], nodes[elements[i+1][end]]]
                 p₁    = LagrangeInterpolatingPolynomial(n, 1)
@@ -136,7 +143,9 @@ for i = 1:length(elements)
             support = [nodes[elements[i][1]], nodes[elements[i][2]], nodes[elements[i][end]]]
         end
 
-        push!(basis, basisPolynomial(support, p₀, ∂p₀∂x, p₁, ∂p₁∂x))
+        if ! (i != 1 && j == 1)
+            push!(basis, basisPolynomial(support, p₀, ∂p₀∂x, p₁, ∂p₁∂x))
+        end
     end
 end
 
@@ -161,33 +170,76 @@ function max(a::Array{<:Real,1})
 end
 
 # Integral points, weights
-x, w = gausslegendre(100)
-A = [[0.0 for j = 1:N] for i=1:N]
+x, ω = gausslegendre(10000)
+A = zeros(Float64, N, N)
+B = zeros(Float64, N)
+
+function f(x) 
+    return -2.0
+end
+
 
 for i = 1:N
-    bi = basis[i]
-    si = bi.support
-    for j = i:N
-        bj = basis[j]
-        sj = bj.support
+    bᵢ = basis[i]
+    sᵢ = bᵢ.support
 
-        if si[end] < sj[1]
-            A[i][j] = 0.0
-            A[j][i] = 0.0
+    a = sᵢ[1]
+    b = sᵢ[end]
+
+    uᵢf  = piecewise(x*(b-a)/2 .+ (a+b)/2, bᵢ) .* f(x*(b-a)/2 .+ (a+b)/2)
+    ∫uᵢf = (b-a)/2 * sum(uᵢf .* ω)
+    B[i] = ∫uᵢf 
+
+    for j = i:N
+        bⱼ = basis[j]
+        sⱼ = bⱼ.support
+
+        if sᵢ[end] < sⱼ[1]
+            A[i,j] = 0.0
+            A[j,i] = 0.0
         end
 
-        a = min(si)
-        b = max(sj)
+        a = min(sᵢ)
+        b = max(sⱼ)
+        ∂uᵢ∂uⱼ = ∂piecewise(x*(b-a)/2 .+ (a+b)/2, bᵢ) .* 
+                 ∂piecewise(x*(b-a)/2 .+ (a+b)/2, bⱼ)
+        ∫∂uᵢ∂uⱼ = (b-a)/2 * sum(∂uᵢ∂uⱼ .* ω)
 
-        f = piecewise(x*(b-a)/2 .+ (a+b)/2, basis[i]) .* piecewise(x*(b-a)/2 .+ (a+b)/2, basis[j])
-
-        A[i][j] = (b-a)/2 * sum(f .* w)
-        A[j][i] = A[i][j]
-
+        # Minus sign from the integration by parts in Galerkin method
+        A[i,j] = -∫∂uᵢ∂uⱼ
+        A[j,i] = -∫∂uᵢ∂uⱼ
     end
 end
+A[1,:]    .= 0.0
+A[end,:]  .= 0.0
+A[1,1]     = 1.0
+A[end,end] = 1.0
+B[1]   = 0.0
+B[end] = 0.0
 
-for a in A
-    println(a)
+function showarray(A)
+    display(A)
+    println("")
 end
+
+showarray(A)
+showarray(rref(A))
+showarray(B)
+
+
+
+println("det: ", det(A))
+#uₐₚₚ = A \ B
+#showarray(uₐₚₚ)
+
+N = 100
+x = collect(range(0.0, stop=1.0, length=N))
+uₑₓ = x - x.^2
+
+#println(lineplot(nodes, uₐₚₚ))
+#println(lineplot(x, uₑₓ))
+for i = 1:N
+    println(lineplot(x, piecewise(x, basis[i])))
+end
+
 

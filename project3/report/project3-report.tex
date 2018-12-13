@@ -483,7 +483,7 @@ Working from the weak form \eq{weak1} (we may also choose to work from \eq{weak2
 
 
 \subsection{Solving differential equations with neural networks}
-The main focus on this project is exploring partial differential problems with the use of deep learning. Deep neural networks (DNN) are networks that consist of two hidden layers or more. In this part of the project we will be using Googles open-source library Tensorflow. A time consuming part of neural networks is the backpropagation and its equations. By using Tensorflow we avoid having to solve the derivatives of a cost function w.r.t to all the different weights and biases. It also provides us with a wast amount of applications. Different activation functions, gradients, loss function etc. And it is easy to add layers and nodes. 
+A part of this project is exploring partial differential problems with the use of deep learning. Deep neural networks (DNN) are networks that consist of two hidden layers or more. In this part of the project we will be using Googles open-source library Tensorflow. A time consuming part of neural networks is the backpropagation and its equations. By using Tensorflow we avoid having to solve the derivatives of a cost function w.r.t to all the different weights and biases. It also provides us with a wast amount of applications. Different activation functions, gradients, loss function etc. And it is easy to add layers and nodes. 
 
 In our approach on solving differential equations with DNN we will discover there are some similarities between this new method and the well known finite element methods. For instance we will not be using backpropagation as a way of teaching the network, we will instead calculate the derivatives directly, much like finite element.
 
@@ -497,7 +497,7 @@ f = f_1 \cdot f_2 \cdot f_3 \cdot f_4 \cdot ... \cdot f_n
 
 A composition consisting of a finit set of elementary operations for which the derivatives are known, combining the derivatives of the constituent operations through the chain rule gives the derivative of the overall composition. This is done through a process called forward and reverse mode. \eq{chain} show how we can repeatedly substitute the derivative of the inner functions in the chain rule of a function $y$ w.r.t one fixed variable $x$. In reverse mode one substitutes the outer functions in the chain rule. A computational graph showing the forward mode of $y = f(x_1, x_2) = \ln (x_1) + x_1 x_2 - \sin (x_2)$ is given in \fig{autodiff}.
 
-Calculating the gradients of $u$ with AD are supposed to give more accurate results than using Taylor and is probably the reason Tensorflow apply AD.
+Calculating the gradients of $u$ with AD is supposed to give more accurate results than using Taylor, and is probably the reason Tensorflow apply AD.
 
 \begin{strip}
 \begin{equation} \label{eq:chain}
@@ -550,7 +550,7 @@ Calculating the gradients of $u$ with AD are supposed to give more accurate resu
 \end{centering} 
 \end{figure*}
 
-We will look at a standard DNN with $n_h$ hidden layers called multilayer perceptron (MLP). Each layer may contain different number of neurons, or nodes. A complete description of the MLP is given in project 2 and particulary Fig. 1 is explanatory.   
+We will look at a standard DNN with $n$ hidden layers called multilayer perceptron (MLP). Each layer may contain different number of neurons, or nodes. A complete description of the MLP is given in project 2 and particulary Fig. 1 is explanatory.   
 
 Usually in supervised learning we would have one set of training data from where we computed an output and evaluated the cost function. In our case we do not have a correct output value to compare with, we are looking at a partial differential equation and our data set is simply initial values of $x$ and $t$ which we try to fit to the model. But from \eq{diff_0} we see that we seak a solution $u(x,t)$ that minimizes the right hand side of the equation. 
 
@@ -558,7 +558,7 @@ Usually in supervised learning we would have one set of training data from where
 0 = \frac{\partial u(x,t)}{\partial t} - \frac{\partial^2 u(x,t)}{\partial x^2} 
 \end{equation}
 
-It therefore makes sens to select the mean squared error (MSE) as our cost function as it allow us to do exactly so. Usually one has a set of test data to check how well the network is able to predict the outcome. However we have the exact analytical solution to check with directly.
+It therefore makes sense to select the mean squared error (MSE) as our cost function as it allow us to do exactly so. Usually one has a set of test data to check how well the network is able to predict the outcome. However we have the exact analytical solution to check with directly.
 
 \begin{equation}
 MSE = \frac{1}{n} \sum^n \left( \frac{\partial u}{\partial t} - \frac{\partial^2 u}{\partial x^2} \right)^2

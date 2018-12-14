@@ -151,16 +151,16 @@ function ψₓ(x, bᵢ)
     return ∂piecewise(x, bᵢ)
 end
 
-function setupMatrices(nodes, elements, basis, initialcondition)
+function setupmatrices_gaussianquadrature(nodes, elements, basis, initialcondition)
     N  = length(nodes)
     K  = zeros(Float64, N, N)
     M  = zeros(Float64, N, N)
     f⁰ = zeros(Float64, N)
 
     # Integral points, weights
-    x, ω = gausslegendre(Int(1e6))
+    x, ω = gausslegendre(Int(1e5))
 
-    for i = 1:N
+    Threads.@threads for i = 1:N
         bᵢ = basis[i]
         sᵢ = bᵢ.support
 
@@ -169,7 +169,7 @@ function setupMatrices(nodes, elements, basis, initialcondition)
         χ = transform(x, a, b)
 
         ∑ωψⁱf = sum(ψ(χ, bᵢ) .* f.(χ) .* ω)
-        ∫ωψⁱf = (b-a) / 4 * ∑ωψⁱf #(b-a) / 2 * ∑ωψⁱf
+        ∫ωψⁱf = (b-a) / 2 * ∑ωψⁱf
 
         f⁰[i] = ∫ωψⁱf
 
@@ -190,8 +190,8 @@ function setupMatrices(nodes, elements, basis, initialcondition)
                 ∑ωψⁱₓψₓʲ = sum(ψₓ(χ, bᵢ) .* ψₓ(χ, bⱼ) .* ω)
                 ∑ωψⁱψʲ   = sum( ψ(χ, bᵢ) .*  ψ(χ, bⱼ) .* ω)
 
-                ∫ψⁱₓψₓʲ = (b-a) / 4 * ∑ωψⁱₓψₓʲ #(b-a) / 2 * ∑ωψⁱₓψₓʲ
-                ∫ψⁱψʲ   = (b-a) / 4 * ∑ωψⁱψʲ   #(b-a) / 2 * ∑ωψⁱψʲ
+                ∫ψⁱₓψₓʲ = (b-a) / 2 * ∑ωψⁱₓψₓʲ
+                ∫ψⁱψʲ   = (b-a) / 2 * ∑ωψⁱψʲ
 
                 K[i,j] = ∫ψⁱₓψₓʲ
                 K[j,i] = ∫ψⁱₓψₓʲ
@@ -201,6 +201,44 @@ function setupMatrices(nodes, elements, basis, initialcondition)
             end
         end
     end
+    return K, M, f⁰
+end
+
+
+function setupmatrices_analytical(nodes, elements, basis, initialcondition)
+    N  = length(nodes)
+    K  = zeros(Float64, N, N)
+    M  = zeros(Float64, N, N)
+    f⁰ = zeros(Float64, N)
+
+    # Integral points, weights
+    x, ω = gausslegendre(Int(1e5))
+
+    for i = 1:N
+        bᵢ = basis[i]
+        sᵢ = bᵢ.support
+
+        a = sᵢ[1]
+        b = sᵢ[end]
+        χ = transform(x, a, b)
+
+        ∑ωψⁱf = sum(ψ(χ, bᵢ) .* f.(χ) .* ω)
+        ∫ωψⁱf = (b-a) / 2 * ∑ωψⁱf
+
+        f⁰[i] = ∫ωψⁱf
+    end
+
+    Kₐ = [7 -8  1; -8 16 -8;  1 -8 7]
+    Mₐ = [4  2 -1;  2 16  2; -1  2 4]
+    for i = 1:2:N-2
+        M[i:i+2, i:i+2] .+= Mₐ
+        K[i:i+2, i:i+2] .+= Kₐ
+    end
+
+    Δx = nodes[2]-nodes[1]
+    K .*= 64*Δx/6
+    M .*= Δx/15
+
     return K, M, f⁰
 end
 

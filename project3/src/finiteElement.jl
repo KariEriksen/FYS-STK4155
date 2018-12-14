@@ -27,26 +27,32 @@ function FEM_P2(N::Integer)
     α  = 1 # Parameter in the diffusion equation
     t  = 0
     Nₜ = 1000
-    Δt = 0.01
+    Δt = 1 / Nₜ
     β  = α * Δt
+    ε = []
 
     uⁿ = u⁰
     for tᵢ = 1:Nₜ
         t = t + Δt 
-        uⁿ⁺¹ = iterate_forward(K, M, uⁿ, β)
+        #uⁿ⁺¹ = iterate_forward(K, M, uⁿ, β)
+        uⁿ⁺¹ = iterate_backward(K, M, uⁿ, β)
         uⁿ = uⁿ⁺¹
 
         if true #tᵢ % 10 == 0
-            println(lineplot(nodes, uₑ.(nodes,t), ylim=[0,1]))
-            println(lineplot(nodes, uⁿ, ylim=[0,1]))
+            err = sum(abs.(uₑ(nodes,t).-uⁿ))/N
+            push!(ε, err)
+            #println(lineplot(nodes, uₑ.(nodes,t), ylim=[0,1]))
+            #println(lineplot(nodes, uⁿ, ylim=[0,1]))
+            println(lineplot(nodes[2:end-1], log10.(1e-10.+abs.(uₑ(nodes[2:end-1],t) .- uⁿ[2:end-1])), ylim=[-10, 1]))
             println(sum(abs.(uₑ(nodes,t).-uⁿ))/N)
-            sleep(0.5)
+            #println(lineplot(log10.(ε)))
+            sleep(0.05)
         end
     end
 end
 
 
 
-FEM_P2(5)
+FEM_P2(101)
 
 

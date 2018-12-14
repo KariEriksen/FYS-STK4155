@@ -25,7 +25,7 @@ function piecewise(xx    ::Array{<:Real,1},
             y[end] = 1.0
         end
     end
-    
+
     return y
 end
 
@@ -158,7 +158,7 @@ function setupMatrices(nodes, elements, basis, initialcondition)
     f⁰ = zeros(Float64, N)
 
     # Integral points, weights
-    x, ω = gausslegendre(Int(1e5))
+    x, ω = gausslegendre(Int(1e6))
 
     for i = 1:N
         bᵢ = basis[i]
@@ -190,14 +190,14 @@ function setupMatrices(nodes, elements, basis, initialcondition)
                 ∑ωψⁱₓψₓʲ = sum(ψₓ(χ, bᵢ) .* ψₓ(χ, bⱼ) .* ω)
                 ∑ωψⁱψʲ   = sum( ψ(χ, bᵢ) .*  ψ(χ, bⱼ) .* ω)
 
-                ∫ωψⁱₓψₓʲ = (b-a) / 4 * ∑ωψⁱₓψₓʲ #(b-a) / 2 * ∑ωψⁱₓψₓʲ
-                ∫ωψⁱψʲ   = (b-a) / 4 * ∑ωψⁱψʲ   #(b-a) / 2 * ∑ωψⁱψʲ
+                ∫ψⁱₓψₓʲ = (b-a) / 4 * ∑ωψⁱₓψₓʲ #(b-a) / 2 * ∑ωψⁱₓψₓʲ
+                ∫ψⁱψʲ   = (b-a) / 4 * ∑ωψⁱψʲ   #(b-a) / 2 * ∑ωψⁱψʲ
 
-                K[i,j] = ∫ωψⁱₓψₓʲ
-                K[j,i] = ∫ωψⁱₓψₓʲ
+                K[i,j] = ∫ψⁱₓψₓʲ
+                K[j,i] = ∫ψⁱₓψₓʲ
 
-                M[i,j] = ∫ωψⁱψʲ
-                M[j,i] = ∫ωψⁱψʲ
+                M[i,j] = ∫ψⁱψʲ
+                M[j,i] = ∫ψⁱψʲ
             end
         end
     end

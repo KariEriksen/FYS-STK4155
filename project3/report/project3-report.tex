@@ -483,94 +483,97 @@ Working from the weak form \eq{weak1} (we may also choose to work from \eq{weak2
 
 
 \subsection{Solving differential equations with neural networks}
-The main focus on this project is exploring partial differential problems with the use of deep learning. Deep neural networks (DNN) are networks that consist of two hidden layers or more. In this part of the project we will be using Googles open-source library Tensorflow. A time consuming part of neural networks is the backpropagation and its equations. By using Tensorflow we avoid having to solve the derivatives of a cost function w.r.t to all the different weights and biases. It also provides us with a wast amount of applications. Different activation functions, gradients, loss function etc. And it is easy to add layers and nodes. 
+A part of this project is exploring partial differential problems with the use of deep learning. Deep neural networks (DNN) are networks that consist of two hidden layers or more. In this part of the project we will be using Googles open-source library Tensorflow. A time consuming part of neural networks is the backpropagation and its equations. By using Tensorflow we avoid having to solve the derivatives of a cost function w.r.t to all the different weights and biases. It also provides us with a wast amount of applications. Different activation functions, gradients, loss function etc. And it is easy to add layers and nodes. 
 
 In our approach on solving differential equations with DNN we will discover there are some similarities between this new method and the well known finite element methods. For instance we will not be using backpropagation as a way of teaching the network, we will instead calculate the derivatives directly, much like finite element.
 
-However in finite element we assume the problem can be rewritten into new numerical solvable equations using Taylor expansion, as mentioned above. Tensorflow uses a method called automatic differentiation to find the derivatives. 
+However in finite element we assume the problem can be rewritten into new numerical solvable equations using Taylor expansion, as mentioned above. Tensorflow uses a method called automatic differentiation (AD) to find the derivatives. 
 
-Automatic differentiation is a technique for solving derivatives of functions consisting of primitive functions, $f$, as addition, multiplication, exponential and the trigonometric functions, and combining them and their derivatives using the chain rule. 
+AD is a technique for solving derivatives by recognising elementary functions $f_i$, (like addition, multiplication, exponential, trigonometric functions) which have known derivatives, within more complex functions $f$.  
 
 \begin{equation}
 f = f_1 \cdot f_2 \cdot f_3 \cdot f_4 \cdot ... \cdot f_n
 \end{equation}
 
+A composition consisting of a finit set of elementary operations for which the derivatives are known, combining the derivatives of the constituent operations through the chain rule gives the derivative of the overall composition. This is done through a process called forward and reverse mode. \eq{chain} show how we can repeatedly substitute the derivative of the inner functions in the chain rule of a function $y$ w.r.t one fixed variable $x$. In reverse mode one substitutes the outer functions in the chain rule. A computational graph showing the forward mode of $y = f(x_1, x_2) = \ln (x_1) + x_1 x_2 - \sin (x_2)$ is given in \fig{autodiff}.
+
+Calculating the gradients of $u$ with AD is supposed to give more accurate results than using Taylor, and is probably the reason Tensorflow apply AD.
+
 \begin{strip}
-\begin{equation}
-\frac{\partial f}{\partial x} = \frac{\partial f}{\partial \omega_{n-1}} \frac{\partial \omega_{n-1}}{\partial x} = \frac{\partial f}{\partial \omega_{n-1}} \left( \frac{\partial \omega_{n-1}}{\partial \omega_{n-2}} \frac{\partial \omega_{n-2}}{\partial x} \right) = \frac{\partial f}{\partial \omega_{n-1}} \left( \frac{\partial \omega_{n-1}}{\partial \omega_{n-2}} \left( \frac{\partial \omega_{n-2}}{\partial x} \right) \right)
+\begin{equation} \label{eq:chain}
+\frac{\partial y}{\partial x} = \frac{\partial y}{\partial \omega_{n-1}} \frac{\partial \omega_{n-1}}{\partial x} = \frac{\partial y}{\partial \omega_{n-1}} \left( \frac{\partial \omega_{n-1}}{\partial \omega_{n-2}} \frac{\partial \omega_{n-2}}{\partial x} \right) = \frac{\partial y}{\partial \omega_{n-1}} \left( \frac{\partial \omega_{n-1}}{\partial \omega_{n-2}} \left( \frac{\partial \omega_{n-2}}{\partial x} \right) \right) = ...
 \end{equation}
 \end{strip}
 
-This is done through a process called forward and reverse mode. A computational graph of $f(x_1, x_2) = \ln (x_1) + x_1 x_2 - \sin (x_2)$ is given in \fig{autodiff}
 
 \begin{figure*}
 \begin{centering}
-\begin{tikzpicture}[
-node distance = 3cm and 4cm,
-  start chain = going below,
-  arro/.style = {-Latex},
-                        ]
+\begin{tikzpicture}[node distance=3cm, arro/.style = {-Latex}]
                                       
-\tikzstyle{format} = [draw, thin, fill=blue!20]
-\tikzstyle{medium} = [draw, thin, circle, fill=green!20, minimum height=2.5em]
+\tikzstyle{format} = [draw, thin]
+\tikzstyle{medium} = [draw, thin, circle]
 
 % inputs
-\node[format] at (0,-1) (x1) {$x_1$};
-\node[format] at (0,-2) (x2) {$x_2$};
+\node at (0,-1) (x1) {$x_1$};
+\node at (0,-3) (x2) {$x_2$};
 % output
-\node[medium] at (1,-1) (ln) {$\ln$}; 
-\node[medium] at (1,-2) (mult) {$*$}; 
-\node[medium] at (1,-3) (sin) {$\sin$};
-% conections
-\draw[arro] (x1) -- (ln);
-\draw[arro] (x1) -- (mult);
-\draw[arro] (x2) -- (mult);
-\draw[arro] (x2) -- (sin);
-% output
-\node[medium] at (2,-1) (plus) {$+$};
+\node[format] at (1,-1) (w1) {$\omega_1$};
+\node[format] at (1,-3) (w2) {$\omega_2$};
 % connections
+\draw[arro] (x1) -- (w1);
+\draw[arro] (x2) -- (w2);
+% output
+\node[medium] at (4,-1) (ln) {$\ln$}; 
+\node[medium] at (4,-2) (mult) {$*$}; 
+% conections
+\draw[arro] (w1) -- (ln);
+\draw[arro] (w1) -- (mult);
+\draw[arro] (w2) -- (mult);
+% output
+\node[medium] at (7,-1) (plus) {$+$};
+\node[medium] at (7,-3) (sin) {$\sin$};
+% connections
+\draw[arro] (w2) -- (sin);
 \draw[arro] (ln) -- (plus);
 \draw[arro] (mult) -- (plus);
 % outputs
-\node[medium] at (3,-1) (minu) {$-$};
+\node[medium] at (10,-2) (minu) {$-$};
 % connections
 \draw[arro] (plus) -- (minu);
 \draw[arro] (sin) -- (minu);
+% final 
+\node at (12,-2) (f) {$f(x_1, x_2)$};
+% connection
+\draw[arro] (minu) -- (f);
 \end{tikzpicture}
-\caption{Diagram of .... \label{fig:autodiff}}
-\end{centering}
+\caption{A representation of the forward accumulation of $f(x_1, x_2) = \ln (x_1) + x_1 x_2 - \sin (x_2)$. We can give $\ln (\omega_1)$ a new label, $\omega_3$, and the multiplication $\omega_1 \omega_2$ we can call $\omega_4$ and so forth. Relabeling each new elementary operation and taking its derivative is the forward mode with the final varible becoming $\omega_5 = \omega_4 - \omega_3$ and $\dot{\omega_5} = \dot{y}$, the derivative of the original complex function. \label{fig:autodiff}}
+\end{centering} 
 \end{figure*}
 
-We will look at a standard DNN with $n_h$ hidden layers called multilayer perceptron (MLP). Each layer may contain different number of neurons, or nodes. A complete description of the MLP is given in project 2 and particulary Fig. 1 is explanatory.   
+We will look at a standard DNN with $n$ hidden layers called multilayer perceptron (MLP). Each layer may contain different number of neurons, or nodes. A complete description of the MLP is given in project 2 and particulary Fig. 1 is explanatory.   
 
-Our biggest job becomes finding a cost function, and testing for different architectural layouts. Since our PDE is the diffusion equation it makes sense to use the mean squared error (MSE) as our cost function. We want to minimize the right hand side of \eq{diff_0} which the MSE allow us to do. 
+Usually in supervised learning we would have one set of training data from where we computed an output and evaluated the cost function. In our case we do not have a correct output value to compare with, we are looking at a partial differential equation and our data set is simply initial values of $x$ and $t$ which we try to fit to the model. But from \eq{diff_0} we see that we seak a solution $u(x,t)$ that minimizes the right hand side of the equation. 
 
 \begin{equation} \label{eq:diff_0}
 0 = \frac{\partial u(x,t)}{\partial t} - \frac{\partial^2 u(x,t)}{\partial x^2} 
 \end{equation}
+
+It therefore makes sense to select the mean squared error (MSE) as our cost function as it allow us to do exactly so. Usually one has a set of test data to check how well the network is able to predict the outcome. However we have the exact analytical solution to check with directly.
 
 \begin{equation}
 MSE = \frac{1}{n} \sum^n \left( \frac{\partial u}{\partial t} - \frac{\partial^2 u}{\partial x^2} \right)^2
 \end{equation}
 
 Unlike finite element where we have algebraic equation sets to solve iterally, with DNN we must introduce a trial function, a guess on the solution, in order to give the network something to work on. 
-Our next task is therefore designing a trial function that can be used as input for the cost function. Preferably a trial function that satisfy the initial conditions and boundary conditions. If we look at \eq{trial} we see that for $x = 0$ and $x = 1$ the trial function is zero since $\sin (0) = \sin (\pi) = 0$ which is the boundary conditions. For $t = 0$ it is $\sin(\pi x)$ which is the initial condition. And \eq{trial} fulfilles all conditions.
+Our next task is therefore designing a trial function that can be used as input for the cost function. Preferably a trial function that satisfy the initial conditions and boundary conditions and isn't to complicated. If we look at \eq{trial} we see that for $x = 0$ and $x = 1$ the trial function is zero since $\sin (0) = \sin (\pi) = 0$ which is the boundary conditions. For $t = 0$ it is $\sin(\pi x)$ which is the initial condition. And \eq{trial} fulfilles all conditions.
 
 \begin{equation} \label{eq:trial}
 u_{trial}(x,t) = (1 - t)\sin (\pi x) + x(1 - x)tN(x, t, P)
 \end{equation}
 
-We can now begin training the network. Usually one would have one set of training data and one set of test data and compare the results. However we have an exact solution and can check our results directly. 
+The trial function is there to assure the network finds a solution that fulfilles the conditions we are given. Otherwise it could just find any function $u(x,t)$ where its first time derivative matched its second spatial derivative. $N(x,t,P)$ is a function that describes the output of the network given the $x$, $t$ and $P$, the parameters of the network (weights and biases). 
 
-
-As optimizer we will use stochastic gradient descent which also have been explained to some extent in previous reports. 
-
-adjust $\alpha$ and look at the solution, and see how well the fit is
-
-Or compare analytical with dnn solution for different time steps.
-
-
-
+Now all we need is an optimizer in order to asjust the parameters. Tensorflow has several possible optimizer methods. We have decided upon Adam, an improved version of stochastic gradient descent, ref project 2. 
 
 \section{Results and discussion}
 \lipsum[6]

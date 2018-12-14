@@ -1,4 +1,5 @@
 using Polynomials
+using FastGaussQuadrature
 include("lagrangeInterpolation.jl")
 
 function piecewise(xx    ::Array{<:Real,1}, 
@@ -51,7 +52,7 @@ function ∂piecewise(x::Array{<:Real,1}, basis::basisPolynomial)
 end
 
 function generateP2Basis(N::Integer) 
-	# In order to use P2 basis, we need the total number of points to be odd.
+    # In order to use P2 basis, we need the total number of points to be odd.
     @assert N >= 5
     @assert N%2 == 1
 
@@ -129,3 +130,71 @@ function generateP2Basis(N::Integer)
     end
     return nodes, elements, basis
 end
+
+function transform(x, a, b)
+    return x*(b-a)/2 .+ (a+b)/2
+end
+
+function ψ(x, bᵢ)
+    return piecewise(x, bᵢ)
+end
+
+function ψₓ(x, bᵢ) 
+    return ∂piecewise(x, bᵢ)
+end
+
+function setupMatrices(nodes, elements, basis, initialcondition)
+    N  = length(nodes)
+    A  = zeros(Float64, N, N)
+    B  = zeros(Float64, N, N)
+    b  = zeros(Float64, N)
+    f⁰ = zeros(Float64, N)
+
+    # Integral points, weights
+    M    = Int(1e4)
+    x, ω = gausslegendre(M)
+    
+    for i = 1:N
+        bᵢ = basis[i]
+        sᵢ = bᵢ.support
+
+        a = sᵢ[1]
+        b = sᵢ[end]
+
+        ∑ωψⁱf = sum(ψ(transform(x, a, b), bᵢ) .* f(transform(x, a, b) .* ω))
+        ∫ωψⁱf = (b-a) / 2 * ∑ωψⁱf
+
+        f⁰[i] = ∫ωψⁱf
+
+        for j = i:N
+            # Since j ≥ i, the support of ψʲ, [aʲ, bʲ], is guaranteed to be larger than
+            # or equal to the support for ψⁱ, [aⁱ, bⁱ]. I.e. aʲ ≥ aⁱ, bⁱ ≥ bʲ.
+            bⱼ = basis[j]
+            sⱼ = bⱼ.support
+
+            # If there is no overlap between the supports of ψⁱ and ψʲ, the Integral
+            # vanishes.
+            if sᵢ[end] < sⱼ[1]
+                A[i,j] = 0.0
+                A[j,i] = 0.0
+            end
+
+            a = minimum(sᵢ)
+            b = maximum(sⱼ)
+            
+            ∑ωψⁱₓψₓʲ = sum(ψₓ(transform(x, a, b), bᵢ) .* ψₓ(transform(x, a, b), bⱼ) .* ω)
+            ∑ωψⁱψʲ   = sum( ψ(transform(x, a, b), bᵢ) .*  ψ(transform(x, a, b), bⱼ) .* ω)
+
+            ∫ωψⁱₓψₓʲ = (b-a)/2 * ∑ωψⁱₓψₓʲ
+            ∫ωψⁱψʲ   = (b-a)/2 * ∑ωψⁱₓψₓʲ
+
+            A[i,j] = ∫ωψⁱₓψₓʲ
+            A[j,i] = ∫ωψⁱₓψₓʲ
+
+            B[i,j] = ∫ωψⁱψʲ
+            B[j,i] = ∫ωψⁱψʲ
+        end
+    end
+    return A, B, b, f⁰
+end
+

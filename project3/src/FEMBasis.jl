@@ -145,15 +145,13 @@ end
 
 function setupMatrices(nodes, elements, basis, initialcondition)
     N  = length(nodes)
-    A  = zeros(Float64, N, N)
-    B  = zeros(Float64, N, N)
-    b  = zeros(Float64, N)
+    K  = zeros(Float64, N, N)
+    M  = zeros(Float64, N, N)
     f⁰ = zeros(Float64, N)
 
     # Integral points, weights
-    M    = Int(1e4)
-    x, ω = gausslegendre(M)
-    
+    x, ω = gausslegendre(Int(1e4))
+
     for i = 1:N
         bᵢ = basis[i]
         sᵢ = bᵢ.support
@@ -174,27 +172,25 @@ function setupMatrices(nodes, elements, basis, initialcondition)
 
             # If there is no overlap between the supports of ψⁱ and ψʲ, the Integral
             # vanishes.
-            if sᵢ[end] < sⱼ[1]
-                A[i,j] = 0.0
-                A[j,i] = 0.0
+            if ! (sᵢ[end] < sⱼ[1])
+
+                a = minimum(sᵢ)
+                b = maximum(sⱼ)
+                
+                ∑ωψⁱₓψₓʲ = sum(ψₓ(transform(x, a, b), bᵢ) .* ψₓ(transform(x, a, b), bⱼ) .* ω)
+                ∑ωψⁱψʲ   = sum( ψ(transform(x, a, b), bᵢ) .*  ψ(transform(x, a, b), bⱼ) .* ω)
+
+                ∫ωψⁱₓψₓʲ = (b-a)/2 * ∑ωψⁱₓψₓʲ
+                ∫ωψⁱψʲ   = (b-a)/2 * ∑ωψⁱₓψₓʲ
+
+                K[i,j] = ∫ωψⁱₓψₓʲ
+                K[j,i] = ∫ωψⁱₓψₓʲ
+
+                M[i,j] = ∫ωψⁱψʲ
+                M[j,i] = ∫ωψⁱψʲ
             end
-
-            a = minimum(sᵢ)
-            b = maximum(sⱼ)
-            
-            ∑ωψⁱₓψₓʲ = sum(ψₓ(transform(x, a, b), bᵢ) .* ψₓ(transform(x, a, b), bⱼ) .* ω)
-            ∑ωψⁱψʲ   = sum( ψ(transform(x, a, b), bᵢ) .*  ψ(transform(x, a, b), bⱼ) .* ω)
-
-            ∫ωψⁱₓψₓʲ = (b-a)/2 * ∑ωψⁱₓψₓʲ
-            ∫ωψⁱψʲ   = (b-a)/2 * ∑ωψⁱₓψₓʲ
-
-            A[i,j] = ∫ωψⁱₓψₓʲ
-            A[j,i] = ∫ωψⁱₓψₓʲ
-
-            B[i,j] = ∫ωψⁱψʲ
-            B[j,i] = ∫ωψⁱψʲ
         end
     end
-    return A, B, b, f⁰
+    return K, M, f⁰
 end
 

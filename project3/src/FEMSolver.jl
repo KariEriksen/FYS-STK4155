@@ -13,9 +13,9 @@ function projectinitial(x, f::Function)
     return u⁰
 end
 
-function iterate_forward(A, B, uⁿ, β)
-    # B uⁿ⁺¹ = (B - β A) uⁿ
-    bⁿ   = (B - β * A) \ uⁿ
-    uⁿ⁺¹ = B \ bⁿ
+function iterate_forward(K, M, uⁿ, β)
+    # M uⁿ⁺¹ = (M - β⋅K) uⁿ
+    bⁿ   = (M - β * K) * uⁿ
+    uⁿ⁺¹ = M \ bⁿ
     return uⁿ⁺¹
 end

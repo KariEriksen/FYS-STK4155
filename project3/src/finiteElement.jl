@@ -17,19 +17,17 @@ function uₑ(x, t)
     return sin.(π.*x).*exp(-π^2 .* t)
 end
 
-function FEM_P2(N::Integer, M::Integer=1000)
+function FEM_P2(N::Integer)
     nodes, elements, basis = generateP2Basis(N)
 
     K, M, f⁰ = setupMatrices(nodes, elements, basis, f)
-
-    u⁰ = projectinitial(nodes, f)
-    
-    println(lineplot(nodes, u⁰))
+    #u⁰ = projectinitial(nodes, f)
+    u⁰ = projectinitial(M, f⁰)
 
     α  = 1 # Parameter in the diffusion equation
     t  = 0
     Nₜ = 1000
-    Δt = 0.001 
+    Δt = 0.01
     β  = α * Δt
 
     uⁿ = u⁰
@@ -38,10 +36,10 @@ function FEM_P2(N::Integer, M::Integer=1000)
         uⁿ⁺¹ = iterate_forward(K, M, uⁿ, β)
         uⁿ = uⁿ⁺¹
 
-        if tᵢ % 10 == 0
+        if true #tᵢ % 10 == 0
             println(lineplot(nodes, uₑ.(nodes,t), ylim=[0,1]))
             println(lineplot(nodes, uⁿ, ylim=[0,1]))
-            println(sum(abs.(uₑ(nodes,t).-uⁿ)))
+            println(sum(abs.(uₑ(nodes,t).-uⁿ))/N)
             sleep(0.5)
         end
     end

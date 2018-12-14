@@ -19,6 +19,13 @@ function piecewise(xx    ::Array{<:Real,1},
             y[i] = 0
         end
     end
+
+    if abs(pieces[end] - 1.0) < 1e-10
+        if abs(lower(1.0) - 1.0) < 1e-10
+            y[end] = 1.0
+        end
+    end
+    
     return y
 end
 
@@ -28,7 +35,8 @@ struct basisPolynomial
                     p₀   ::Poly{<:Real}, 
                     ∂p₀∂x::Poly{<:Real}, 
                     p₁   ::Poly{<:Real}, 
-                    ∂p₁∂x::Poly{<:Real}) = new(s, p₀, ∂p₀∂x, p₁, ∂p₁∂x)
+                    ∂p₁∂x::Poly{<:Real},
+                    c::Complex) = new(s, p₀, ∂p₀∂x, p₁, ∂p₁∂x)
 
     support::Array{<:Real, 1}
     p₀     ::Poly{<:Real}
@@ -96,7 +104,7 @@ function generateP2Basis(N::Integer)
                     p₁      = Poly([0.0])
                     ∂p₁∂x   = Poly([0.0]) 
 
-                    ind     = elements[length(elements)]
+                    ind     = elements[end]
                     support = [nodes[ind[1]], nodes[ind[end]], nodes[ind[end]]]
                 else 
                     n     = [nodes[elements[i+1][1]], nodes[elements[i+1][2]], nodes[elements[i+1][end]]]
@@ -124,7 +132,7 @@ function generateP2Basis(N::Integer)
             end
 
             if ! (i != 1 && j == 1)
-                push!(basis, basisPolynomial(support, p₀, ∂p₀∂x, p₁, ∂p₁∂x))
+                push!(basis, basisPolynomial(support, p₀, ∂p₀∂x, p₁, ∂p₁∂x, 1im))
             end
         end
     end
@@ -150,7 +158,7 @@ function setupMatrices(nodes, elements, basis, initialcondition)
     f⁰ = zeros(Float64, N)
 
     # Integral points, weights
-    x, ω = gausslegendre(Int(1e4))
+    x, ω = gausslegendre(Int(1e5))
 
     for i = 1:N
         bᵢ = basis[i]
@@ -158,9 +166,10 @@ function setupMatrices(nodes, elements, basis, initialcondition)
 
         a = sᵢ[1]
         b = sᵢ[end]
+        χ = transform(x, a, b)
 
-        ∑ωψⁱf = sum(ψ(transform(x, a, b), bᵢ) .* f(transform(x, a, b) .* ω))
-        ∫ωψⁱf = (b-a) / 2 * ∑ωψⁱf
+        ∑ωψⁱf = sum(ψ(χ, bᵢ) .* f.(χ) .* ω)
+        ∫ωψⁱf = (b-a) / 4 * ∑ωψⁱf #(b-a) / 2 * ∑ωψⁱf
 
         f⁰[i] = ∫ωψⁱf
 
@@ -176,12 +185,13 @@ function setupMatrices(nodes, elements, basis, initialcondition)
 
                 a = minimum(sᵢ)
                 b = maximum(sⱼ)
+                χ = transform(x, a, b)
                 
-                ∑ωψⁱₓψₓʲ = sum(ψₓ(transform(x, a, b), bᵢ) .* ψₓ(transform(x, a, b), bⱼ) .* ω)
-                ∑ωψⁱψʲ   = sum( ψ(transform(x, a, b), bᵢ) .*  ψ(transform(x, a, b), bⱼ) .* ω)
+                ∑ωψⁱₓψₓʲ = sum(ψₓ(χ, bᵢ) .* ψₓ(χ, bⱼ) .* ω)
+                ∑ωψⁱψʲ   = sum( ψ(χ, bᵢ) .*  ψ(χ, bⱼ) .* ω)
 
-                ∫ωψⁱₓψₓʲ = (b-a)/2 * ∑ωψⁱₓψₓʲ
-                ∫ωψⁱψʲ   = (b-a)/2 * ∑ωψⁱₓψₓʲ
+                ∫ωψⁱₓψₓʲ = (b-a) / 4 * ∑ωψⁱₓψₓʲ #(b-a) / 2 * ∑ωψⁱₓψₓʲ
+                ∫ωψⁱψʲ   = (b-a) / 4 * ∑ωψⁱψʲ   #(b-a) / 2 * ∑ωψⁱψʲ
 
                 K[i,j] = ∫ωψⁱₓψₓʲ
                 K[j,i] = ∫ωψⁱₓψₓʲ

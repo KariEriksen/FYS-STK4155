@@ -24,8 +24,8 @@ for i, p0 in enumerate([Pi, Pj, Pk]) :
 		K[i,j] = integrate(diff(p0,x)*diff(p1,x), (x, xi, xk))
 
 print("M: ")
-dx = 0.1
-pprint(M.subs({xi:0.8,xj:0.9,xk:1}))
+dx = 0.125
+pprint(M.subs({xi:0.75,xj:0.875,xk:1}))
 
 print("K: ")
-pprint(K.subs({xi:0.8,xj:0.9,xk:1}))
+pprint(K.subs({xi:0.75,xj:0.875,xk:1}))

@@ -236,7 +236,7 @@ function setupmatrices_analytical(nodes, elements, basis, initialcondition)
     end
 
     Δx = nodes[2]-nodes[1]
-    K .*= 64*Δx/6
+    K .*= 1/(6*Δx)
     M .*= Δx/15
 
     return K, M, f⁰

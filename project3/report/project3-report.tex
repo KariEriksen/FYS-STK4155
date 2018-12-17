@@ -628,10 +628,46 @@ u_{trial}(x,t) = (1 - t)\sin (\pi x) + x(1 - x)tN(x, t, P)
 
 The trial function is there to assure the network finds a solution that fulfilles the conditions we are given. Otherwise it could just find any function $u(x,t)$ where its first time derivative matched its second spatial derivative. $N(x,t,P)$ is a function that describes the output of the network given the $x$, $t$ and $P$, the parameters of the network (weights and biases). 
 
-Now all we need is an optimizer in order to asjust the parameters. Tensorflow has several possible optimizer methods. We have decided upon Adam, an improved version of stochastic gradient descent, ref project 2. 
+Now all we need is an optimizer in order to asjust the parameters. Tensorflow has several possible optimizer methods. However we will look at ordinary gradient descent.
 
 \section{Results and discussion}
-\lipsum[6]
+We now turn to the last part of this project and try to solve the diffursion equation with a neural network. We are using Tensorflow to solve this problem and the structure of the network can be chenged by adding new layers in the python list called num\_hidden\_neurons, where each element is the number of nodes in each layer. Our network takes as input 100 pairs of x and t-values. These are then updated and optimized with gradient descent. 
+First off the Tensorflow optimizer AdamOptimizer was tested. This method was used in project 2 giving good results. Observing an increase in the error compared to GradientDescentOptimizer however, the method was droped in this case, and gradient descent has been used through out this section.
+After running the network with a number of different structures we observe that adding layers may not necessarily give better results. If we look at \tab{NN_one_layer} just increasing the amount of nodes in a NN with one layer essentially becomes more computationally expensive. The more nodes and layers we add the more time consuming the network becomes. For 90 nodes we reach an optimal point with a maximum difference between analytical solution and the final output of the NN of 0.0179. 
+
+We try to add a new layer also containing 90 nodes. This give a better result, see \tab{NN_more_layers}. Compared to deeper networks with fewer nodes it is also better. It looks as though larger single layers is more important than increasing number of layers, a deeper network. This is consistent with the universal approximation theorem.
+
+
+\begin{strip}
+\begin{center}
+\captionof{table}{Simulation of NN with one hidden layer and number of neurons given in table. Number of iterations equal 100.000 and learning rate at 0.01. Results given as average over 5 runs. It is the difference between the analytical solution and the final output of the network, its maximum value and the mean, that is listed.} \label{tab:NN_one_layer} 
+    \begin{tabular}{| l | l | l | l |}
+    \hline
+    Number of neurons & Abs. max. diff. & Abs. mean diff. & Computational time [s]\\ \hline
+    10 & 0.0263 & 0.00097 & 24.0 \\ \hline
+    40 & 0.0420 & 0.00012 & 27.7 \\ \hline
+    80 & 0.0186 & 0.00074 & 33.2 \\ \hline
+    90 & 0.0179 & 0.00056 & 35.4 \\ \hline
+    100 & 0.0187 & 0.00077 & 36.8 \\ 
+    \hline
+    \end{tabular} 
+\end{center}
+\end{strip}
+
+\begin{strip}
+\begin{center}
+\captionof{table}{Simulation of NN with the number of hidden layer and neurons given in table, [10,10] equals two layers with 10 nodes in each. Number of iterations equal 100.000 and learning rate at 0.01. Results given as average over 3 runs.} \label{tab:NN_more_layers} 
+    \begin{tabular}{| l | l | l | l |}
+    \hline
+    [$\text{layer}_{n}$,] & Abs. max. diff. & Abs. mean diff. & Computational time [s]\\ \hline
+    [10,10] & 0,0844 & 0.03736 & 33.1 \\ \hline
+    [10,10,10] & 0,1334 & 0,02409 & 42.0 \\ \hline
+    [10,10,10,10] & 0.0156 & 0.00111 & 50.2 \\ \hline
+    [90,90] & 0.0134 & 0.00098 & 1m 31s \\ 
+    \hline
+    \end{tabular} 
+\end{center}
+\end{strip}
 
 \section{Conclusion}
 \lipsum[7]

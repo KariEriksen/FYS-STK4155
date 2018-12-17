@@ -635,7 +635,8 @@ We now turn to the last part of this project and try to solve the diffursion equ
 First off the Tensorflow optimizer AdamOptimizer was tested. This method was used in project 2 giving good results. Observing an increase in the error compared to GradientDescentOptimizer however, the method was droped in this case, and gradient descent has been used through out this section.
 After running the network with a number of different structures we observe that adding layers may not necessarily give better results. If we look at \tab{NN_one_layer} just increasing the amount of nodes in a NN with one layer essentially becomes more computationally expensive. The more nodes and layers we add the more time consuming the network becomes. For 90 nodes we reach an optimal point with a maximum difference between analytical solution and the final output of the NN of 0.0179. 
 
-We try to add a new layer also containing 90 nodes. This give a better result, see \tab{NN_more_layers}. Compared to deeper networks with fewer nodes it is also better. 
+We try to add a new layer also containing 90 nodes. This give a better result, see \tab{NN_more_layers}. Compared to deeper networks with fewer nodes it is also better. It looks as though larger single layers is more important than increasing number of layers, a deeper network. This is consistent with the universal approximation theorem.
+
 
 \begin{strip}
 \begin{center}

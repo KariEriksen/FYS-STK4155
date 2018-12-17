@@ -118,12 +118,17 @@ dnn_51 = np.array(
    3.56145177e-01 ,  3.71937380e-01 ,  3.52557235e-01,   3.01208737e-01,
    2.20701238e-01 ,  1.16739716e-01 ,  1.10218212e-16,]
 )
-dnn_x = [11, 51] 
-dnn   = [np.mean(np.abs(dnn_11)), np.mean(np.abs(dnn_51))]
+dnn_101 = np.array(
+[  0.00000000e+00 , 1.17439073e-01 ,  2.20152434e-01,   3.03640933e-01,
+   3.56485645e-01 , 3.72252585e-01 ,  3.52787570e-01,   3.01353368e-01,
+   2.20789818e-01 , 1.16790173e-01 ,  1.10218212e-16]
+)
+dnn_x = [11, 51, 101] 
+dnn   = [np.mean(np.abs(dnn_11)), np.mean(np.abs(dnn_51)), np.mean(np.abs(dnn_101))]
 
 ###
 
-plt.loglog(1/np.asarray(dnn_x), dnn, 'y-^', label=r'NN')
+plt.loglog(0.1/np.asarray(dnn_x), dnn, 'y-^', label=r'NN')
 
 #plt.semilogy(range(10,1001,5), errors, 'r-', label=r'FEM')
 plt.loglog(dts, errors, 'r-', label=r'FEM')

@@ -639,7 +639,7 @@ After running the network with a number of different structures we observe that 
 \epsilon_{diff} = u_{analytic}(x,t) - u_{NN}(x,t,P)
 \end{equation}
 
-We try to add a new layer also containing 90 nodes. This give a better result, see \tab{NN_more_layers}. Compared to deeper networks with fewer nodes it is also better, but takes longer time than just increasing the number of iterations. Running one hidden layer with 200.000 iterations give a decrease in error and computational time.
+We try to add a new layer also containing 90 nodes. This give a better result, see \tab{NN_more_layers}. Compared to deeper networks with fewer nodes it is also better, but takes longer time than just increasing the number of iterations. Running one hidden layer containing 90 node with 200.000 iterations give a decrease in error and computational time compared to two layers with 90 nodes, see \tab{NN_90}.
 It looks as though larger single layers is more important than increasing the number of layers and creating a deeper network. This is consistent with the universal approximation theorem.
 
 
@@ -654,6 +654,18 @@ It looks as though larger single layers is more important than increasing the nu
     80 & 0.0186 & 0.00074 & 33.2 \\ \hline
     90 & 0.0179 & 0.00056 & 35.4 \\ \hline
     100 & 0.0187 & 0.00077 & 36.8 \\ 
+    \hline
+    \end{tabular} 
+\end{center}
+\end{strip}
+
+\begin{strip}
+\begin{center}
+\captionof{table}{Simulation of NN with one hidden layer and 90 neurons. Number of iterations equal 200.000 and learning rate at 0.01. Results given as average over 3 runs.} \label{tab:NN_90} 
+    \begin{tabular}{| l | l | l | l |}
+    \hline
+    Number of neurons & max $|\epsilon_{diff}|$ & mean $|\epsilon_{diff}|$ & Computational time [s]\\ \hline
+    90 & 0.0113 & 0.00036 & 1m 9s \\ 
     \hline
     \end{tabular} 
 \end{center}

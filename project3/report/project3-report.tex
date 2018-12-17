@@ -410,10 +410,21 @@ f_N^{j-1}
 As the matrix $A$ is tri-diagonal, efficient linear scaling solution algorithms exists which circumvent the traditional solution schemes, e.g.\ LU decomposition at $\mathcal{O}(N^3)$.
 
 \subsection{The Crank-Nicolson scheme}
-\lipsum[3]
-
-\subsection{Stability analysis \label{sect:finitestability}}
-\lipsum[4]
+The more advanced Crank-Nicolson finite element scheme is obtained by combining the explicit and the implicit Euler methods. Doing this results in the linear equations
+\begin{align}
+(2+\beta B)\mathbf{f}^{n+1} = (2-\beta B)\mathbf{f}^{n},
+\end{align}
+with the matrix $B$ being defined as
+\begin{align}
+B = \begin{pmatrix}
+2 & -1 & \\
+-1 & 2 & -1 \\
+ & -1 & 2 & -1 \\
+ & & &  \ddots \\
+ & & & -1 & 2 & -1 \\
+ & & & & -1 & 2 
+\end{pmatrix}.
+\end{align}
 
 
 \subsection{Finite element methods}

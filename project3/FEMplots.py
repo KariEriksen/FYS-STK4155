@@ -4,28 +4,133 @@ import scipy.interpolate as inp
 import numpy as np
 import os
 import sys
+import scipy.linalg as scl
+import scipy.sparse as sparse
+import scipy.sparse.linalg as sparse_linalg
+from matplotlib import cm
 
 
+
+def FDM(Nt) :
+    Nx = 11
+    x_np = np.linspace(0,1,Nx)
+    Nt = Nt
+    t_np = np.linspace(0,0.1,Nt)
+    #Finite difference schemes
+    Ngrid = Nx-1 #Only inner grid points
+    dx = x_np[1]-x_np[0]
+    dt = (0.1-0.0) / Nt #t_np[1]-t_np[0]
+    alpha = 1
+
+    beta  = alpha**2*(dt/dx**2)
+    gamma = 1+2*beta
+    stable = True
+    if(beta > 0.5):
+        stable = False
+        print("beta: %g" % beta)
+        print("Explicit scheme unstable: must have beta < 0.5 for stability")
+
+    Tfinal = 0.1
+    Nsteps = int(Tfinal/dt)
+
+    u_explicit  = np.sin(np.pi*x_np) #Initial condition
+    u_implicit  = np.sin(np.pi*x_np) #Initial condition
+    u_crank_nich = np.sin(np.pi*x_np) #Initial condition
+
+    A_diag =  np.ones(Ngrid-1)*gamma
+    A_off  = -beta*np.ones(Ngrid-1)
+    A = sparse.diags([A_diag, A_off, A_off], offsets=[0, -1, 1]).tocsr()
+
+    gamma1_cn = 1+beta
+    gamma2_cn = 1-beta
+
+    A_cn_diag = np.ones(Ngrid-1)*gamma1_cn
+    A_cn_off = -np.ones(Ngrid-1)*0.5*beta
+    B_cn_diag = np.ones(Ngrid-1)*gamma2_cn
+    B_cn_off = np.ones(Ngrid-1)*0.5*beta
+
+    A_cn = sparse.diags([A_cn_diag, A_cn_off, A_cn_off], offsets=[0, -1, 1]).tocsr()
+    B_cn = sparse.diags([B_cn_diag, B_cn_off, B_cn_off], offsets=[0, -1, 1]).tocsr()
+
+    #plt.plot(x,u_explicit,'-g',label=r'$u_e(x,0)$') #plot initial state
+    tt = 0
+    for t in range(1,Nt+1):
+        tt += dt
+        u_explicit[1:Ngrid] = u_explicit[1:Ngrid] + beta*(u_explicit[2:]-2*u_explicit[1:Ngrid]+u_explicit[0:Ngrid-1]) #Explicit Euler
+        u_implicit[1:Ngrid] = sparse_linalg.spsolve(A,u_implicit[1:Ngrid]) 
+        u_crank_nich[1:Ngrid] = sparse_linalg.spsolve(A_cn,B_cn.dot(u_crank_nich[1:Ngrid]))
+    print(tt)
+    return u_explicit, u_implicit, u_crank_nich, stable
 
 plt.rc('text', usetex=True)
-
-
 x = np.linspace(0,1,11)
 ue = np.sin(np.pi*x)*np.exp(-0.1*np.pi**2)
 
-errors = []
+expl, impl, crank = [],[],[]
+dts = []
 
-for i in range(10,1001,5) :
-    t = np.loadtxt(os.path.join(os.path.dirname(__file__), 'data', 't%d.dat' %(i)))
-    u = np.loadtxt(os.path.join(os.path.dirname(__file__), 'data', 'u%d.dat' %(i)))
+M = 50
+first_expl = -1
+for Nt in range(10,1001,M) :
+    dt = 0.1/Nt
+    t = 0.1
+    dts.append(dt)
+
+    expl_, impl_, crank_, stable = FDM(Nt)
     
-    errors.append(np.mean(np.sum(np.abs(u[-1,:]-ue))))
+
+    expl.append(np.sum(np.abs(expl_   - ue))/11)
+    if not stable :
+        expl[-1] = np.nan
+    impl.append(np.sum(np.abs(impl_   - ue))/11)
+    crank.append(np.sum(np.abs(crank_ - ue))/11)
+    print(Nt, expl[-1], impl[-1], crank[-1])
+
+skip = np.sum(~np.isfinite(expl))
+print(skip)
+print(expl[:skip])
+
+expl_x = np.asarray(dts[skip:])
+#plt.loglog(expl_x, expl[skip:],  'b-x', label=r'FDM-Explicit')
+#plt.loglog(dts, impl,  'k-o', label=r'FDM-Implicit')
+#plt.loglog(dts, crank, 'c-s', label=r'FDM-Crank')
+
+errors = []
+dts = []
+
+for Nt in range(10,1001,5) :
+    dt = 0.1/Nt
+    t = 0.1
+    dts.append(dt)
+    ue = np.sin(np.pi*x)*np.exp(-t*np.pi**2)
+    t = np.loadtxt(os.path.join(os.path.dirname(__file__), 'data', 't%d.dat' %(Nt)))
+    u = np.loadtxt(os.path.join(os.path.dirname(__file__), 'data', 'u%d.dat' %(Nt)))
+    
+    errors.append(np.mean(np.abs(u[-1,:]-ue)))
 
 
-plt.semilogy(range(10,1001,5), errors, 'r.', markersize=0.5)
-plt.xlabel(r'Time steps, $N_t$', fontsize=16)
-plt.ylabel(r'Mean $|u_e-u|$', fontsize=16)
-plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'FEM_Nt.png'), transparent=True, bbox_inches='tight')
+###
+dnn_11 = np.array([  0.00000000e+0 , 1.16299335e-1 ,  2.18211440e-1,   3.01040738e-1 ,
+   3.53491286e-1 ,  3.69497491e-1 ,  3.50736761e-1,   2.99996583e-1,
+   2.19906798e-1 ,  1.16277424e-1 ,  1.10218212e-16])
+dnn_51 = np.array(
+[  0.00000000e+00 ,  1.17311885e-01 ,  2.19934974e-01,   3.03348916e-01,
+   3.56145177e-01 ,  3.71937380e-01 ,  3.52557235e-01,   3.01208737e-01,
+   2.20701238e-01 ,  1.16739716e-01 ,  1.10218212e-16,]
+)
+dnn_x = [11, 51] 
+dnn   = [np.mean(np.abs(dnn_11)), np.mean(np.abs(dnn_51))]
+
+###
+
+plt.loglog(1/np.asarray(dnn_x), dnn, 'y-^', label=r'NN')
+
+#plt.semilogy(range(10,1001,5), errors, 'r-', label=r'FEM')
+plt.loglog(dts, errors, 'r-', label=r'FEM')
+plt.xlabel(r'Time step, $\Delta t$', fontsize=16)
+plt.ylabel(r'Mean $|u_e(x,t=0.1) - u(x,t=0.1)|$', fontsize=16)
+plt.legend()
+plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'NT_error_compare.png'), transparent=True, bbox_inches='tight')
 plt.show()
 
 
@@ -107,6 +212,7 @@ plt.show()
 ####################################
 ####################################
 # P2 elements
+"""
 L1 = L([-3,-2,-1], [0, 0, 1])
 L2 = L([-1, 0, 1], [1, 0, 0])
 
@@ -116,7 +222,7 @@ L3 = L([-1, 0, 1], [0, 0, 1])
 L4 = L([ 1, 2, 3], [1, 0, 0])
 
 
-"""
+
 fig, ax = plt.subplots()
 newax = ax.twiny()
 

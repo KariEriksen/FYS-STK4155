@@ -33,7 +33,7 @@ function FEM_P2(N::Integer)
         α  = 1 # Parameter in the diffusion equation
         t₀ = 0
         t₁ = 0.1 
-        #Nₜ = 25
+        Nₜ = 27
         Δt = (t₁ - t₀) / Nₜ
         β  = α * Δt
         ε = []
@@ -58,6 +58,7 @@ function FEM_P2(N::Integer)
                 println(Δt, " ", sum(abs.(uₑ(nodes,t).-uⁿ))/N)
             end
         end
+        #display(uⁿ)
         #ΔtΔx² = Δt/(nodes[2]-nodes[1])^2
         #println("Δt/Δx² = $ΔtΔx² \n")
     end
@@ -66,5 +67,10 @@ end
 
 
 FEM_P2(11)
+
+
+
+
+
 
 

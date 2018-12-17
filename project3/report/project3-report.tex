@@ -631,11 +631,16 @@ The trial function is there to assure the network finds a solution that fulfille
 Now all we need is an optimizer in order to asjust the parameters. Tensorflow has several possible optimizer methods. However we will look at ordinary gradient descent.
 
 \section{Results and discussion}
-We now turn to the last part of this project and try to solve the diffursion equation with a neural network. We are using Tensorflow to solve this problem and the structure of the network can be chenged by adding new layers in the python list called num\_hidden\_neurons, where each element is the number of nodes in each layer. Our network takes as input 100 pairs of x and t-values. These are then updated and optimized with gradient descent. 
+We now turn to the last part of this project and try to solve the diffursion equation with a neural network. We use Tensorflow to solve this problem and the structure of the network can be chenged by adding new layers in the python list called num\_hidden\_neurons, where each element is the number of nodes in each layer. Our network takes as input 100 pairs of x and t-values. These are then updated and optimized with gradient descent. 
 First off the Tensorflow optimizer AdamOptimizer was tested. This method was used in project 2 giving good results. Observing an increase in the error compared to GradientDescentOptimizer however, the method was droped in this case, and gradient descent has been used through out this section.
-After running the network with a number of different structures we observe that adding layers may not necessarily give better results. If we look at \tab{NN_one_layer} just increasing the amount of nodes in a NN with one layer essentially becomes more computationally expensive. The more nodes and layers we add the more time consuming the network becomes. For 90 nodes we reach an optimal point with a maximum difference between analytical solution and the final output of the NN of 0.0179. 
+After running the network with a number of different structures we observe that adding layers may not necessarily give better results. If we look at \tab{NN_one_layer}, just increasing the amount of nodes in a NN with one layer essentially becomes more computationally expensive. The more nodes and layers we add the more time consuming the network becomes. For 90 nodes we reach an optimal point with a maximum difference between analytical solution and the final output, $\epsilon_{diff}$, of the NN of 0.0179. 
 
-We try to add a new layer also containing 90 nodes. This give a better result, see \tab{NN_more_layers}. Compared to deeper networks with fewer nodes it is also better. It looks as though larger single layers is more important than increasing number of layers, a deeper network. This is consistent with the universal approximation theorem.
+\begin{equation}
+\epsilon_{diff} = u_{analytic}(x,t) - u_{NN}(x,t,P)
+\end{equation}
+
+We try to add a new layer also containing 90 nodes. This give a better result, see \tab{NN_more_layers}. Compared to deeper networks with fewer nodes it is also better, but takes longer time than just increasing the number of iterations. Running one hidden layer containing 90 node with 200.000 iterations give a decrease in error and computational time compared to two layers with 90 nodes, see \tab{NN_90}.
+It looks as though larger single layers is more important than increasing the number of layers and creating a deeper network. This is consistent with the universal approximation theorem.
 
 
 \begin{strip}
@@ -643,7 +648,7 @@ We try to add a new layer also containing 90 nodes. This give a better result, s
 \captionof{table}{Simulation of NN with one hidden layer and number of neurons given in table. Number of iterations equal 100.000 and learning rate at 0.01. Results given as average over 5 runs. It is the difference between the analytical solution and the final output of the network, its maximum value and the mean, that is listed.} \label{tab:NN_one_layer} 
     \begin{tabular}{| l | l | l | l |}
     \hline
-    Number of neurons & Abs. max. diff. & Abs. mean diff. & Computational time [s]\\ \hline
+    Number of neurons & max $|\epsilon_{diff}|$ & mean $|\epsilon_{diff}|$ & Computational time [s]\\ \hline
     10 & 0.0263 & 0.00097 & 24.0 \\ \hline
     40 & 0.0420 & 0.00012 & 27.7 \\ \hline
     80 & 0.0186 & 0.00074 & 33.2 \\ \hline
@@ -656,10 +661,22 @@ We try to add a new layer also containing 90 nodes. This give a better result, s
 
 \begin{strip}
 \begin{center}
+\captionof{table}{Simulation of NN with one hidden layer and 90 neurons. Number of iterations equal 200.000 and learning rate at 0.01. Results given as average over 3 runs.} \label{tab:NN_90} 
+    \begin{tabular}{| l | l | l | l |}
+    \hline
+    Number of neurons & max $|\epsilon_{diff}|$ & mean $|\epsilon_{diff}|$ & Computational time [s]\\ \hline
+    90 & 0.0113 & 0.00036 & 1m 9s \\ 
+    \hline
+    \end{tabular} 
+\end{center}
+\end{strip}
+
+\begin{strip}
+\begin{center}
 \captionof{table}{Simulation of NN with the number of hidden layer and neurons given in table, [10,10] equals two layers with 10 nodes in each. Number of iterations equal 100.000 and learning rate at 0.01. Results given as average over 3 runs.} \label{tab:NN_more_layers} 
     \begin{tabular}{| l | l | l | l |}
     \hline
-    [$\text{layer}_{n}$,] & Abs. max. diff. & Abs. mean diff. & Computational time [s]\\ \hline
+    [$\text{layer}_{n}$,] & max $|\epsilon_{diff}|$ & mean $|\epsilon_{diff}|$ & Computational time [s]\\ \hline
     [10,10] & 0,0844 & 0.03736 & 33.1 \\ \hline
     [10,10,10] & 0,1334 & 0,02409 & 42.0 \\ \hline
     [10,10,10,10] & 0.0156 & 0.00111 & 50.2 \\ \hline
@@ -668,6 +685,46 @@ We try to add a new layer also containing 90 nodes. This give a better result, s
     \end{tabular} 
 \end{center}
 \end{strip}
+
+\subsection{Comparing NN with FD and FEM}
+We want to compare the solution using the neural network with the traditional PDE-methods of finite difference and 
+finite element. We have implemented three finite-difference solutions, namely the explicit and implicit Euler as well as the  
+Crank-Nicholson scheme. Furthermore we implemented a FEM P2 solution.
+
+In order to compare the solutions we solved the one-dimensional diffusion equation described in the theory section with closed form 
+soultion given by Eq. (\ref{eq:full}). The solution was computed in the time interval $t \in [0,0.1]$, where the solution has diffused but is 
+not zero. We compare the different solutions at the end of the simulation, namely at $t = 0.1$.
+
+We used a rather coarse spatial grid with only $N_x = 10$ integration points in space and 
+$N_t = 25$ integration points in time. The parameters were chosen such that the explicit Euler scheme is stable and we could compare 
+all methods, with the same parameters. For the neural network a single layer with $N_{neurons} = 90$ hidden neurons. The network 
+was trained for $N_{iterations} = 10^5$ iterations with the trial function given by Eq. (\ref{eq:trial}) and using the method of 
+gradient descent for optimization. The training phase completed in roughly $4$ minutes.
+
+Fig. (\ref{FD_vs_NN_vs_FEM}) shows the computed solution at $t=0.1$ using all methods compared with the closed form 
+solution. Furthermore, we have plotted the deviation from the exact solution for all methods, as it is to some 
+degree easier to see difference between the methods in this way. 
+
+It is clear that with the chosen parameters the neural network and the Crank-Nicholson performs best in terms of accuracy, with 
+a slight better performance using the NN. However, it should be noted that the Crank-Nicholson scheme takes merely a second to complete 
+in contrast with the $4$ minutes used to train the network. Thus, in terms of accuracy pr. wall time, the Crank-Nicholson scheme 
+is superior.
+
+Nevertheless, this exercise provides a proof-of-principle that we can use neural networks to solve a partial 
+differential equation. However, it seems far away that it can outperform the standard approaches in terms of efficiency, 
+even though it provides adequate accuracy.
+
+
+\begin{figure*}[p]
+\centering
+\subfloat[]{\includegraphics[width=12cm]{finiteDiff_dnn_analytic_Nt=25.png}} \\
+\subfloat[]{\includegraphics[width=12cm]{Diff_finiteDiff_dnn_analytic_Nt=25.png}} \\
+\captionof{figure}{Comparison of the solution of the diffusion equation using a neural network, finite difference schemes 
+and the finite element method with P2 functions.
+\label{FD_vs_NN_vs_FEM}
+}
+\end{figure*}
+
 
 \section{Conclusion}
 \lipsum[7]
@@ -679,5 +736,19 @@ We try to add a new layer also containing 90 nodes. This give a better result, s
 
 \end{document}
 
+abstract 
 
+intro
+
+crank 
+
+stability theory 
+
+results: 
+finite diff
+Morten sine??
+sammenligning
+
+
+conclusion
 

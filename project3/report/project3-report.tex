@@ -479,6 +479,8 @@ In order to make the problem numerically tractable, we are now forced to choose 
 \end{align}
 i.e.\ piecewise linear functions which are non-zero in the range $[x_i-h, x_i+h]$, increasing linearly to unity from $x_i-h$ to $x_i$, before decreasing linearly back to zero between $x_i$ and $x_i+h$. 
 
+In general, it is numerically beneficient to introduce a spatial discretization\textemdash as done in the context of the finite difference method\textemdash and choosing a set of functions $\psi_i(x)$ which vanish on all but one of the discretized points. 
+
 Working from the weak form \eq{weak1} (we may also choose to work from \eq{weak2}, but the former yields tidier mathematics), we express the arbitrary $\phi(x)$ in terms of the chosen basis functions $\{\psi_i(x)\}$.
 
 
@@ -495,7 +497,7 @@ AD is a technique for solving derivatives by recognising elementary functions $f
 f = f_1 \cdot f_2 \cdot f_3 \cdot f_4 \cdot ... \cdot f_n
 \end{equation}
 
-A composition consisting of a finit set of elementary operations for which the derivatives are known, combining the derivatives of the constituent operations through the chain rule gives the derivative of the overall composition. This is done through a process called forward and reverse mode. \eq{chain} show how we can repeatedly substitute the derivative of the inner functions in the chain rule of a function $y$ w.r.t one fixed variable $x$. In reverse mode one substitutes the outer functions in the chain rule. A computational graph showing the forward mode of $y = f(x_1, x_2) = \ln (x_1) + x_1 x_2 - \sin (x_2)$ is given in \fig{autodiff}.
+A composition consisting of a finite set of elementary operations for which the derivatives are known, combining the derivatives of the constituent operations through the chain rule gives the derivative of the overall composition. This is done through a process called forward and reverse mode. \eq{chain} show how we can repeatedly substitute the derivative of the inner functions in the chain rule of a function $y$ w.r.t one fixed variable $x$. In reverse mode one substitutes the outer functions in the chain rule. A computational graph showing the forward mode of $y = f(x_1, x_2) = \ln (x_1) + x_1 x_2 - \sin (x_2)$ is given in \fig{autodiff}.
 
 Calculating the gradients of $u$ with AD is supposed to give more accurate results than using Taylor, and is probably the reason Tensorflow apply AD.
 
@@ -552,7 +554,7 @@ Calculating the gradients of $u$ with AD is supposed to give more accurate resul
 
 We will look at a standard DNN with $n$ hidden layers called multilayer perceptron (MLP). Each layer may contain different number of neurons, or nodes. A complete description of the MLP is given in project 2 and particulary Fig. 1 is explanatory.   
 
-Usually in supervised learning we would have one set of training data from where we computed an output and evaluated the cost function. In our case we do not have a correct output value to compare with, we are looking at a partial differential equation and our data set is simply initial values of $x$ and $t$ which we try to fit to the model. But from \eq{diff_0} we see that we seak a solution $u(x,t)$ that minimizes the right hand side of the equation. 
+Usually in supervised learning we would have one set of training data from where we computed an output and evaluated the cost function. In our case we do not have a correct output value to compare with, we are looking at a partial differential equation and our data set is simply initial values of $x$ and $t$ which we try to fit to the model. But from \eq{diff_0} we see that we seek a solution $u(x,t)$ that minimizes the right hand side of the equation. 
 
 \begin{equation} \label{eq:diff_0}
 0 = \frac{\partial u(x,t)}{\partial t} - \frac{\partial^2 u(x,t)}{\partial x^2} 

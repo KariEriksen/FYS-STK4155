@@ -151,7 +151,7 @@
 \maketitle
 
 \begin{abstract}
-\lipsum[1]
+We solve the heat equation in one spatial dimension with direchlet boundary conditions and a sinusoidal initial condition. A number of different solution schemes are explored: Finite difference variants \textit{explicit} and \textit{implicit} Euler, and the Crank-Nicholson scheme, in addition to a finite element scheme using P2 piecewise Lagrange interpolating polynomial basis functions. Lastly, a neural network is designed which is able to solve the same problem. Comparison between the methods reveals that the neural network approach is not useful in the solving of this specific problem (in terms of cost effectiveness). Although the neural network solution is superior in the case of very small discretized lattice sizes and a very small number of time steps employed, the error scaling of the traditional methods prove to be far superior. 
 \end{abstract}
 
 \twocolumn
@@ -165,8 +165,6 @@
 \lipsum[1]
 
 \section{Theory}
-\lipsum[2]
-
 \subsection{The heat equation}
 The heat equation is a partial differential equation (in space $x$ and time $t$) which describes the evolution of temperature differences in a region of space over a time interval. It is based on \textit{Fourier's law}; the rate of heat flow through a surface is proportional to the temperature gradient across the surface, i.e.\
 \begin{align}
@@ -724,6 +722,17 @@ and the finite element method with P2 functions.
 \label{FD_vs_NN_vs_FEM}
 }
 \end{figure*}
+
+
+\subsection{Increasing the number of time steps}
+Keeping our attention at the temporal region $[0,0.1]$, we now explore how the network solution compares to the traditional methods when the number of time steps is increased. We run simulations using the P2 finite element scheme and train the network using $N_t\in[10,1000]$. As the training is rather slow, we are not able to explore fully the upper regions of this interval in the latter case. In contrast, the FEM method easily calculates the solution at $t=0.1$ in less than a second, even when using $N_t=1000$. Note that this corresponds to a time step of $\Delta t=0.0001$. Plotting the mean difference between the numerical solution and the closed form solution yields the plot shown in \fig{NNFEMcompare}. 
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{NT_error_compare.png}
+\captionof{figure}{Comparison of the error scaling between the P2-FEM scheme and the NN method, for time steps in the range $10^{-4}\le \Delta t\le 10^{-1}$. We note that the traditional scheme improves steadily as $\Delta t$ decreases, while this is not seen for the NN solution.\label{fig:NNFEMcompare}}
+\end{figure}
+
 
 
 \section{Conclusion}

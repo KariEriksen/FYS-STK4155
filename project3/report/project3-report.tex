@@ -453,7 +453,7 @@ As we have seen, the solution function of the original heat equation resides in 
 
 Let us consider a stationary diffusion equation on the form
 \begin{align}
-f(x)=\partial_{xx}u(x),
+f(x)=\partial_{xx}u(x), \label{eq:stationary}
 \end{align} 
 with $f(x)$ some known function. Multiplying from the left by a test function $\phi(x)\in C^\infty(\Omega)$ satisfying $\phi(\partial\Omega)=0$ and integrating over $\Omega$, before integrating by parts, yields a \textit{weak} or \textit{variational} form as
 \begin{align}
@@ -513,7 +513,28 @@ and
 For smart choices of discretization, the integrals over the basis functions may be easily calculated in closed form. 
 
 \subsubsection{Pairing the FEM method with a finite difference scheme in time}
-
+In order to solve a time dependent problem, a finite difference scheme is traditionally introduced in the temporal dimension. In principle we may choose any such scheme, but we will in the following focus on the simplest such scheme: The forward euler (as derived in section \ref{sect:finitediff} and \eq{explicit}). Modifying the left hand side of the stationary diffusion equation\textemdash \eq{stationary}\textemdash and introducing the backwards difference approximation of \eq{backwarddiff}, we find
+\begin{align}
+\frac{\partial u}{\partial t} &= \alpha\frac{\partial^2 u}{\partial x^2} \nonumber \\
+%
+\frac{u^{n+1}-u^{n}}{\Delta t} &=  \alpha\frac{\partial^2 u^n}{\partial x^2} \nonumber \\
+%
+u^{n+1} &= u^{n} + \beta \frac{\partial^2 u^n}{\partial x^2}.
+\end{align}
+We now use the Galerkin method: Introducing a P$k$ basis $\{\psi_i(x)\}_i$, left-multiplying by $\psi_k(x)$ and integrating over $\Omega$, performing a single integration by parts on the right hand side:
+\begin{strip}
+\begin{align}
+\int_\Omega\mathrm{d}x\, \sum_ic^{n+1}_i\psi_i(x) \psi_k(x) &= \int_\Omega\mathrm{d}x\, \sum_ic^{n}_i\psi_i(x) \psi_k(x) - \beta\int_\Omega\mathrm{d}x\, \sum_i c_i^n\frac{\partial \psi_k}{\partial x}\frac{\partial \psi_i}{\partial x}, \label{eq:FEMf}
+\end{align}
+\end{strip}
+where superscripts denote the discretized time step, i.e.\ $u(x,t_n)=u^n(x)$. Introducing the matrix 
+\begin{align}
+M_{ij}\equiv \int_\Omega \mathrm{d}x\, \psi_i(x)\psi_j(x),
+\end{align}
+we may write \eq{FEMf} as $M\mathbf{c}^{n+1}=M\mathbf{c}^n -\beta K\mathbf{c}^n$. Note carefully that all of the right hand side is known at time step $n$, which means we may simply directly solve this equation for the coefficients of the solution function relative to the $\{\psi_i\}_i$ basis at time step $n+1$. A similar derivation yields the corresponding equation set for the \textit{backwards} Euler scheme as
+\begin{align}
+\Big(M +\beta K\Big)\mathbf{c}^{n+1} &= M \mathbf{c}^n. 
+\end{align}
 
 
 \subsection{Solving differential equations with neural networks}

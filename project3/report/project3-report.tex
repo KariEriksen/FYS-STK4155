@@ -686,6 +686,46 @@ It looks as though larger single layers is more important than increasing the nu
 \end{center}
 \end{strip}
 
+\subsection{Comparing NN with FD and FEM}
+We want to compare the solution using the neural network with the traditional PDE-methods of finite difference and 
+finite element. We have implemented three finite-difference solutions, namely the explicit and implicit Euler as well as the  
+Crank-Nicholson scheme. Furthermore we implemented a FEM P2 solution.
+
+In order to compare the solutions we solved the one-dimensional diffusion equation described in the theory section with closed form 
+soultion given by Eq. (\ref{eq:full}). The solution was computed in the time interval $t \in [0,0.1]$, where the solution has diffused but is 
+not zero. We compare the different solutions at the end of the simulation, namely at $t = 0.1$.
+
+We used a rather coarse spatial grid with only $N_x = 10$ integration points in space and 
+$N_t = 25$ integration points in time. The parameters were chosen such that the explicit Euler scheme is stable and we could compare 
+all methods, with the same parameters. For the neural network a single layer with $N_{neurons} = 90$ hidden neurons. The network 
+was trained for $N_{iterations} = 10^5$ iterations with the trial function given by Eq. (\ref{eq:trial}) and using the method of 
+gradient descent for optimization. The training phase completed in roughly $4$ minutes.
+
+Fig. (\ref{FD_vs_NN_vs_FEM}) shows the computed solution at $t=0.1$ using all methods compared with the closed form 
+solution. Furthermore, we have plotted the deviation from the exact solution for all methods, as it is to some 
+degree easier to see difference between the methods in this way. 
+
+It is clear that with the chosen parameters the neural network and the Crank-Nicholson performs best in terms of accuracy, with 
+a slight better performance using the NN. However, it should be noted that the Crank-Nicholson scheme takes merely a second to complete 
+in contrast with the $4$ minutes used to train the network. Thus, in terms of accuracy pr. wall time, the Crank-Nicholson scheme 
+is superior.
+
+Nevertheless, this exercise provides a proof-of-principle that we can use neural networks to solve a partial 
+differential equation. However, it seems far away that it can outperform the standard approaches in terms of efficiency, 
+even though it provides adequate accuracy.
+
+
+\begin{figure*}[p]
+\centering
+\subfloat[]{\includegraphics[width=12cm]{finiteDiff_dnn_analytic_Nt=25.png}} \\
+\subfloat[]{\includegraphics[width=12cm]{Diff_finiteDiff_dnn_analytic_Nt=25.png}} \\
+\captionof{figure}{Comparison of the solution of the diffusion equation using a neural network, finite difference schemes 
+and the finite element method with P2 functions.
+\label{FD_vs_NN_vs_FEM}
+}
+\end{figure*}
+
+
 \section{Conclusion}
 \lipsum[7]
 

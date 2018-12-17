@@ -22,7 +22,7 @@ L4 = L([ 1, 3], [1, 0])
 
 
 plt.rc('text', usetex=True)
-"""
+
 fig, ax = plt.subplots()
 newax = ax.twiny()
 
@@ -59,7 +59,7 @@ ax.legend()
 ax.set_yticks([0,1])
 ax.set_xticks([-3,-1,0,1,3])
 newax.set_xticks([-3,-1,1,3])
-newax.set_xticklabels(['E${}_{1}$','E${}_{0}$','E${}_{1}$'], fontsize=16)
+newax.set_xticklabels(['E${}_{-1}$','E${}_{0}$','E${}_{1}$'], fontsize=16)
 ax.axis([-3.5, 3.5, -0.2, 1.2])
 newax.axis([-3.5, 3.5, -0.2, 1.2])
 
@@ -74,7 +74,7 @@ for label in newax.xaxis.get_majorticklabels():
 
 #plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'P1_basis.png'), transparent=True, bbox_inches='tight')
 plt.show()
-"""
+
 
 ####################################
 ####################################
@@ -130,7 +130,7 @@ ax.legend()
 ax.set_yticks([0,1])
 ax.set_xticks([-3,-1,0,1,3])
 newax.set_xticks([-3,-1,1,3])
-newax.set_xticklabels(['E${}_{1}$','E${}_{0}$','E${}_{1}$'], fontsize=16)
+newax.set_xticklabels(['E${}_{-1}$','E${}_{0}$','E${}_{1}$'], fontsize=16)
 ax.axis([-3.5, 3.5, -0.2, 1.2])
 newax.axis([-3.5, 3.5, -0.2, 1.2])
 
@@ -147,7 +147,7 @@ plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'P2_basis.png'), 
 plt.show()
 """
 
-
+"""
 ####################################
 ####################################
 ####################################
@@ -194,26 +194,13 @@ ax.plot(E2, L30(E2), 'b-', label=r'$\psi_3$')
 ax.plot(E3, L31(E3), 'b-')
 ax.plot([6, 10], [0, 0], 'b-')
 
-"""
-ax.plot(E2, L5(E2), 'k-', label=r'$\psi_{0}$')
-
-ax.plot(E2, L3(E2), 'b-', label=r'$\psi_{1}$')
-ax.plot(E3, L4(E3), 'b-')
-ax.plot([3, 10], [0, 0], 'b-')
-
-
-ax.plot([-1,-1], [-10, 10], 'k--')
-ax.plot([ 1, 1], [-10, 10], 'k--')
-ax.plot([-3,-3], [-10, 10], 'y--')
-ax.plot([ 3, 3], [-10, 10], 'g--')
-"""
 plt.rc('legend', fontsize=16)
 ax.legend()
 
 ax.set_yticks([0,1])
 ax.set_xticks([-3,0,1,2,3, 6])
 newax.set_xticks([-3,0,3,6])
-newax.set_xticklabels(['E${}_{1}$','E${}_{0}$','E${}_{1}$'], fontsize=16)
+newax.set_xticklabels(['E${}_{-1}$','E${}_{0}$','E${}_{1}$'], fontsize=16)
 ax.axis([-3.5, 6.5, -0.4, 1.2])
 newax.axis([-3.5, 6.5, -0.4, 1.2])
 
@@ -228,3 +215,4 @@ for label in newax.xaxis.get_majorticklabels():
 
 plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'P3_basis.png'), transparent=True, bbox_inches='tight')
 plt.show()
+"""

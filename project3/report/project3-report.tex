@@ -415,7 +415,7 @@ As the matrix $A$ is tri-diagonal, efficient linear scaling solution algorithms 
 
 
 \subsection{Finite element methods}
-In the case of the finite difference approximation, the derivatives in the original partial differential equation is transformed into a set of algebraic equations by application of \textit{finite difference} approximations arising from Taylor expansions of the solution function. A fundamentally different, and somewhat more sophisticated, solution strategy entails writing the original differential equation in its \textit{weak form}. This is done by integrating the original equation multiplied by a test function $v(x)$ over the domain in question. Such a \textit{finite element} approach is normally accompanied by a simple finite element scheme in time when partial differential equations are considered. 
+In the case of the finite difference approximation, the derivatives in the original partial differential equation is transformed into a set of algebraic equations by application of \textit{finite difference} approximations arising from Taylor expansions of the solution function. A fundamentally different, and somewhat more sophisticated, solution strategy entails writing the original differential equation in its \textit{weak form}. This is done by integrating the original equation multiplied by a test function $v(x)$ over the domain in question. Such a \textit{finite element} (FEM) approach is normally accompanied by a simple finite difference scheme in time when partial differential equations are considered. 
 
 \subsubsection{Functional spaces and weak forms}
 Let us consider the vector space of \textit{all} functions $f:\mathds{R}^2\rightarrow\mathds{R}$, which we will call $A(\mathds{R}^2)$. Obviously, the solution to the heat equation is contained in this space, being a real-valued function of two parameters, $x$ and $t$. However, we may consider subspaces with more useful structure than the all-encompassing $A(\mathds{R}^2)$. Assuming the initial and boundary conditions are specified in a sufficiently non-pathological way, the solution at each instant in time will be continuous across the spatial integration domain, $\Omega$. In other words, the solution (at some $\tau\ge0$) $u(x;\tau)\in C(\Omega)$: The vector space of \textit{continuous} functions $f:\Omega\rightarrow\mathds{R}$. As the heat equation involves a second spatial derivative, we might assume that the solution be twice continuously differentiable, i.e.\ $u(x;\tau)\in C^2(\Omega)$.
@@ -475,21 +475,53 @@ In order to make the problem numerically tractable, we are now forced to choose 
 \frac{x-(x_i-h)}{h} & x\in [x_i-h, x_i) \\%x_i-h\le x < x_i \\
 1- \frac{x-x_i}{h}  & x\in [x_i, x_i+h) \\%x_i \le x < x_i+h \\
 0                   & x\in [x_i+h, \infty)%x_i+h \le x
-\end{matrix}\right.
+\end{matrix}\right. \label{eq:P1}
 \end{align}
 i.e.\ piecewise linear functions which are non-zero in the range $[x_i-h, x_i+h]$, increasing linearly to unity from $x_i-h$ to $x_i$, before decreasing linearly back to zero between $x_i$ and $x_i+h$. 
 
-In general, it is numerically beneficient to introduce a spatial discretization\textemdash as done in the context of the finite difference method\textemdash and choosing a set of functions $\psi_i(x)$ which vanish on all but one of the discretized points. 
+In general, it is numerically beneficient to introduce a spatial discretization\textemdash as done in the context of the finite difference method\textemdash and choosing a set of functions $\psi_i(x)$ which vanish on all but one of the discretized points. A convenient choice often employed is the Lagrange interpolating polynomials, of which the piecewise first degree functions \eq{P1} are an example. Introducing a discretization, we may group adjacent discretized points into what are known as \textit{elements}. In the case of the Lagrange interpolating polynomial basis, the number of points (or nodes) in each element is determined by the order of the polynomials used. We will in the following refer to the interpolating polynomial bases as P$k$-bases, with $k$ denoting the order of the piecewise polynomial functions. Equation (\ref{eq:P1}) represents P1 elements. In general, the Lagrange interpolating polynomials which vanish exactly on all points $x_i$, except for a single $x_k$ on which it takes the value unity may be written as
+\begin{align}
+L_k(x) &= \prod_{i\not=k}\frac{x-x_i}{x_k-x_i}.
+\end{align}
 
-Working from the weak form \eq{weak1} (we may also choose to work from \eq{weak2}, but the former yields tidier mathematics), we express the arbitrary $\phi(x)$ in terms of the chosen basis functions $\{\psi_i(x)\}$.
+Using P$k$ elements, each spatial element will contain $k+1$ nodes, of which two will coincide with nodes in the neighboring elements. Examples of P1, P2, and P3 basis functions are shown in \fig{Pk}.
+
+\begin{figure*}[p]
+\centering
+\subfloat[P1]{\includegraphics[width=0.4\linewidth]{P1_basis.png}}
+\subfloat[P2]{\includegraphics[width=0.4\linewidth]{P2_basis.png}} \\
+\subfloat[P3]{\includegraphics[width=0.5\linewidth]{P3_basis.png}}
+\captionof{figure}{Piecewise Lagrange interpolating polynomial basis functions for P1, P2, and P3 elements, respectively. The basis functions $\psi_i(x)$ are labelled according to the only discretized spatial point (node) they do not vanish on. Note that all $\psi_i(x)$ take the value $\psi_i(x_i)=1$ on the one node for which they do not vanish. \label{fig:Pk}}
+\end{figure*}
+
+Working from the weak form \eq{weak1} (we may also choose to work from \eq{weak2}, but the former yields tidier mathematics), we express the arbitrary $\phi(x)$ in terms of the chosen basis functions $\{\psi_i(x)\}$. It is obvious that \textit{within the subspace }$V_n$, demanding that \eq{weak1} is satisfied \textit{for any} $\phi(x)$ is the same as demanding that it holds for any of the basis functions $\psi_i(x)$. To realize this, let us choose the arbitrary $\phi(x)$ to be $\psi_k(x)$, and express $u(x)$ in terms of its basis expansion in $\psi_i$s:
+%\begin{strip}
+\begin{align}
+\int_\Omega\mathrm{d}x\, \psi_k(x)f(x) &= -\int_\Omega \mathrm{d}x\, \frac{\partial \psi_k}{\partial x}\frac{\partial u}{\partial x} \nonumber \\
+%
+\int_\Omega\mathrm{d}x\, \psi_k(x)f(x) &= -\int_\Omega \mathrm{d}x\, \sum_i c_i \frac{\partial \psi_k}{\partial x}\frac{\partial \psi_i}{\partial x}. \nonumber 
+\end{align}
+%\end{strip}
+If we do this once for each $\psi_k$, we end up with a set of $n$ equations for the coefficients $c_i$, which determine the solution function $u(x)$ \textit{in the subspace} $V_n$. It is clear that this may be formulated in terms of a matrix-vector equation as $K\mathbf{c}=\mathbf{f}$, with
+\begin{align}
+K_{ij}\equiv -\int_\Omega \mathrm{d}x\, \frac{\partial \psi_i}{\partial x}\frac{\partial \psi_j}{\partial x}
+\end{align}
+and
+\begin{align}
+\mathbf{f}_i \equiv  \int_\Omega\mathrm{d}x\, \psi_i(x)f(x).
+\end{align}
+For smart choices of discretization, the integrals over the basis functions may be easily calculated in closed form. 
+
+\subsubsection{Pairing the FEM method with a finite difference scheme in time}
+
 
 
 \subsection{Solving differential equations with neural networks}
 A part of this project is exploring partial differential problems with the use of deep learning. Deep neural networks (DNN) are networks that consist of two hidden layers or more. In this part of the project we will be using Googles open-source library Tensorflow. A time consuming part of neural networks is the backpropagation and its equations. By using Tensorflow we avoid having to solve the derivatives of a cost function w.r.t to all the different weights and biases. It also provides us with a wast amount of applications. Different activation functions, gradients, loss function etc. And it is easy to add layers and nodes. 
 
-In our approach on solving differential equations with DNN we will discover there are some similarities between this new method and the well known finite element methods. For instance we will not be using backpropagation as a way of teaching the network, we will instead calculate the derivatives directly, much like finite element.
+In our approach on solving differential equations with DNN we will discover there are some similarities between this new method and the well known finite difference methods. For instance we will not only be using backpropagation as a way of teaching the network, we will also calculate the spatial and temporal derivatives directly, much like we do in the finite difference scheme.
 
-However in finite element we assume the problem can be rewritten into new numerical solvable equations using Taylor expansion, as mentioned above. Tensorflow uses a method called automatic differentiation (AD) to find the derivatives. 
+However in the finite difference method we assume the problem can be rewritten into new numerical solvable equations using Taylor expansion, as mentioned above. Tensorflow uses a method called automatic differentiation (AD) to find the derivatives. 
 
 AD is a technique for solving derivatives by recognising elementary functions $f_i$, (like addition, multiplication, exponential, trigonometric functions) which have known derivatives, within more complex functions $f$.  
 
@@ -499,7 +531,7 @@ f = f_1 \cdot f_2 \cdot f_3 \cdot f_4 \cdot ... \cdot f_n
 
 A composition consisting of a finite set of elementary operations for which the derivatives are known, combining the derivatives of the constituent operations through the chain rule gives the derivative of the overall composition. This is done through a process called forward and reverse mode. \eq{chain} show how we can repeatedly substitute the derivative of the inner functions in the chain rule of a function $y$ w.r.t one fixed variable $x$. In reverse mode one substitutes the outer functions in the chain rule. A computational graph showing the forward mode of $y = f(x_1, x_2) = \ln (x_1) + x_1 x_2 - \sin (x_2)$ is given in \fig{autodiff}.
 
-Calculating the gradients of $u$ with AD is supposed to give more accurate results than using Taylor, and is probably the reason Tensorflow apply AD.
+Calculating the gradients of $u$ with AD gives more accurate results than using Taylor expansion approximations, which is the reason Tensorflow uses AD. In theory, AD should yield exact derivatives to numerical precision (since each step in the chain rule differentiation is exact).
 
 \begin{strip}
 \begin{equation} \label{eq:chain}

@@ -3,6 +3,7 @@ using UnicodePlots
 using LinearAlgebra
 using FastGaussQuadrature
 using RowEchelon
+using DelimitedFiles
 
 include("lagrangeInterpolation.jl")
 include("FEMBasis.jl")
@@ -18,47 +19,47 @@ function uₑ(x, t)
 end
 
 function FEM_P2(N::Integer)
-    nodes, elements, basis = generateP2Basis(N)
+    for Nₜ = 10:5:1000
+        tfile = open("../data/t$Nₜ.dat", "w")
+        ufile = open("../data/u$Nₜ.dat", "w")
 
-    #K, M, f⁰ = setupmatrices_gaussianquadrature(nodes, elements, basis, f)
-    K, M, f⁰ = setupmatrices_analytical(nodes, elements, basis, f)
-    #u⁰ = projectinitial(nodes, f)
-    u⁰ = projectinitial(M, f⁰)
+        nodes, elements, basis = generateP2Basis(N)
 
-    println("M")
-    display(M)
-    println("K")
-    display(K)
-    println(nodes)
-    exit()
-    
+        #K, M, f⁰ = setupmatrices_gaussianquadrature(nodes, elements, basis, f)
+        K, M, f⁰ = setupmatrices_analytical(nodes, elements, basis, f)
+        #u⁰ = projectinitial(nodes, f)
+        u⁰ = projectinitial(M, f⁰)    
 
-    α  = 1 # Parameter in the diffusion equation
-    t₀ = 0
-    t₁ = 0.1 
-    Nₜ = 100
-    Δt = (t₁ - t₀) / Nₜ
-    β  = α * Δt
-    ε = []
+        α  = 1 # Parameter in the diffusion equation
+        t₀ = 0
+        t₁ = 0.1 
+        #Nₜ = 25
+        Δt = (t₁ - t₀) / Nₜ
+        β  = α * Δt
+        ε = []
 
-    uⁿ = u⁰
-    t = t₀
-    for tᵢ = 1:Nₜ
-        t = t + Δt 
-        #uⁿ⁺¹ = iterate_forward(K, M, uⁿ, β)
-        uⁿ⁺¹ = iterate_backward(K, M, uⁿ, β)
-        uⁿ = uⁿ⁺¹
+        uⁿ = u⁰
+        t = t₀
 
-        if tᵢ % 10 == 0
-            #err = sum(abs.(uₑ(nodes,t).-uⁿ))/N
-            #push!(ε, err)
-            #println(lineplot(nodes, uₑ.(nodes,t), ylim=[0,1]))
-            #println(lineplot(nodes, uⁿ, ylim=[0,1]))
-            #println(lineplot(nodes[2:end-1], log10.(1e-10.+abs.(uₑ(nodes[2:end-1],t) .- uⁿ[2:end-1])), ylim=[-10, 1]))
-            println(sum(abs.(uₑ(nodes,t).-uⁿ))/N)
-            #println(lineplot(log10.(ε)))
-            #sleep(0.05)
+        writedlm(tfile, t)
+        writedlm(ufile, transpose(uⁿ))
+
+        for tᵢ = 1:Nₜ
+            t = t + Δt 
+            #uⁿ⁺¹ = iterate_forward(K, M, uⁿ, β)
+            uⁿ⁺¹ = iterate_backward(K, M, uⁿ, β)
+            uⁿ = uⁿ⁺¹
+
+            writedlm(tfile, t)
+            writedlm(ufile, transpose(uⁿ))
+
+            #if tᵢ % 1 == 0
+            if tᵢ == Nₜ
+                println(Δt, " ", sum(abs.(uₑ(nodes,t).-uⁿ))/N)
+            end
         end
+        #ΔtΔx² = Δt/(nodes[2]-nodes[1])^2
+        #println("Δt/Δx² = $ΔtΔx² \n")
     end
 end
 

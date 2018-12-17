@@ -6,8 +6,34 @@ import os
 import sys
 
 
+
+plt.rc('text', usetex=True)
+
+
+x = np.linspace(0,1,11)
+ue = np.sin(np.pi*x)*np.exp(-0.1*np.pi**2)
+
+errors = []
+
+for i in range(10,1001,5) :
+    t = np.loadtxt(os.path.join(os.path.dirname(__file__), 'data', 't%d.dat' %(i)))
+    u = np.loadtxt(os.path.join(os.path.dirname(__file__), 'data', 'u%d.dat' %(i)))
+    
+    errors.append(np.mean(np.sum(np.abs(u[-1,:]-ue))))
+
+
+plt.semilogy(range(10,1001,5), errors, 'r.', markersize=0.5)
+plt.xlabel(r'Time steps, $N_t$', fontsize=16)
+plt.ylabel(r'Mean $|u_e-u|$', fontsize=16)
+plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'FEM_Nt.png'), transparent=True, bbox_inches='tight')
+plt.show()
+
+
+"""
+
+
 def L(x, y) :
-	return inp.lagrange(x, y)
+    return inp.lagrange(x, y)
 
 N = 1000
 E1 = np.linspace(-3,-1, N)
@@ -72,10 +98,10 @@ offset = matplotlib.transforms.ScaledTranslation(dx, dy, fig.dpi_scale_trans)
 for label in newax.xaxis.get_majorticklabels():
     label.set_transform(label.get_transform() + offset)
 
-#plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'P1_basis.png'), transparent=True, bbox_inches='tight')
+plt.savefig(os.path.join(os.path.dirname(__file__), 'figures', 'P1_basis.png'), transparent=True, bbox_inches='tight')
 plt.show()
 
-
+"""
 ####################################
 ####################################
 ####################################

@@ -318,7 +318,7 @@ u_{i, j+1} &= \beta (u_{i+1,j} - 2u_{i,j} + u_{i-1,j}) + u_{i,j} \\
 &= \beta (u_{i+1,j} + u_{i-1,j}) + (1 - 2\beta)u_{i,j} 
 \end{align*}
 
-\subsection{Finite difference method} \label{sect:finitediff}
+\subsection{Finite difference method\label{sect:finitediff}}
 The most straightforward way to solve \eq{heat} numerically is through \textit{finite difference methods}, i.e.\ discretizing time and space on a grid and Taylor expanding the solution to obtain algebraic equation sets. A multitude of different strategies and schemes exists, but we will consider the \textit{explicit forward Euler} scheme. 
 
 The spatial region $[0,L]$ is discretized by splitting it into $N$ segments, and considering only the functional values on the points $x_i=i\Delta x$ with $i\in[0,N-1]$. We denote a function $f(x,t)$ evaluated at $x_i$ (and at time $t$) by $f_i^t=f(x_i,t)$. Considering $N$ spatial points gives a step size $\Delta x$ between each point of 
@@ -360,7 +360,7 @@ Equation (\ref{eq:explicit}) is known as the \textit{explicit Euler} scheme, and
 
 
 \subsection{Implicit schemes}
-As noted in section \ref{sect:finitediff}, applying the forward difference approximation for the first derivative in time\textemdash derived from the Taylor expansion of a function around the point $x+h$\textemdash yields the explicit Euler scheme. However, as we will see in section \ref{sect:finitestability}, the forward method has a rather weak stability criterion which necessitates the use of very small time steps to ensure the solution remains well-behaved. 
+As noted in section \ref{sect:finitediff}, applying the forward difference approximation for the first derivative in time\textemdash derived from the Taylor expansion of a function around the point $x+h$\textemdash yields the explicit Euler scheme. However, as can be shown, the forward method has a rather weak stability criterion which necessitates the use of very small time steps to ensure the solution remains well-behaved. 
 
 If we instead employ a backward difference approximation in time (solving \eq{f(x-h)} for an $\mathcal{O}(h)$ approximation of the first derivative) we obtain equations sets which are stable for any combination of $\Delta x$ and $\Delta t$. This allows us to use more reasonable time steps and ultimately speeds up and improves the computed solution. 
 
@@ -751,12 +751,12 @@ Keeping our attention at the temporal region $[0,0.1]$, we now explore how the n
 
 
 \section{Conclusion}
-\lipsum[7]
+We have computed numerical approximations to the solution of the heat equation in one spatial dimensions using a variety of methods. The most interesting of the schemes presented is the somewhat novel approach of employing neural networks in the solving of the PDE. The other approaches are thoroughly well documented in numerous works, but the NN scheme is a new one, emerging around the early 90s. 
 
+As we have shown, for the very simple PDE in the present work, the NN scheme performs well at low spatial and temporal resolutions. When considering Fig.\ \ref{FD_vs_NN_vs_FEM}, the NN appears to outperform all the other methods, with the Crank-Nicholson solution being a close second in terms of accuracy. However, this comes at the cost of an almost 250 times longer computation time, when accounting for the training of the network. It should be carefully noted however, that once the training is done, we have a network which may evaluate the solution at any point in time and space (within the training data, we should not expect the NN to extrapolate to completely new data with any significant measure of success). This is somewhat in contrast to the finite difference or finite element schemes, in which the solution is either stored on discrete time and spatial points, or thrown away while integrating leaving only the solution at the very last instant. In this way, the NN solution may be regarded as being more useful \textit{after training has completed}, even though the training itself is time consuming. 
 
-\onecolumn{
-\printbibliography
-}
+When leaving the region of very low (temporal) resolutions, the network solution stuggles heavily in keeping up with the more traditional schemes. As can be seen in \fig{NNFEMcompare}, the accuracy e.g.\ the FEM solution may be made in principle arbitrarily good (within the bounds of numerical precision and the potential loss of precision incurred by the temporal finite difference scheme) by simply considering finer discrete grids. It is immediately obvious from this figure that the naive approach of simply increasing the resolution of the training data is not sufficient to make the trained NN perform better. As we observe, there is essentially no scaling of the approximation error when decreasing $\Delta t$. We postulate that more sophisticated approaches to training and possibly changing the network architecture may help with training a higher accuracy network, but that is beyond the scope of the present work.
+
 
 \end{document}
 
